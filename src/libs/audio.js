@@ -50,10 +50,18 @@ function isSupportedAudioFile(filePath) {
 function resolveWithinPath(baseDir, relativePath) {
     if (typeof baseDir !== 'string' || baseDir.trim() === '') return null;
     if (typeof relativePath !== 'string' || relativePath.trim() === '') return null;
-    if (path.isAbsolute(relativePath)) return null;
+    // Reject every absolute form regardless of the host platform: a Windows
+    // drive path is still an escape attempt when the tests run on Linux, and a
+    // NUL byte truncates the name inside fs calls.
+    if (relativePath.includes('\0')) return null;
+    if (path.isAbsolute(relativePath) || path.win32.isAbsolute(relativePath)) return null;
 
     const base = path.resolve(baseDir);
-    const target = path.resolve(base, relativePath);
+    // Pack manifests may be authored on Windows and then synced to macOS or
+    // Linux. Treat both separators as separators so `..\..\x` is still caught
+    // and portable pack folders resolve the same way everywhere.
+    const portableRelative = relativePath.replace(/\\/g, '/');
+    const target = path.resolve(base, portableRelative);
 
     // Windows paths are case-insensitive: a pack folder stored with different
     // casing must not make every sound look like a traversal attempt.

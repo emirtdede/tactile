@@ -20,11 +20,11 @@ jobs:
     name: Quality gates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -32,7 +32,7 @@ jobs:
 
       - name: Static syntax check
         run: |
-          for f in src/main.js src/preload.js src/app.js src/i18n.js src/cloud-sync.js src/db/database.js src/libs/audio.js src/libs/keycodes.js src/utils/remapper.js; do
+          for f in src/main.js src/preload.js src/app.js src/i18n.js src/cloud-sync.js src/db/database.js src/libs/audio.js src/libs/ico.js src/libs/keycodes.js src/utils/remapper.js; do
             node --check "$f"
           done
 
@@ -56,11 +56,11 @@ jobs:
     needs: quality
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
