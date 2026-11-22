@@ -1,265 +1,292 @@
-﻿2026-11-22T07:32:00.7493894Z Current runner version: '2.338.2'
-2026-11-22T07:32:00.7514842Z ##[group]Runner Image Provisioner
-2026-11-22T07:32:00.7515581Z Hosted Compute Agent
-2026-11-22T07:32:00.7516045Z Version: 20261111.635
-2026-11-22T07:32:00.7516516Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
-2026-11-22T07:32:00.7517096Z Build Date: 2026-11-11T01:49:01Z
-2026-11-22T07:32:00.7517682Z Worker ID: {20dd6326-3db1-4207-95d7-60d8788c9f4a}
-2026-11-22T07:32:00.7518281Z Region: eastus2
-2026-11-22T07:32:00.7518743Z Cloud: Azure
-2026-11-22T07:32:00.7519158Z ##[endgroup]
-2026-11-22T07:32:00.7520236Z ##[group]Operating System
-2026-11-22T07:32:00.7520748Z Microsoft Windows Server 2025
-2026-11-22T07:32:00.7521227Z 10.0.26100
-2026-11-22T07:32:00.7521621Z Datacenter
-2026-11-22T07:32:00.7521996Z ##[endgroup]
-2026-11-22T07:32:00.7522416Z ##[group]Runner Image
-2026-11-22T07:32:00.7523029Z Image: windows-2025-vs2026
-2026-11-22T07:32:00.7523493Z Version: 20261116.315.1
-2026-11-22T07:32:00.7525094Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261116.315/images/windows/Windows2025-VS2026-Readme.md
-2026-11-22T07:32:00.7526545Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261116.315
-2026-11-22T07:32:00.7527664Z ##[endgroup]
-2026-11-22T07:32:00.7528483Z ##[group]GITHUB_TOKEN Permissions
-2026-11-22T07:32:00.7530163Z Contents: read
-2026-11-22T07:32:00.7530732Z Metadata: read
-2026-11-22T07:32:00.7531399Z ##[endgroup]
-2026-11-22T07:32:00.7533185Z Secret source: Actions
-2026-11-22T07:32:00.7533944Z Cache mode: write
-2026-11-22T07:32:00.7534468Z Prepare workflow directory
-2026-11-22T07:32:00.7858038Z Prepare all required actions
-2026-11-22T07:32:00.7897486Z Getting action download info
-2026-11-22T07:32:00.9501522Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
-2026-11-22T07:32:01.0553436Z Download action repository 'actions/setup-node@v5' (SHA:a0853c24544627f65ddf259abe73b1d18a591444)
-2026-11-22T07:32:01.2116338Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
-2026-11-22T07:32:01.4052053Z Download action repository 'softprops/action-gh-release@v2' (SHA:3bb12739c298aeb8a4eeaf626c5b8d85266b0e65)
-2026-11-22T07:32:01.6440185Z Complete job name: Windows installer
-2026-11-22T07:32:01.7641693Z ##[group]Run actions/checkout@v5
-2026-11-22T07:32:01.7642588Z with:
-2026-11-22T07:32:01.7642923Z   repository: emirtdede/tactile
-2026-11-22T07:32:01.7646452Z   token: ***
-2026-11-22T07:32:01.7646781Z   ssh-strict: true
-2026-11-22T07:32:01.7647121Z   ssh-user: git
-2026-11-22T07:32:01.7647463Z   persist-credentials: true
-2026-11-22T07:32:01.7647834Z   clean: true
-2026-11-22T07:32:01.7648187Z   sparse-checkout-cone-mode: true
-2026-11-22T07:32:01.7648799Z   fetch-depth: 1
-2026-11-22T07:32:01.7649134Z   fetch-tags: false
-2026-11-22T07:32:01.7649477Z   show-progress: true
-2026-11-22T07:32:01.7649823Z   lfs: false
-2026-11-22T07:32:01.7650142Z   submodules: false
-2026-11-22T07:32:01.7650524Z   set-safe-directory: true
-2026-11-22T07:32:01.7650918Z   allow-unsafe-pr-checkout: false
-2026-11-22T07:32:01.7651510Z ##[endgroup]
-2026-11-22T07:32:01.8865145Z Syncing repository: emirtdede/tactile
-2026-11-22T07:32:01.8866607Z ##[group]Getting Git version info
-2026-11-22T07:32:01.8867176Z Working directory is 'D:\a\tactile\tactile'
-2026-11-22T07:32:01.9423928Z [command]"C:\Program Files\Git\bin\git.exe" version
-2026-11-22T07:32:02.2540223Z git version 2.56.1.windows.1
-2026-11-22T07:32:02.2581023Z ##[endgroup]
-2026-11-22T07:32:02.2597283Z Temporarily overriding HOME='D:\a\_temp\72697298-a8b2-46b9-9686-e25f3a952bb9' before making global git config changes
-2026-11-22T07:32:02.2598633Z Adding repository directory to the temporary git global config as a safe directory
-2026-11-22T07:32:02.2605465Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\tactile\tactile
-2026-11-22T07:32:02.3193900Z Deleting the contents of 'D:\a\tactile\tactile'
-2026-11-22T07:32:02.3199395Z ##[group]Initializing the repository
-2026-11-22T07:32:02.3206954Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\tactile\tactile
-2026-11-22T07:32:02.4053258Z Initialized empty Git repository in D:/a/tactile/tactile/.git/
-2026-11-22T07:32:02.4090579Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/emirtdede/tactile
-2026-11-22T07:32:02.4653595Z ##[endgroup]
-2026-11-22T07:32:02.4654732Z ##[group]Disabling automatic garbage collection
-2026-11-22T07:32:02.4660222Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
-2026-11-22T07:32:02.4943910Z ##[endgroup]
-2026-11-22T07:32:02.4945255Z ##[group]Setting up auth
-2026-11-22T07:32:02.4952648Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
-2026-11-22T07:32:02.5239749Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
-2026-11-22T07:32:03.9071636Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
-2026-11-22T07:32:03.9366755Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
-2026-11-22T07:32:04.4007287Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
-2026-11-22T07:32:04.4294081Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
-2026-11-22T07:32:04.8809835Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
-2026-11-22T07:32:04.9122782Z ##[endgroup]
-2026-11-22T07:32:04.9123541Z ##[group]Fetching the repository
-2026-11-22T07:32:04.9133304Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +ce9a035d55f62dfdc1b358706c8486ac59bc00ee:refs/tags/v1.0.0
-2026-11-22T07:32:06.1801441Z From https://github.com/emirtdede/tactile
-2026-11-22T07:32:06.1802374Z  * [new ref]         ce9a035d55f62dfdc1b358706c8486ac59bc00ee -> v1.0.0
-2026-11-22T07:32:06.1836736Z ##[endgroup]
-2026-11-22T07:32:06.1837250Z ##[group]Determining the checkout info
-2026-11-22T07:32:06.1903478Z ##[endgroup]
-2026-11-22T07:32:06.1905794Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
-2026-11-22T07:32:06.2301597Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
-2026-11-22T07:32:06.2596633Z ##[group]Checking out the ref
-2026-11-22T07:32:06.2597069Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/tags/v1.0.0
-2026-11-22T07:32:06.5306245Z Note: switching to 'refs/tags/v1.0.0'.
-2026-11-22T07:32:06.5306881Z 
-2026-11-22T07:32:06.5307130Z You are in 'detached HEAD' state. You can look around, make experimental
-2026-11-22T07:32:06.5307733Z changes and commit them, and you can discard any commits you make in this
-2026-11-22T07:32:06.5308341Z state without impacting any branches by switching back to a branch.
-2026-11-22T07:32:06.5308965Z 
-2026-11-22T07:32:06.5309446Z If you want to create a new branch to retain commits you create, you may
-2026-11-22T07:32:06.5310066Z do so (now or later) by using -c with the switch command. Example:
-2026-11-22T07:32:06.5310304Z 
-2026-11-22T07:32:06.5310407Z   git switch -c <new-branch-name>
-2026-11-22T07:32:06.5310546Z 
-2026-11-22T07:32:06.5310637Z Or undo this operation with:
-2026-11-22T07:32:06.5310804Z 
-2026-11-22T07:32:06.5310894Z   git switch -
-2026-11-22T07:32:06.5310999Z 
-2026-11-22T07:32:06.5311162Z Turn off this advice by setting config variable advice.detachedHead to false
-2026-11-22T07:32:06.5312542Z 
-2026-11-22T07:32:06.5312882Z HEAD is now at ce9a035 fix: portable test runner and CI-compatible paths
-2026-11-22T07:32:06.5386583Z ##[endgroup]
-2026-11-22T07:32:06.5769571Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
-2026-11-22T07:32:06.6047392Z ce9a035d55f62dfdc1b358706c8486ac59bc00ee
-2026-11-22T07:32:06.6431121Z ##[group]Run actions/setup-node@v5
-2026-11-22T07:32:06.6431402Z with:
-2026-11-22T07:32:06.6431558Z   node-version: 22
-2026-11-22T07:32:06.6431719Z   cache: npm
-2026-11-22T07:32:06.6431872Z   always-auth: false
-2026-11-22T07:32:06.6432054Z   check-latest: false
-2026-11-22T07:32:06.6434164Z   token: ***
-2026-11-22T07:32:06.6434336Z   package-manager-cache: true
-2026-11-22T07:32:06.6434535Z ##[endgroup]
-2026-11-22T07:32:06.7928369Z Found in cache @ C:\hostedtoolcache\windows\node\22.23.5\x64
-2026-11-22T07:32:06.7933670Z (node:7828) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-2026-11-22T07:32:06.7934274Z (Use `node --trace-deprecation ...` to show where the warning was created)
-2026-11-22T07:32:06.7936103Z ##[group]Environment details
-2026-11-22T07:32:11.2438221Z node: v22.23.5
-2026-11-22T07:32:11.2438436Z npm: 10.9.9
-2026-11-22T07:32:11.2438591Z yarn: 1.22.22
-2026-11-22T07:32:11.2439646Z ##[endgroup]
-2026-11-22T07:32:11.2923944Z [command]C:\Windows\system32\cmd.exe /D /S /C "C:\hostedtoolcache\windows\node\22.23.5\x64\npm.cmd config get cache"
-2026-11-22T07:32:11.8049432Z C:\npm\cache
-2026-11-22T07:32:14.7239293Z npm cache is not found
-2026-11-22T07:32:14.7482266Z ##[group]Run npm ci
-2026-11-22T07:32:14.7482517Z [36;1mnpm ci[0m
-2026-11-22T07:32:14.8111919Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
-2026-11-22T07:32:14.8112208Z ##[endgroup]
-2026-11-22T07:32:20.2635126Z npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
-2026-11-22T07:32:21.2386779Z npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-2026-11-22T07:32:29.9133839Z 
-2026-11-22T07:32:29.9134647Z > tactile@1.0.0 postinstall
-2026-11-22T07:32:29.9135170Z > electron-builder install-app-deps
-2026-11-22T07:32:29.9135421Z 
-2026-11-22T07:32:30.5245660Z   • electron-builder  version=24.13.3
-2026-11-22T07:32:30.5257630Z   • loaded configuration  file=package.json ("build" field)
-2026-11-22T07:32:30.5664614Z   • rebuilding native dependencies  dependencies=uiohook-napi@1.5.5 platform=win32 arch=x64
-2026-11-22T07:32:35.0686748Z 
-2026-11-22T07:32:35.0687456Z added 304 packages, and audited 305 packages in 20s
-2026-11-22T07:32:35.0687965Z 
-2026-11-22T07:32:35.0688369Z 45 packages are looking for funding
-2026-11-22T07:32:35.0688843Z   run `npm fund` for details
-2026-11-22T07:32:35.1722575Z 
-2026-11-22T07:32:35.1723427Z 23 vulnerabilities (1 low, 2 moderate, 18 high, 2 critical)
-2026-11-22T07:32:35.1723753Z 
-2026-11-22T07:32:35.1723993Z To address issues that do not require attention, run:
-2026-11-22T07:32:35.1724414Z   npm audit fix
-2026-11-22T07:32:35.1724544Z 
-2026-11-22T07:32:35.1724786Z To address all issues (including breaking changes), run:
-2026-11-22T07:32:35.1725529Z   npm audit fix --force
-2026-11-22T07:32:35.1725687Z 
-2026-11-22T07:32:35.1725801Z Run `npm audit` for details.
-2026-11-22T07:32:36.0938205Z ##[group]Run npm run build:win
-2026-11-22T07:32:36.0938486Z [36;1mnpm run build:win[0m
-2026-11-22T07:32:36.0992347Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
-2026-11-22T07:32:36.0992625Z ##[endgroup]
-2026-11-22T07:32:36.7117563Z 
-2026-11-22T07:32:36.7118160Z > tactile@1.0.0 build:win
-2026-11-22T07:32:36.7118979Z > node tools/build-icons.js && electron-builder --win nsis --x64 && node tools/refresh-icon-cache.js
-2026-11-22T07:32:36.7119515Z 
-2026-11-22T07:32:36.8285946Z Generating dark ICO...
-2026-11-22T07:32:36.8426277Z   - 256x256 from Tactile-bg.svg
-2026-11-22T07:32:36.8454750Z   - 128x128 from Tactile-bg.svg
-2026-11-22T07:32:36.8477130Z   - 64x64 from Tactile-bg.svg
-2026-11-22T07:32:36.8499828Z   - 48x48 from Tactile-bg.svg
-2026-11-22T07:32:36.8523068Z   - 32x32 from Tactile-bg.svg
-2026-11-22T07:32:36.8543457Z   - 24x24 from Tactile-bg.svg
-2026-11-22T07:32:36.8567367Z   - 16x16 from Tactile-bg.svg
-2026-11-22T07:32:36.8575747Z Saved D:\a\tactile\tactile\public\Tactile-bg.ico (363.8 KB)
-2026-11-22T07:32:36.8577904Z Generating light ICO...
-2026-11-22T07:32:36.8633578Z   - 256x256 from Tactile-light.svg
-2026-11-22T07:32:36.8666163Z   - 128x128 from Tactile-light.svg
-2026-11-22T07:32:36.8686183Z   - 64x64 from Tactile-light.svg
-2026-11-22T07:32:36.8705464Z   - 48x48 from Tactile-light.svg
-2026-11-22T07:32:36.8723029Z   - 32x32 from Tactile-light.svg
-2026-11-22T07:32:36.8740162Z   - 24x24 from Tactile-light.svg
-2026-11-22T07:32:36.8757259Z   - 16x16 from Tactile-light.svg
-2026-11-22T07:32:36.8762934Z Saved D:\a\tactile\tactile\public\Tactile-light.ico (363.8 KB)
-2026-11-22T07:32:36.8774885Z Copied Tactile-bg.ico -> D:\a\tactile\tactile\build\icon.ico
-2026-11-22T07:32:36.8779264Z Copied Tactile-bg.ico -> D:\a\tactile\tactile\build\installerIcon.ico
-2026-11-22T07:32:36.8783285Z Copied Tactile-bg.ico -> D:\a\tactile\tactile\build\uninstallerIcon.ico
-2026-11-22T07:32:36.8787488Z Copied Tactile-light.ico -> D:\a\tactile\tactile\build\installerHeaderIcon.ico
-2026-11-22T07:32:36.8788312Z Generating setup window light ICO...
-2026-11-22T07:32:36.8810551Z   - 48x48 from Tactile-light-small.svg
-2026-11-22T07:32:36.8829069Z   - 32x32 from Tactile-light-small.svg
-2026-11-22T07:32:36.8845830Z   - 24x24 from Tactile-light-small.svg
-2026-11-22T07:32:36.8862586Z   - 16x16 from Tactile-light-small.svg
-2026-11-22T07:32:36.8866097Z Saved D:\a\tactile\tactile\build\setupWindowIcon.ico (17.1 KB)
-2026-11-22T07:32:36.8924254Z Saved installer header BMP -> D:\a\tactile\tactile\build\installerHeader.bmp
-2026-11-22T07:32:36.8924817Z All ICO files built successfully.
-2026-11-22T07:32:37.4665781Z   • electron-builder  version=24.13.3 os=10.0.26100
-2026-11-22T07:32:37.4669479Z   • artifacts will be published  reason=tag is defined tag=v1.0.0
-2026-11-22T07:32:37.4706790Z   • loaded configuration  file=package.json ("build" field)
-2026-11-22T07:32:37.6700197Z   • rebuilding native dependencies  dependencies=uiohook-napi@1.5.5 platform=win32 arch=x64
-2026-11-22T07:32:38.2386224Z   • packaging       platform=win32 arch=x64 electron=30.5.1 appOutDir=dist\win-unpacked
-2026-11-22T07:32:38.3512452Z   • downloading     url=https://github.com/electron/electron/releases/download/v30.5.1/electron-v30.5.1-win32-x64.zip size=109 MB parts=8
-2026-11-22T07:32:38.5599118Z   • downloaded      url=https://github.com/electron/electron/releases/download/v30.5.1/electron-v30.5.1-win32-x64.zip duration=308ms
-2026-11-22T07:32:40.8711272Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
-2026-11-22T07:32:40.9442867Z   • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=262ms
-2026-11-22T07:32:41.5889349Z   • building        target=nsis file=dist\Tactile-Setup-1.0.0.exe archs=x64 oneClick=false perMachine=false
-2026-11-22T07:32:41.7843772Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z size=1.3 MB parts=1
-2026-11-22T07:32:41.8350768Z   • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z duration=229ms
-2026-11-22T07:33:06.8402656Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z size=731 kB parts=1
-2026-11-22T07:33:06.8897641Z   • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z duration=142ms
-2026-11-22T07:33:09.5534647Z   • building block map  blockMapFile=dist\Tactile-Setup-1.0.0.exe.blockmap
-2026-11-22T07:33:10.3128638Z   ⨯ Cannot cleanup: 
-2026-11-22T07:33:10.3128871Z 
-2026-11-22T07:33:10.3129280Z Error #1 --------------------------------------------------------------------------------
-2026-11-22T07:33:10.3130212Z Error: GitHub Personal Access Token is not set, neither programmatically, nor using env "GH_TOKEN"
-2026-11-22T07:33:10.3131201Z     at new GitHubPublisher (D:\a\tactile\tactile\node_modules\electron-publish\src\gitHubPublisher.ts:52:15)
-2026-11-22T07:33:10.3132240Z     at createPublisher (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:303:14)
-2026-11-22T07:33:10.3133420Z     at PublishManager.getOrCreatePublisher (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:222:19)
-2026-11-22T07:33:10.3134687Z     at PublishManager.scheduleUpload (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:152:28)
-2026-11-22T07:33:10.3136131Z     at PublishManager.artifactCreatedWithoutExplicitPublishConfig (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:202:14)
-2026-11-22T07:33:10.3136965Z 
-2026-11-22T07:33:10.3137327Z Error #2 --------------------------------------------------------------------------------
-2026-11-22T07:33:10.3138176Z Error: GitHub Personal Access Token is not set, neither programmatically, nor using env "GH_TOKEN"
-2026-11-22T07:33:10.3139122Z     at new GitHubPublisher (D:\a\tactile\tactile\node_modules\electron-publish\src\gitHubPublisher.ts:52:15)
-2026-11-22T07:33:10.3140322Z     at createPublisher (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:303:14)
-2026-11-22T07:33:10.3141453Z     at PublishManager.getOrCreatePublisher (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:222:19)
-2026-11-22T07:33:10.3142654Z     at PublishManager.scheduleUpload (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:152:28)
-2026-11-22T07:33:10.3144292Z     at PublishManager.artifactCreatedWithoutExplicitPublishConfig (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:202:14)  failedTask=build stackTrace=Error: Cannot cleanup: 
-2026-11-22T07:33:10.3150247Z                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         Error #1 --------------------------------------------------------------------------------
-2026-11-22T07:33:10.3154596Z Error: GitHub Personal Access Token is not set, neither programmatically, nor using env "GH_TOKEN"
-2026-11-22T07:33:10.3155573Z     at new GitHubPublisher (D:\a\tactile\tactile\node_modules\electron-publish\src\gitHubPublisher.ts:52:15)
-2026-11-22T07:33:10.3156579Z     at createPublisher (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:303:14)
-2026-11-22T07:33:10.3157722Z     at PublishManager.getOrCreatePublisher (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:222:19)
-2026-11-22T07:33:10.3158923Z     at PublishManager.scheduleUpload (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:152:28)
-2026-11-22T07:33:10.3160520Z     at PublishManager.artifactCreatedWithoutExplicitPublishConfig (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:202:14)
-2026-11-22T07:33:10.3165340Z                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         Error #2 --------------------------------------------------------------------------------
-2026-11-22T07:33:10.3169102Z Error: GitHub Personal Access Token is not set, neither programmatically, nor using env "GH_TOKEN"
-2026-11-22T07:33:10.3170022Z     at new GitHubPublisher (D:\a\tactile\tactile\node_modules\electron-publish\src\gitHubPublisher.ts:52:15)
-2026-11-22T07:33:10.3171039Z     at createPublisher (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:303:14)
-2026-11-22T07:33:10.3172262Z     at PublishManager.getOrCreatePublisher (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:222:19)
-2026-11-22T07:33:10.3173704Z     at PublishManager.scheduleUpload (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:152:28)
-2026-11-22T07:33:10.3175093Z     at PublishManager.artifactCreatedWithoutExplicitPublishConfig (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:202:14)
-2026-11-22T07:33:10.3176318Z     at throwError (D:\a\tactile\tactile\node_modules\builder-util\src\asyncTaskManager.ts:89:11)
-2026-11-22T07:33:10.3177161Z     at checkErrors (D:\a\tactile\tactile\node_modules\builder-util\src\asyncTaskManager.ts:53:9)
-2026-11-22T07:33:10.3178100Z     at AsyncTaskManager.awaitTasks (D:\a\tactile\tactile\node_modules\builder-util\src\asyncTaskManager.ts:58:5)
-2026-11-22T07:33:10.3179170Z     at PublishManager.awaitTasks (D:\a\tactile\tactile\node_modules\app-builder-lib\src\publish\PublishManager.ts:236:28)
-2026-11-22T07:33:10.3180729Z     at D:\a\tactile\tactile\node_modules\app-builder-lib\src\index.ts:119:32
-2026-11-22T07:33:10.3181530Z     at executeFinally (D:\a\tactile\tactile\node_modules\builder-util\src\promise.ts:23:9)
-2026-11-22T07:33:10.3599829Z ##[error]Process completed with exit code 1.
-2026-11-22T07:33:10.3831699Z Post job cleanup.
-2026-11-22T07:33:10.5222453Z [command]"C:\Program Files\Git\bin\git.exe" version
-2026-11-22T07:33:10.5505014Z git version 2.56.1.windows.1
-2026-11-22T07:33:10.5567353Z Temporarily overriding HOME='D:\a\_temp\8e35d9d4-762e-4f6c-8d21-00c3e0e62da8' before making global git config changes
-2026-11-22T07:33:10.5568456Z Adding repository directory to the temporary git global config as a safe directory
-2026-11-22T07:33:10.5576804Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\tactile\tactile
-2026-11-22T07:33:10.5898465Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
-2026-11-22T07:33:10.6210544Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
-2026-11-22T07:33:11.0668901Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
-2026-11-22T07:33:11.0932621Z http.https://github.com/.extraheader
-2026-11-22T07:33:11.0966239Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
-2026-11-22T07:33:11.1258984Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
-2026-11-22T07:33:11.5818996Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
-2026-11-22T07:33:11.6127950Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
-2026-11-22T07:33:12.0721698Z Cleaning up orphan processes
+﻿2026-11-22T07:37:10.7882787Z Current runner version: '2.338.2'
+2026-11-22T07:37:10.7906369Z ##[group]Runner Image Provisioner
+2026-11-22T07:37:10.7907100Z Hosted Compute Agent
+2026-11-22T07:37:10.7907570Z Version: 20261111.635
+2026-11-22T07:37:10.7908032Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+2026-11-22T07:37:10.7908640Z Build Date: 2026-11-11T01:49:01Z
+2026-11-22T07:37:10.7909142Z Worker ID: {c5245437-1b66-49c6-8805-f76d1199901c}
+2026-11-22T07:37:10.7909676Z Region: westus3
+2026-11-22T07:37:10.7910143Z Cloud: Azure
+2026-11-22T07:37:10.7910548Z ##[endgroup]
+2026-11-22T07:37:10.7911614Z ##[group]Operating System
+2026-11-22T07:37:10.7912099Z Microsoft Windows Server 2025
+2026-11-22T07:37:10.7912625Z 10.0.26100
+2026-11-22T07:37:10.7913031Z Datacenter
+2026-11-22T07:37:10.7913461Z ##[endgroup]
+2026-11-22T07:37:10.7913914Z ##[group]Runner Image
+2026-11-22T07:37:10.7914378Z Image: windows-2025-vs2026
+2026-11-22T07:37:10.7914816Z Version: 20261116.315.1
+2026-11-22T07:37:10.7916067Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261116.315/images/windows/Windows2025-VS2026-Readme.md
+2026-11-22T07:37:10.7917350Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261116.315
+2026-11-22T07:37:10.7918128Z ##[endgroup]
+2026-11-22T07:37:10.7919033Z ##[group]GITHUB_TOKEN Permissions
+2026-11-22T07:37:10.7920538Z Contents: read
+2026-11-22T07:37:10.7921363Z Metadata: read
+2026-11-22T07:37:10.7921829Z ##[endgroup]
+2026-11-22T07:37:10.7923611Z Secret source: Actions
+2026-11-22T07:37:10.7924318Z Cache mode: write
+2026-11-22T07:37:10.7924852Z Prepare workflow directory
+2026-11-22T07:37:10.8943778Z Prepare all required actions
+2026-11-22T07:37:10.8986091Z Getting action download info
+2026-11-22T07:37:11.1967213Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+2026-11-22T07:37:11.3226635Z Download action repository 'actions/setup-node@v5' (SHA:a0853c24544627f65ddf259abe73b1d18a591444)
+2026-11-22T07:37:11.4686657Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-22T07:37:11.6654420Z Download action repository 'softprops/action-gh-release@v2' (SHA:3bb12739c298aeb8a4eeaf626c5b8d85266b0e65)
+2026-11-22T07:37:12.3103161Z Complete job name: Windows installer
+2026-11-22T07:37:12.5523635Z ##[group]Run actions/checkout@v5
+2026-11-22T07:37:12.5524604Z with:
+2026-11-22T07:37:12.5524929Z   repository: emirtdede/tactile
+2026-11-22T07:37:12.5528214Z   token: ***
+2026-11-22T07:37:12.5528694Z   ssh-strict: true
+2026-11-22T07:37:12.5529003Z   ssh-user: git
+2026-11-22T07:37:12.5529312Z   persist-credentials: true
+2026-11-22T07:37:12.5529655Z   clean: true
+2026-11-22T07:37:12.5529977Z   sparse-checkout-cone-mode: true
+2026-11-22T07:37:12.5530346Z   fetch-depth: 1
+2026-11-22T07:37:12.5530645Z   fetch-tags: false
+2026-11-22T07:37:12.5530962Z   show-progress: true
+2026-11-22T07:37:12.5531281Z   lfs: false
+2026-11-22T07:37:12.5531573Z   submodules: false
+2026-11-22T07:37:12.5531926Z   set-safe-directory: true
+2026-11-22T07:37:12.5532292Z   allow-unsafe-pr-checkout: false
+2026-11-22T07:37:12.5533009Z ##[endgroup]
+2026-11-22T07:37:12.6748388Z Syncing repository: emirtdede/tactile
+2026-11-22T07:37:12.6749700Z ##[group]Getting Git version info
+2026-11-22T07:37:12.6750223Z Working directory is 'D:\a\tactile\tactile'
+2026-11-22T07:37:12.7417144Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-22T07:37:13.0804280Z git version 2.56.1.windows.1
+2026-11-22T07:37:13.0849965Z ##[endgroup]
+2026-11-22T07:37:13.0866413Z Temporarily overriding HOME='D:\a\_temp\698d7db2-f06f-42d5-88f1-83a6ca6c34a6' before making global git config changes
+2026-11-22T07:37:13.0867411Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-22T07:37:13.0875424Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\tactile\tactile
+2026-11-22T07:37:13.1553882Z Deleting the contents of 'D:\a\tactile\tactile'
+2026-11-22T07:37:13.1559496Z ##[group]Initializing the repository
+2026-11-22T07:37:13.1567118Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\tactile\tactile
+2026-11-22T07:37:13.2478752Z Initialized empty Git repository in D:/a/tactile/tactile/.git/
+2026-11-22T07:37:13.2522362Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/emirtdede/tactile
+2026-11-22T07:37:13.3375434Z ##[endgroup]
+2026-11-22T07:37:13.3376745Z ##[group]Disabling automatic garbage collection
+2026-11-22T07:37:13.3382974Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-11-22T07:37:13.3696348Z ##[endgroup]
+2026-11-22T07:37:13.3697250Z ##[group]Setting up auth
+2026-11-22T07:37:13.3707304Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-22T07:37:13.4030561Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-22T07:37:14.9246659Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-22T07:37:14.9575155Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-22T07:37:15.4324204Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-22T07:37:15.4623406Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-22T07:37:15.8908447Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-11-22T07:37:15.9214131Z ##[endgroup]
+2026-11-22T07:37:15.9214848Z ##[group]Fetching the repository
+2026-11-22T07:37:15.9224681Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +65da9fef895af14dc72b5a7552fb22882915423d:refs/tags/v1.0.0
+2026-11-22T07:37:17.7717193Z From https://github.com/emirtdede/tactile
+2026-11-22T07:37:17.7718369Z  * [new ref]         65da9fef895af14dc72b5a7552fb22882915423d -> v1.0.0
+2026-11-22T07:37:17.7750588Z ##[endgroup]
+2026-11-22T07:37:17.7750900Z ##[group]Determining the checkout info
+2026-11-22T07:37:17.7752773Z ##[endgroup]
+2026-11-22T07:37:17.7764987Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-11-22T07:37:17.8241051Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-11-22T07:37:17.8543855Z ##[group]Checking out the ref
+2026-11-22T07:37:17.8550803Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force refs/tags/v1.0.0
+2026-11-22T07:37:18.1263493Z Note: switching to 'refs/tags/v1.0.0'.
+2026-11-22T07:37:18.1264079Z 
+2026-11-22T07:37:18.1264331Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-22T07:37:18.1264891Z changes and commit them, and you can discard any commits you make in this
+2026-11-22T07:37:18.1265879Z state without impacting any branches by switching back to a branch.
+2026-11-22T07:37:18.1266234Z 
+2026-11-22T07:37:18.1266447Z If you want to create a new branch to retain commits you create, you may
+2026-11-22T07:37:18.1266954Z do so (now or later) by using -c with the switch command. Example:
+2026-11-22T07:37:18.1267466Z 
+2026-11-22T07:37:18.1267612Z   git switch -c <new-branch-name>
+2026-11-22T07:37:18.1267817Z 
+2026-11-22T07:37:18.1267939Z Or undo this operation with:
+2026-11-22T07:37:18.1268192Z 
+2026-11-22T07:37:18.1268353Z   git switch -
+2026-11-22T07:37:18.1268518Z 
+2026-11-22T07:37:18.1268833Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-22T07:37:18.1270212Z 
+2026-11-22T07:37:18.1270446Z HEAD is now at 65da9fe build: keep local and CI packaging publish-free
+2026-11-22T07:37:18.1346196Z ##[endgroup]
+2026-11-22T07:37:18.1752995Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-11-22T07:37:18.2044982Z 65da9fef895af14dc72b5a7552fb22882915423d
+2026-11-22T07:37:18.3433602Z ##[group]Run actions/setup-node@v5
+2026-11-22T07:37:18.3433885Z with:
+2026-11-22T07:37:18.3434038Z   node-version: 22
+2026-11-22T07:37:18.3434192Z   cache: npm
+2026-11-22T07:37:18.3434346Z   always-auth: false
+2026-11-22T07:37:18.3434523Z   check-latest: false
+2026-11-22T07:37:18.3436908Z   token: ***
+2026-11-22T07:37:18.3437070Z   package-manager-cache: true
+2026-11-22T07:37:18.3437252Z ##[endgroup]
+2026-11-22T07:37:18.4950489Z Found in cache @ C:\hostedtoolcache\windows\node\22.23.5\x64
+2026-11-22T07:37:18.4956938Z (node:1360) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-22T07:37:18.4957807Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-22T07:37:18.4960001Z ##[group]Environment details
+2026-11-22T07:37:27.0292689Z node: v22.23.5
+2026-11-22T07:37:27.0292904Z npm: 10.9.9
+2026-11-22T07:37:27.0293042Z yarn: 1.22.22
+2026-11-22T07:37:27.0293502Z ##[endgroup]
+2026-11-22T07:37:27.0817481Z [command]C:\Windows\system32\cmd.exe /D /S /C "C:\hostedtoolcache\windows\node\22.23.5\x64\npm.cmd config get cache"
+2026-11-22T07:37:27.9406754Z C:\npm\cache
+2026-11-22T07:37:28.3831057Z npm cache is not found
+2026-11-22T07:37:28.4137359Z ##[group]Run npm ci
+2026-11-22T07:37:28.4137608Z [36;1mnpm ci[0m
+2026-11-22T07:37:28.5997229Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-22T07:37:28.5997552Z ##[endgroup]
+2026-11-22T07:37:42.3601797Z npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+2026-11-22T07:37:44.3935371Z npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+2026-11-22T07:37:56.7983406Z 
+2026-11-22T07:37:56.7984817Z > tactile@1.0.0 postinstall
+2026-11-22T07:37:56.7985305Z > electron-builder install-app-deps
+2026-11-22T07:37:56.7985497Z 
+2026-11-22T07:37:57.4375335Z   • electron-builder  version=24.13.3
+2026-11-22T07:37:57.4386602Z   • loaded configuration  file=package.json ("build" field)
+2026-11-22T07:37:57.4822234Z   • rebuilding native dependencies  dependencies=uiohook-napi@1.5.5 platform=win32 arch=x64
+2026-11-22T07:38:05.1411829Z 
+2026-11-22T07:38:05.1412570Z added 304 packages, and audited 305 packages in 36s
+2026-11-22T07:38:05.1412888Z 
+2026-11-22T07:38:05.1413055Z 45 packages are looking for funding
+2026-11-22T07:38:05.1413338Z   run `npm fund` for details
+2026-11-22T07:38:05.2576632Z 
+2026-11-22T07:38:05.2577532Z 23 vulnerabilities (1 low, 2 moderate, 18 high, 2 critical)
+2026-11-22T07:38:05.2577847Z 
+2026-11-22T07:38:05.2578049Z To address issues that do not require attention, run:
+2026-11-22T07:38:05.2578429Z   npm audit fix
+2026-11-22T07:38:05.2578562Z 
+2026-11-22T07:38:05.2578791Z To address all issues (including breaking changes), run:
+2026-11-22T07:38:05.2579140Z   npm audit fix --force
+2026-11-22T07:38:05.2579280Z 
+2026-11-22T07:38:05.2579399Z Run `npm audit` for details.
+2026-11-22T07:38:08.4242922Z ##[group]Run npm run build:win
+2026-11-22T07:38:08.4243192Z [36;1mnpm run build:win[0m
+2026-11-22T07:38:08.4298294Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-22T07:38:08.4298557Z ##[endgroup]
+2026-11-22T07:38:09.1504283Z 
+2026-11-22T07:38:09.1504810Z > tactile@1.0.0 build:win
+2026-11-22T07:38:09.1505445Z > node tools/build-icons.js && electron-builder --win nsis --x64 --publish never && node tools/refresh-icon-cache.js
+2026-11-22T07:38:09.1505876Z 
+2026-11-22T07:38:09.2582659Z Generating dark ICO...
+2026-11-22T07:38:09.2727208Z   - 256x256 from Tactile-bg.svg
+2026-11-22T07:38:09.2760351Z   - 128x128 from Tactile-bg.svg
+2026-11-22T07:38:09.2785230Z   - 64x64 from Tactile-bg.svg
+2026-11-22T07:38:09.2808199Z   - 48x48 from Tactile-bg.svg
+2026-11-22T07:38:09.2833354Z   - 32x32 from Tactile-bg.svg
+2026-11-22T07:38:09.2859533Z   - 24x24 from Tactile-bg.svg
+2026-11-22T07:38:09.2881645Z   - 16x16 from Tactile-bg.svg
+2026-11-22T07:38:09.2893150Z Saved D:\a\tactile\tactile\public\Tactile-bg.ico (363.8 KB)
+2026-11-22T07:38:09.2895629Z Generating light ICO...
+2026-11-22T07:38:09.2941370Z   - 256x256 from Tactile-light.svg
+2026-11-22T07:38:09.2973928Z   - 128x128 from Tactile-light.svg
+2026-11-22T07:38:09.2995888Z   - 64x64 from Tactile-light.svg
+2026-11-22T07:38:09.3015587Z   - 48x48 from Tactile-light.svg
+2026-11-22T07:38:09.3034598Z   - 32x32 from Tactile-light.svg
+2026-11-22T07:38:09.3053097Z   - 24x24 from Tactile-light.svg
+2026-11-22T07:38:09.3070666Z   - 16x16 from Tactile-light.svg
+2026-11-22T07:38:09.3077334Z Saved D:\a\tactile\tactile\public\Tactile-light.ico (363.8 KB)
+2026-11-22T07:38:09.3091828Z Copied Tactile-bg.ico -> D:\a\tactile\tactile\build\icon.ico
+2026-11-22T07:38:09.3096199Z Copied Tactile-bg.ico -> D:\a\tactile\tactile\build\installerIcon.ico
+2026-11-22T07:38:09.3100953Z Copied Tactile-bg.ico -> D:\a\tactile\tactile\build\uninstallerIcon.ico
+2026-11-22T07:38:09.3106578Z Copied Tactile-light.ico -> D:\a\tactile\tactile\build\installerHeaderIcon.ico
+2026-11-22T07:38:09.3107234Z Generating setup window light ICO...
+2026-11-22T07:38:09.3133976Z   - 48x48 from Tactile-light-small.svg
+2026-11-22T07:38:09.3152505Z   - 32x32 from Tactile-light-small.svg
+2026-11-22T07:38:09.3170511Z   - 24x24 from Tactile-light-small.svg
+2026-11-22T07:38:09.3188203Z   - 16x16 from Tactile-light-small.svg
+2026-11-22T07:38:09.3191505Z Saved D:\a\tactile\tactile\build\setupWindowIcon.ico (17.1 KB)
+2026-11-22T07:38:09.3251178Z Saved installer header BMP -> D:\a\tactile\tactile\build\installerHeader.bmp
+2026-11-22T07:38:09.3251696Z All ICO files built successfully.
+2026-11-22T07:38:09.9294591Z   • electron-builder  version=24.13.3 os=10.0.26100
+2026-11-22T07:38:09.9335445Z   • loaded configuration  file=package.json ("build" field)
+2026-11-22T07:38:10.1412802Z   • rebuilding native dependencies  dependencies=uiohook-napi@1.5.5 platform=win32 arch=x64
+2026-11-22T07:38:10.7228726Z   • packaging       platform=win32 arch=x64 electron=30.5.1 appOutDir=dist\win-unpacked
+2026-11-22T07:38:10.9846013Z   • downloading     url=https://github.com/electron/electron/releases/download/v30.5.1/electron-v30.5.1-win32-x64.zip size=109 MB parts=8
+2026-11-22T07:38:11.2052477Z   • downloaded      url=https://github.com/electron/electron/releases/download/v30.5.1/electron-v30.5.1-win32-x64.zip duration=469ms
+2026-11-22T07:38:13.7349908Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+2026-11-22T07:38:13.8450296Z   • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=353ms
+2026-11-22T07:38:14.9514433Z   • building        target=nsis file=dist\Tactile-Setup-1.0.0.exe archs=x64 oneClick=false perMachine=false
+2026-11-22T07:38:15.2066309Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z size=1.3 MB parts=1
+2026-11-22T07:38:15.2861951Z   • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z duration=316ms
+2026-11-22T07:38:42.4732413Z   • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z size=731 kB parts=1
+2026-11-22T07:38:42.5527435Z   • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z duration=326ms
+2026-11-22T07:38:45.3345921Z   • building block map  blockMapFile=dist\Tactile-Setup-1.0.0.exe.blockmap
+2026-11-22T07:38:46.1975872Z Windows icon cache refresh requested.
+2026-11-22T07:38:46.2625596Z ##[group]Run $exe = Get-ChildItem dist -Filter 'Tactile-Setup-*.exe' | Select-Object -First 1
+2026-11-22T07:38:46.2626248Z [36;1m$exe = Get-ChildItem dist -Filter 'Tactile-Setup-*.exe' | Select-Object -First 1[0m
+2026-11-22T07:38:46.2626647Z [36;1mif (-not $exe) { throw 'Installer was not produced' }[0m
+2026-11-22T07:38:46.2626943Z [36;1m$info = (Get-Item $exe.FullName).VersionInfo[0m
+2026-11-22T07:38:46.2627305Z [36;1mif ($info.FileVersion -ne '1.0.0') { throw "Unexpected version: $($info.FileVersion)" }[0m
+2026-11-22T07:38:46.2627691Z [36;1mWrite-Host "Built $($exe.Name) $($exe.Length) bytes"[0m
+2026-11-22T07:38:46.2684398Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-11-22T07:38:46.2684686Z ##[endgroup]
+2026-11-22T07:38:46.5843982Z Built Tactile-Setup-1.0.0.exe 109920826 bytes
+2026-11-22T07:38:46.6547115Z ##[group]Run actions/upload-artifact@v4
+2026-11-22T07:38:46.6547434Z with:
+2026-11-22T07:38:46.6547599Z   name: tactile-windows-installer
+2026-11-22T07:38:46.6547964Z   path: dist/Tactile-Setup-*.exe
+dist/Tactile-Setup-*.exe.blockmap
+dist/latest.yml
+
+2026-11-22T07:38:46.6548290Z   if-no-files-found: error
+2026-11-22T07:38:46.6548463Z   compression-level: 6
+2026-11-22T07:38:46.6548619Z   overwrite: false
+2026-11-22T07:38:46.6548772Z   include-hidden-files: false
+2026-11-22T07:38:46.6548942Z ##[endgroup]
+2026-11-22T07:38:46.8123283Z (node:6708) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-22T07:38:46.8123893Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-22T07:38:46.8180847Z With the provided path, there will be 3 files uploaded
+2026-11-22T07:38:46.8184555Z Artifact name is valid!
+2026-11-22T07:38:46.8186205Z Root directory input is valid!
+2026-11-22T07:38:47.1922843Z Beginning upload of artifact content to blob storage
+2026-11-22T07:38:47.4207867Z (node:6708) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-22T07:38:48.3933950Z Uploaded bytes 8388608
+2026-11-22T07:38:48.5790354Z Uploaded bytes 16777216
+2026-11-22T07:38:48.6370308Z Uploaded bytes 25165824
+2026-11-22T07:38:48.7240832Z Uploaded bytes 33554432
+2026-11-22T07:38:48.8892946Z Uploaded bytes 41943040
+2026-11-22T07:38:48.9508232Z Uploaded bytes 50331648
+2026-11-22T07:38:49.0251167Z Uploaded bytes 58720256
+2026-11-22T07:38:49.0868935Z Uploaded bytes 67108864
+2026-11-22T07:38:49.3415346Z Uploaded bytes 75497472
+2026-11-22T07:38:49.5833325Z Uploaded bytes 83886080
+2026-11-22T07:38:49.7361606Z Uploaded bytes 92274688
+2026-11-22T07:38:49.9740201Z Uploaded bytes 100663296
+2026-11-22T07:38:50.1978214Z Uploaded bytes 109051904
+2026-11-22T07:38:50.2655421Z Uploaded bytes 109686265
+2026-11-22T07:38:50.3222384Z Finished uploading artifact content to blob storage!
+2026-11-22T07:38:50.3225623Z SHA256 digest of uploaded artifact zip is ba60aa21be4f63d70ecdab803ed4c9f021d32c752e7894984d7f002f5ac913e0
+2026-11-22T07:38:50.3227469Z Finalizing artifact upload
+2026-11-22T07:38:50.6716159Z Artifact tactile-windows-installer.zip successfully finalized. Artifact ID 14744448583
+2026-11-22T07:38:50.6716908Z Artifact tactile-windows-installer has been successfully uploaded! Final size is 109686265 bytes. Artifact ID is 14744448583
+2026-11-22T07:38:50.6727709Z Artifact download URL: https://github.com/emirtdede/tactile/actions/runs/44999031662/artifacts/14744448583
+2026-11-22T07:38:50.7228840Z ##[group]Run softprops/action-gh-release@v2
+2026-11-22T07:38:50.7229124Z with:
+2026-11-22T07:38:50.7229346Z   draft: true
+2026-11-22T07:38:50.7229707Z   files: dist/Tactile-Setup-*.exe
+dist/Tactile-Setup-*.exe.blockmap
+dist/latest.yml
+
+2026-11-22T07:38:50.7230015Z   overwrite_files: true
+2026-11-22T07:38:50.7232635Z   token: ***
+2026-11-22T07:38:50.7232784Z ##[endgroup]
+2026-11-22T07:38:51.1796544Z 👩‍🏭 Creating new GitHub release for tag v1.0.0...
+2026-11-22T07:38:51.3317683Z ⚠️ GitHub release failed with status: 403
+2026-11-22T07:38:51.3318688Z {"message":"Resource not accessible by integration","documentation_url":"https://docs.github.com/rest/releases/releases#create-a-release","status":"403"}
+2026-11-22T07:38:51.3319482Z Skip retry — your GitHub token/PAT does not have the required permission to create a release
+2026-11-22T07:38:51.3320831Z ⚠️ Unexpected error fetching GitHub release for tag refs/tags/v1.0.0: HttpError: Resource not accessible by integration - https://docs.github.com/rest/releases/releases#create-a-release
+2026-11-22T07:38:51.3338370Z ##[error]Resource not accessible by integration - https://docs.github.com/rest/releases/releases#create-a-release
+2026-11-22T07:38:51.3917187Z Post job cleanup.
+2026-11-22T07:38:51.5309332Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-11-22T07:38:51.5604349Z git version 2.56.1.windows.1
+2026-11-22T07:38:51.5669236Z Temporarily overriding HOME='D:\a\_temp\56170848-bfed-4f85-989e-0b41177d5d2c' before making global git config changes
+2026-11-22T07:38:51.5670229Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-22T07:38:51.5678514Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\tactile\tactile
+2026-11-22T07:38:51.6017275Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-11-22T07:38:51.6404806Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-11-22T07:38:52.1036361Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-22T07:38:52.1310553Z http.https://github.com/.extraheader
+2026-11-22T07:38:52.1357220Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-11-22T07:38:52.1701682Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-11-22T07:38:52.6465174Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-22T07:38:52.6800675Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-11-22T07:38:53.2177159Z Cleaning up orphan processes
+2026-11-22T07:38:53.2483192Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@v4, softprops/action-gh-release@v2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
