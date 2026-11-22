@@ -1,21 +1,25 @@
 function remapper(from = 'standard', to = 'darwin', defines = {}) {
-  if (from == 'standard') {
+  if (from === 'standard') {
     // from standard linux, darwin, win32
     switch (to) {
       case 'linux':
         break;
       case 'darwin': {
-        defines['91'] = defines['3639']; // mac f13
-        defines['92'] = defines['70']; // mac f14
-        defines['93'] = defines['3653']; // mac f15
-        defines['91'] = defines['57416'];
-        defines['56'] = defines['3675'];
-        defines['3675'] = defines['56'];
-        defines['3675'] = defines['3640'];
-        defines['56'] = defines['3676'];
-        defines['29'] = defines['3613'];
+        // Read every source value from an untouched snapshot. The old code
+        // read back keys it had already overwritten (e.g. 56 and 3675 were
+        // assigned from themselves), so the result depended on statement
+        // order and the F13 mapping was silently destroyed by a second
+        // assignment to the same key (91).
+        const source = { ...defines };
+        defines['91'] = source['3639']; // mac f13
+        defines['92'] = source['70']; // mac f14
+        defines['93'] = source['3653']; // mac f15
 
-        defines['3597'] = defines['69']; // numlock -> clear
+        defines['56'] = source['3676'];
+        defines['3675'] = source['3640'];
+        defines['29'] = source['3613'];
+
+        defines['3597'] = source['69']; // numlock -> clear
         break;
       }
       case 'win32': {
@@ -41,14 +45,16 @@ function remapper(from = 'standard', to = 'darwin', defines = {}) {
     // from linux, darwin, win32 to standard
     switch (from) {
       case 'darwin': {
-        defines['3639'] = defines['91'];
-        defines['70'] = defines['92'];
-        defines['3653'] = defines['93'];
-        defines['3675'] = defines['56'];
-        defines['56'] = defines['3675'];
-        defines['3640'] = defines['3675'];
-        defines['3676'] = defines['56'];
-        defines['3613'] = defines['29'];
+        // Same trap as the forward direction: several targets overlap with
+        // sources (56/3675/3676/3640), so read from an untouched snapshot.
+        const source = { ...defines };
+        defines['3639'] = source['91'];   // mac f13
+        defines['70'] = source['92'];     // mac f14
+        defines['3653'] = source['93'];   // mac f15
+        defines['3676'] = source['56'];   // Command
+        defines['3640'] = source['3675']; // Option
+        defines['3613'] = source['29'];   // Ctrl
+        defines['69'] = source['3597'];   // clear -> numlock
         break;
       }
       case 'win32': {

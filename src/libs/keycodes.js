@@ -161,17 +161,45 @@ const linux = JSON.parse(JSON.stringify(standard));
 // remap keycodes from standard to os based keycodes
 function keycodesRemap(defines) {
   const remapper = require('../utils/remapper');
-  const sprite = remapper('standard', process.platform, {...defines});
-  Object.keys(sprite).map((kc) => {
-    sprite[`keycode-${kc}`] = sprite[kc];
-    delete sprite[kc];
+
+  // The map holds both "3666" (keydown) and "3666-up" (keyup) entries. Only
+  // the numeric part may go through the remapper: feeding it "3666-up" left
+  // that key untouched, so the keyup sound stayed on the standard keycode and
+  // never fired on win32/darwin (the hook reports the remapped keycode).
+  const numeric = {};
+  const keyup = {};
+  const passthrough = {};
+
+  Object.keys(defines).forEach((key) => {
+    const match = /^(\d+)(-up)?$/.exec(key);
+    if (!match) {
+      passthrough[key] = defines[key];
+      return;
+    }
+    if (match[2]) keyup[match[1]] = defines[key];
+    else numeric[match[1]] = defines[key];
+  });
+
+  const remappedDown = remapper('standard', process.platform, { ...numeric });
+  const remappedUp = remapper('standard', process.platform, { ...keyup });
+
+  // forEach, not map: the return value was always discarded.
+  const sprite = {};
+  Object.entries(remappedDown).forEach(([kc, value]) => {
+    sprite[`keycode-${kc}`] = value;
+  });
+  Object.entries(remappedUp).forEach(([kc, value]) => {
+    sprite[`keycode-${kc}-up`] = value;
+  });
+  Object.entries(passthrough).forEach(([kc, value]) => {
+    sprite[`keycode-${kc}`] = value;
   });
   return sprite;
 }
 
 function keycodesFill(defines){
   let keys = {...defines};
-  Object.keys(standard).map((kc) => {
+  Object.keys(standard).forEach((kc) => {
     if(!keys[kc]){
       keys[kc] = null;
     }

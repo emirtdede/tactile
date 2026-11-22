@@ -1,631 +1,1143 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
+    <!--
+        Locks the renderer down to bundled resources only. `file:` is listed
+        next to 'self' because the window is loaded from disk via loadFile();
+        `data:` is required for the sound packs (Howler decodes the base64
+        data URIs with atob) and for the rasterized app icon; `'unsafe-inline'`
+        for styles is required by the inline `style=` attributes used
+        throughout the markup and by the JS-generated cards.
+    -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self' file:; script-src 'self' file:; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: file:; media-src 'self' data: file:; font-src 'self' data: file:; connect-src 'self' file:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
     <title>Tactile</title>
-    <!-- Use system font or inter if available -->
     <link rel="stylesheet" href="./assets/app.css">
 </head>
 <body>
     <div class="window-container">
-        <!-- Titlebar -->
         <header class="titlebar">
             <div class="drag-region">
                 <div class="brand">
+                    <img src="../public/Tactile.svg" alt="Tactile" class="titlebar-mark" title="" data-i18n-title="app.subtitle">
                     <span>Tactile</span>
+                    <span class="titlebar-divider" aria-hidden="true"></span>
+                    <span class="titlebar-context" id="titlebar-context" data-i18n="nav.sounds"></span>
                 </div>
             </div>
             <div class="window-controls">
-                <button id="btn-min" class="win-btn">_</button>
-                <button id="btn-max" class="win-btn">□</button>
-                <button id="btn-close" class="win-btn close-btn">✕</button>
+                <button id="btn-gh-repo" class="win-btn win-btn-link" data-i18n-title="about.github" title="" data-i18n-aria-label="about.github" aria-label="">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.55v-2.1c-3.2.7-3.88-1.36-3.88-1.36-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .3.21.66.8.55A11.5 11.5 0 0 0 23.5 12A11.5 11.5 0 0 0 12 .5Z"/></svg>
+                </button>
+                <button id="btn-min" class="win-btn" aria-label="Minimize" data-i18n-aria-label="window.minimize">
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2" y1="6" x2="10" y2="6" stroke="currentColor" stroke-width="1.4"/></svg>
+                </button>
+                <button id="btn-max" class="win-btn" aria-label="Maximize" data-i18n-aria-label="window.maximize">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="7" height="7" stroke="currentColor" stroke-width="1.2"/></svg>
+                </button>
+                <button id="btn-close" class="win-btn close-btn" aria-label="Close" data-i18n-aria-label="window.close">
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                </button>
             </div>
         </header>
 
-        <!-- Main Layout -->
         <div class="layout">
-            <!-- Sidebar -->
-            <nav class="sidebar">
-                <div class="sidebar-header">
-                    <img src="../public/Tactile.svg" alt="Tactile Logo" class="app-brand-logo">
-                    <div class="app-brand-meta">
-                        <div class="app-brand-name">Tactile</div>
-                        <div class="app-brand-subtitle" data-i18n="app.subtitle">Tatmin Edici Tuş Sesleri</div>
-                    </div>
-                </div>
-                
-                <div class="nav-group">
-                    <div class="nav-title-container" style="display: flex; justify-content: space-between; align-items: center; padding-right: 8px;">
-                        <div class="nav-title" data-i18n="nav.sound_profiles">SES PROFİLLERİ</div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <button class="btn-edit-categories" id="btn-edit-categories" data-i18n-title="modal.manage_title" title="Kategorileri Yönet" style="background: transparent; border: none; color: var(--accent-gold); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path>
-                                </svg>
-                            </button>
-                            <button class="btn-add-category" id="btn-add-category" data-i18n-title="modal.create_category_title" title="Yeni Kategori" style="background: transparent; border: none; color: var(--accent-gold); cursor: pointer; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center;">+</button>
-                        </div>
-                    </div>
-                    <div id="dynamic-categories-list" style="display: flex; flex-direction: column; gap: 4px;">
-                        <!-- Populated dynamically by JS -->
-                    </div>
+            <!-- Primary rail (first sidebar) -->
+            <nav class="rail" data-i18n-aria-label="nav.workspace" aria-label="Workspace">
+                <div class="rail-logo">
+                    <img src="../public/Tactile.svg" alt="Tactile" class="app-brand-logo">
                 </div>
 
-                
-                <div class="spacer"></div>
-                
-                <div class="nav-group footer-nav">
-                    <button class="nav-item" data-view="settings" data-i18n="nav.settings">Ayarlar</button>
-                    <button class="nav-item" data-view="about" data-i18n="nav.about">Hakkında / Yasal</button>
+                <div class="rail-group">
+                    <button class="nav-item rail-item active" data-view="profiles" data-i18n-title="nav.sounds" title="" data-i18n-aria-label="nav.sounds" aria-label="">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        <span data-i18n="nav.sounds"></span>
+                    </button>
+                    <button class="nav-item rail-item" data-view="custom" data-i18n-title="nav.import" title="" data-i18n-aria-label="nav.import" aria-label="">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <span data-i18n="nav.import"></span>
+                    </button>
+                    <button class="nav-item rail-item" data-view="docs" data-i18n-title="nav.documents" title="" data-i18n-aria-label="nav.documents" aria-label="">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <span data-i18n="nav.documents"></span>
+                    </button>
                 </div>
-                
-                <div class="sidebar-user">
-                    <div class="user-avatar">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name" data-i18n="sidebar.local_user">Yerel Kullanıcı</div>
-                        <div class="user-role">Windows</div>
-                    </div>
+
+                <div class="rail-spacer"></div>
+
+                <div class="rail-group">
+                    <button class="nav-item rail-item" data-view="diagnostics" data-i18n-title="nav.diagnostics" title="" data-i18n-aria-label="nav.diagnostics" aria-label="">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        <span data-i18n="nav.diagnostics"></span>
+                    </button>
+                    <button class="nav-item rail-item" data-view="settings" data-i18n-title="nav.settings" title="" data-i18n-aria-label="nav.settings" aria-label="">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        <span data-i18n="nav.settings"></span>
+                    </button>
+                    <button class="nav-item rail-item" data-view="about" data-i18n-title="nav.about" title="" data-i18n-aria-label="nav.about" aria-label="">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span data-i18n="nav.about"></span>
+                    </button>
+                </div>
+
+                <div class="rail-footer">
+                    <button id="btn-sponsor" class="rail-icon-btn" data-i18n-title="about.sponsor" title="" data-i18n-aria-label="about.sponsor" aria-label="">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+                    </button>
+                    <span class="rail-version" id="rail-version"></span>
                 </div>
             </nav>
 
-            <!-- Content Area -->
+            <!-- Contextual sidebar (second sidebar) -->
+            <aside class="subnav" id="subnav">
+                <section class="subnav-panel active" data-panel="profiles">
+                    <div class="subnav-head">
+                        <span class="subnav-eyebrow" data-i18n="nav.workspace"></span>
+                        <h2 data-i18n="sidebar.library"></h2>
+                        <p data-i18n="sidebar.library_desc"></p>
+                    </div>
+                    <div class="subnav-block">
+                        <div class="subnav-block-head">
+                            <span data-i18n="sidebar.categories"></span>
+                            <span class="subnav-actions">
+                                <button class="icon-action" id="btn-edit-categories" data-i18n-title="modal.manage_title" title="" data-i18n-aria-label="modal.manage_title" aria-label="">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/></svg>
+                                </button>
+                                <button class="icon-action" id="btn-add-category" data-i18n-title="modal.create_category_title" title="" data-i18n-aria-label="modal.create_category_title" aria-label="">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                </button>
+                            </span>
+                        </div>
+                        <div id="dynamic-categories-list" class="category-list"></div>
+                    </div>
+                    <div class="subnav-block">
+                        <div class="subnav-block-head"><span data-i18n="sidebar.status"></span></div>
+                        <dl class="stat-list">
+                            <div><dt data-i18n="sidebar.profiles_count"></dt><dd id="stat-profiles">0</dd></div>
+                            <div><dt data-i18n="sidebar.categories_count"></dt><dd id="stat-categories">0</dd></div>
+                            <div><dt data-i18n="sidebar.cloud"></dt><dd id="stat-cloud" data-i18n="sidebar.cloud_off"></dd></div>
+                            <div><dt data-i18n="sidebar.local_user"></dt><dd>Tactile</dd></div>
+                        </dl>
+                    </div>
+                    <div class="subnav-block">
+                        <div class="subnav-block-head"><span data-i18n="sidebar.quick_actions"></span></div>
+                        <button class="subnav-action" id="btn-quick-import" data-i18n="nav.import"></button>
+                        <button class="subnav-action" id="btn-quick-backup" data-i18n="cloud.sync_now"></button>
+                    </div>
+                </section>
+
+                <section class="subnav-panel" data-panel="settings">
+                    <div class="subnav-head">
+                        <span class="subnav-eyebrow" data-i18n="nav.application"></span>
+                        <h2 data-i18n="nav.settings"></h2>
+                        <p data-i18n="settings.subtitle"></p>
+                    </div>
+                    <div class="section-nav">
+                        <button class="section-link active" data-section="general" data-i18n="settings.section_general"></button>
+                        <button class="section-link" data-section="appearance" data-i18n="settings.section_appearance"></button>
+                        <button class="section-link" data-section="language" data-i18n="settings.section_language"></button>
+                        <button class="section-link" data-section="sound" data-i18n="settings.section_sound"></button>
+                        <button class="section-link" data-section="shortcuts" data-i18n="settings.section_shortcuts"></button>
+                        <button class="section-link" data-section="data" data-i18n="settings.section_data"></button>
+                        <button class="section-link" data-section="updates" data-i18n="settings.section_updates"></button>
+                    </div>
+                </section>
+
+                <section class="subnav-panel" data-panel="docs">
+                    <div class="subnav-head">
+                        <span class="subnav-eyebrow" data-i18n="nav.support"></span>
+                        <h2 data-i18n="docs.title"></h2>
+                        <p data-i18n="docs.desc"></p>
+                    </div>
+                    <div class="section-nav">
+                        <button class="section-link" data-docs="getting_started" data-i18n="docs.getting_started"></button>
+                        <button class="section-link" data-docs="profiles" data-i18n="docs.profiles"></button>
+                        <button class="section-link" data-docs="sync" data-i18n="docs.sync"></button>
+                        <button class="section-link" data-docs="shortcuts" data-i18n="docs.shortcuts"></button>
+                        <button class="section-link" data-docs="privacy" data-i18n="docs.privacy"></button>
+                    </div>
+                </section>
+
+                <section class="subnav-panel" data-panel="diagnostics">
+                    <div class="subnav-head">
+                        <span class="subnav-eyebrow" data-i18n="nav.support"></span>
+                        <h2 data-i18n="diag.title"></h2>
+                        <p data-i18n="diag.desc"></p>
+                    </div>
+                    <dl class="stat-list">
+                        <div><dt data-i18n="diag.db"></dt><dd id="subnav-diag-db" data-i18n="diag.ok"></dd></div>
+                        <div><dt data-i18n="diag.hook"></dt><dd id="subnav-diag-hook" data-i18n="diag.ok"></dd></div>
+                        <div><dt data-i18n="diag.tray"></dt><dd id="subnav-diag-tray" data-i18n="diag.ok"></dd></div>
+                    </dl>
+                </section>
+
+                <section class="subnav-panel" data-panel="about">
+                    <div class="subnav-head">
+                        <span class="subnav-eyebrow" data-i18n="about.developer"></span>
+                        <h2 data-i18n="nav.about"></h2>
+                        <p data-i18n="about.registered"></p>
+                    </div>
+                    <button class="subnav-action" id="btn-subnav-github" data-i18n="about.github"></button>
+                    <button class="subnav-action" id="btn-subnav-sponsor" data-i18n="about.sponsor"></button>
+                    <button class="subnav-action" id="btn-subnav-docs" data-i18n="about.docs"></button>
+                </section>
+            </aside>
+
             <main class="content-area">
-                
-                <!-- Top Toolbar -->
-                <div class="toolbar">
+                <div class="toolbar" id="main-toolbar">
                     <div class="search-box">
-                        <input type="text" id="search-input" data-i18n-placeholder="toolbar.search" placeholder="Profil ara...">
-                        <button id="btn-clear-search" class="btn-clear-search" title="Temizle">✕</button>
+                        <input type="text" id="search-input" data-i18n-placeholder="toolbar.search" placeholder="" aria-label="" data-i18n-aria-label="toolbar.search">
+                        <button id="btn-clear-search" class="btn-clear-search" data-i18n-title="toolbar.clear_search" title="" data-i18n-aria-label="toolbar.clear_search" aria-label="">
+                            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                        </button>
                     </div>
                     <div class="global-controls">
-                        <span class="active-profile-badge" id="active-profile-name" data-i18n="toolbar.no_profile">Aktif Profil Yok</span>
+                        <span class="active-profile-badge" id="active-profile-name" data-i18n="toolbar.no_profile"></span>
                         <div class="volume-control">
-                            <button id="btn-toggle-mute" class="btn-mute" data-i18n-title="toolbar.mute_title" title="Sessiz / Ses Aç">
-                                <svg class="volume-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                </svg>
+                            <button id="btn-toggle-mute" class="btn-mute" data-i18n-title="toolbar.mute_title" title="" aria-label="" data-i18n-aria-label="toolbar.mute_title">
+                                <svg class="volume-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
                             </button>
-                            <input type="range" id="global-volume" min="0" max="100" value="50">
+                            <input type="range" id="global-volume" min="0" max="100" value="50" aria-label="" data-i18n-aria-label="toolbar.volume">
                         </div>
                     </div>
                 </div>
 
-                <!-- Views Container -->
                 <div class="views-container">
-                    
-                    <!-- Profiles View (Linear/Tactile/Clicky) -->
+                    <!-- Sound library -->
                     <div id="view-profiles" class="view active">
+                        <div class="view-header">
+                            <div>
+                                <h1 data-i18n="nav.sounds"></h1>
+                                <p data-i18n="sidebar.library_desc"></p>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn primary" id="btn-create-profile-modal" data-i18n="btn.new_profile"></button>
+                            </div>
+                        </div>
                         <div class="profiles-header-actions">
-                            <div class="filters">
-                                <button class="chip active" data-i18n="filter.all">Tümü</button>
+                            <div class="filters" id="material-filters">
+                                <button class="chip active" data-i18n="filter.all">All</button>
                                 <button class="chip">PBT</button>
                                 <button class="chip">ABS</button>
                             </div>
-                            <div class="action-buttons">
-                                <button class="btn primary" id="btn-create-profile-modal" data-i18n="btn.new_profile">+ Yeni Ses (Profil)</button>
-                            </div>
                         </div>
-                        
-                        <div class="grid" id="profiles-grid">
-                            <!-- Populated by JS -->
-                        </div>
+                        <div class="grid" id="profiles-grid"></div>
                     </div>
 
-                                        <!-- Custom Sounds View -->
+                    <!-- Import -->
                     <div id="view-custom" class="view">
+                        <div class="view-header">
+                            <div>
+                                <h1 data-i18n="nav.import"></h1>
+                                <p data-i18n="import.drag_desc"></p>
+                            </div>
+                        </div>
                         <div class="custom-layout">
                             <div class="custom-card-import">
                                 <div class="drag-drop-zone" id="drop-zone">
                                     <div class="drop-icon">
-                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                            <polyline points="17 8 12 3 7 8"></polyline>
-                                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                                        </svg>
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                     </div>
-                                    <h3 data-i18n="import.drag_title">Ses Klasörlerini Sürükle ve Bırak</h3>
-                                    <p data-i18n="import.drag_desc">Yeni bir ses profili olarak içe aktarmak için ses paketi klasörlerinizi buraya bırakın.</p>
-                                    <button class="btn primary" id="btn-select-folder" data-i18n="import.select_folder">Ses Klasörü Seç</button>
+                                    <h3 data-i18n="import.drag_title"></h3>
+                                    <p data-i18n="import.drag_desc"></p>
+                                    <button class="btn primary" id="btn-select-folder" data-i18n="import.select_folder"></button>
                                 </div>
                             </div>
-                            
-
                         </div>
-
-                        <div class="grid" id="custom-grid">
-                            <!-- Populated by JS -->
-                        </div>
+                        <div class="grid" id="custom-grid"></div>
                     </div>
 
-                    <!-- Settings View -->
+                    <!-- Settings -->
                     <div id="view-settings" class="view">
-                        <h2 data-i18n="settings.title">Ayarlar</h2>
-                        <div class="section-divider" data-i18n="settings.general">⚙ GENEL</div>
-                        
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <h3 data-i18n="settings.mute_title">Sesleri Kapat</h3>
-                                <p data-i18n="settings.mute_desc">Tuş sesi geri bildirimini geçici olarak devre dışı bırak.</p>
+                        <div class="view-header">
+                            <div>
+                                <h1 data-i18n="settings.title"></h1>
+                                <p data-i18n="settings.subtitle"></p>
                             </div>
-                            <label class="switch">
-                                <input type="checkbox" id="setting-mute">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <h3 data-i18n="settings.startup_title">Windows ile Başlat</h3>
-                                <p data-i18n="settings.startup_desc">Bilgisayar açıldığında Tactile otomatik olarak arka planda çalışır.</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="setting-startup">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <h3 data-i18n="settings.tray_title">Tepsi Simgesine Küçült</h3>
-                                <p data-i18n="settings.tray_desc">Pencere kapatıldığında Tactile sistem tepsisinde çalışmaya devam eder.</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="setting-tray">
-                                <span class="slider"></span>
-                            </label>
+                            <span class="version-pill" id="settings-version"></span>
                         </div>
 
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <h3 data-i18n="settings.lang_title">Uygulama Dili</h3>
-                                <p data-i18n="settings.lang_desc">Uygulama arayüzünün dilini seçin.</p>
-                            </div>
-                            <select id="setting-lang" class="form-select" style="width: 120px; margin: 0;">
-                                <option value="tr">Türkçe</option>
-                                <option value="en">English</option>
-                            </select>
-                        </div>
+                        <div class="settings-scroll">
+                            <section class="settings-section" id="settings-general" data-section="general">
+                                <h2 data-i18n="settings.section_general"></h2>
 
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <h3 data-i18n="settings.theme_title">Uygulama Teması</h3>
-                                <p data-i18n="settings.theme_desc">Arayüzün görünüm temasını seçin.</p>
-                            </div>
-                            <select id="setting-theme" class="form-select" style="width: 120px; margin: 0;">
-                                <option value="dark" data-i18n="settings.theme_dark">Karanlık</option>
-                                <option value="light" data-i18n="settings.theme_light">Açık</option>
-                            </select>
-                        </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-mute-label" data-i18n="settings.mute_title"></h3>
+                                        <p data-i18n="settings.mute_desc"></p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-mute" aria-labelledby="setting-mute-label">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
 
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <h3 data-i18n="settings.icon_title">Uygulama İkonu</h3>
-                                <p data-i18n="settings.icon_desc">Masaüstü ve görev çubuğu ikonunun stilini seçin.</p>
-                            </div>
-                            <select id="setting-app-icon" class="form-select" style="width: 120px; margin: 0;">
-                                <option value="dark" data-i18n="settings.icon_dark">Karanlık (Tactile-bg)</option>
-                                <option value="light" data-i18n="settings.icon_light">Açık (Tactile-light)</option>
-                            </select>
-                        </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-startup-label" data-i18n="settings.startup_title"></h3>
+                                        <p data-i18n="settings.startup_desc"></p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-startup" aria-labelledby="setting-startup-label">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
 
-                        <!-- Single click action -->
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <h3 data-i18n="settings.tray_click_single_title">Tepsi Simgesi Tek Tıklama</h3>
-                                <p data-i18n="settings.tray_click_single_desc">Sistem tepsisindeki uygulama simgesine tek tıklandığında ne yapılsın?</p>
-                            </div>
-                            <select id="setting-tray-single" class="form-select" style="width: 150px; margin: 0;">
-                                <option value="open" data-i18n="settings.tray_action_open">Uygulamayı Aç</option>
-                                <option value="mute" data-i18n="settings.tray_action_mute">Sesi Kapat / Aç</option>
-                                <option value="vol_up" data-i18n="settings.tray_action_vol_up">Sesi Arttır (+10%)</option>
-                                <option value="vol_down" data-i18n="settings.tray_action_vol_down">Sesi Azalt (-10%)</option>
-                                <option value="none" data-i18n="settings.tray_action_none">Hiçbir Şey</option>
-                            </select>
-                        </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-close-label" data-i18n="settings.close_title"></h3>
+                                        <p data-i18n="settings.close_desc"></p>
+                                    </div>
+                                    <select id="setting-close-behavior" class="form-select" aria-labelledby="setting-close-label">
+                                        <option value="ask" data-i18n="settings.close_ask"></option>
+                                        <option value="tray" data-i18n="settings.close_tray"></option>
+                                        <option value="quit" data-i18n="settings.close_quit"></option>
+                                    </select>
+                                </div>
 
-                        <!-- Double click action -->
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <h3 data-i18n="settings.tray_click_double_title">Tepsi Simgesi Çift Tıklama</h3>
-                                <p data-i18n="settings.tray_click_double_desc">Sistem tepsisindeki uygulama simgesine çift tıklandığında ne yapılsın?</p>
-                            </div>
-                            <select id="setting-tray-double" class="form-select" style="width: 150px; margin: 0;">
-                                <option value="open" data-i18n="settings.tray_action_open">Uygulamayı Aç</option>
-                                <option value="mute" data-i18n="settings.tray_action_mute">Sesi Kapat / Aç</option>
-                                <option value="vol_up" data-i18n="settings.tray_action_vol_up">Sesi Arttır (+10%)</option>
-                                <option value="vol_down" data-i18n="settings.tray_action_vol_down">Sesi Azalt (-10%)</option>
-                                <option value="none" data-i18n="settings.tray_action_none">Hiçbir Şey</option>
-                            </select>
-                        </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-tray-label" data-i18n="settings.tray_title"></h3>
+                                        <p data-i18n="settings.tray_desc"></p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-tray" aria-labelledby="setting-tray-label">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
 
-                        <!-- Shortcut Recorder -->
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <h3 data-i18n="settings.shortcut_title">Sesi Aç/Kapat Kısayol Tuşu</h3>
-                                <p data-i18n="settings.shortcut_desc">Uygulama arka plandayken sesleri açıp kapatmak için global kısayol tuşu atayın.</p>
-                            </div>
-                            <div class="shortcut-recorder-container" style="display: flex; gap: 8px; align-items: center;">
-                                <button id="btn-record-shortcut" class="btn secondary" style="min-width: 150px; text-align: center; justify-content: center; font-family: inherit; font-size: 13px;" data-i18n="settings.shortcut_record_placeholder">Kısayol Kaydetmek İçin Tıkla...</button>
-                                <button id="btn-clear-shortcut" class="btn secondary" style="padding: 6px 10px; min-width: auto; color: var(--accent-gold);" title="Kısayolu Kaldır">✕</button>
-                            </div>
-                        </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-tray-single-label" data-i18n="settings.tray_click_single_title"></h3>
+                                        <p data-i18n="settings.tray_click_single_desc"></p>
+                                    </div>
+                                    <select id="setting-tray-single" class="form-select" aria-labelledby="setting-tray-single-label">
+                                        <option value="open" data-i18n="settings.tray_action_open"></option>
+                                        <option value="mute" data-i18n="settings.tray_action_mute"></option>
+                                        <option value="vol_up" data-i18n="settings.tray_action_vol_up"></option>
+                                        <option value="vol_down" data-i18n="settings.tray_action_vol_down"></option>
+                                        <option value="none" data-i18n="settings.tray_action_none"></option>
+                                    </select>
+                                </div>
 
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-tray-double-label" data-i18n="settings.tray_click_double_title"></h3>
+                                        <p data-i18n="settings.tray_click_double_desc"></p>
+                                    </div>
+                                    <select id="setting-tray-double" class="form-select" aria-labelledby="setting-tray-double-label">
+                                        <option value="open" data-i18n="settings.tray_action_open"></option>
+                                        <option value="mute" data-i18n="settings.tray_action_mute"></option>
+                                        <option value="vol_up" data-i18n="settings.tray_action_vol_up"></option>
+                                        <option value="vol_down" data-i18n="settings.tray_action_vol_down"></option>
+                                        <option value="none" data-i18n="settings.tray_action_none"></option>
+                                    </select>
+                                </div>
+                            </section>
+
+                            <section class="settings-section" id="settings-appearance" data-section="appearance">
+                                <h2 data-i18n="settings.section_appearance"></h2>
+
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-theme-label" data-i18n="settings.theme_title"></h3>
+                                        <p data-i18n="settings.theme_desc"></p>
+                                    </div>
+                                    <select id="setting-theme" class="form-select" aria-labelledby="setting-theme-label">
+                                        <option value="system" data-i18n="settings.theme_system"></option>
+                                        <option value="dark" data-i18n="settings.theme_dark"></option>
+                                        <option value="light" data-i18n="settings.theme_light"></option>
+                                        <option value="custom" data-i18n="settings.theme_custom"></option>
+                                    </select>
+                                </div>
+
+                                <div class="setting-item" id="custom-color-row" hidden>
+                                    <div class="setting-info">
+                                        <h3 id="setting-custom-color-label" data-i18n="settings.theme_custom"></h3>
+                                        <p data-i18n="settings.custom_color_desc"></p>
+                                    </div>
+                                    <div class="inline-control">
+                                        <input type="text" id="setting-custom-color" class="form-input color-input" maxlength="7" spellcheck="false" aria-labelledby="setting-custom-color-label">
+                                        <button class="btn secondary" id="btn-apply-color" data-i18n="settings.apply"></button>
+                                    </div>
+                                </div>
+
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-icon-label" data-i18n="settings.icon_title"></h3>
+                                        <p data-i18n="settings.icon_desc"></p>
+                                    </div>
+                                    <select id="setting-app-icon" class="form-select" aria-labelledby="setting-icon-label">
+                                        <option value="theme" data-i18n="settings.icon_theme"></option>
+                                        <option value="custom" data-i18n="settings.icon_custom"></option>
+                                        <option value="dark" data-i18n="settings.icon_dark"></option>
+                                        <option value="light" data-i18n="settings.icon_light"></option>
+                                    </select>
+                                </div>
+
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-zoom-label" data-i18n="settings.zoom_title"></h3>
+                                        <p data-i18n="settings.zoom_desc"></p>
+                                    </div>
+                                    <div class="inline-control">
+                                        <input type="range" id="setting-zoom" min="80" max="150" step="10" value="100" aria-labelledby="setting-zoom-label">
+                                        <span class="range-value" id="zoom-value">100%</span>
+                                        <button class="btn secondary" id="btn-zoom-reset" data-i18n="settings.zoom_reset"></button>
+                                    </div>
+                                </div>
+
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-contrast-label" data-i18n="settings.contrast_title"></h3>
+                                        <p data-i18n="settings.contrast_desc"></p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-contrast" aria-labelledby="setting-contrast-label">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-motion-label" data-i18n="settings.motion_title"></h3>
+                                        <p data-i18n="settings.motion_desc"></p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-motion" aria-labelledby="setting-motion-label">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </section>
+
+                            <section class="settings-section" id="settings-language" data-section="language">
+                                <h2 data-i18n="settings.section_language"></h2>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-lang-label" data-i18n="settings.lang_title"></h3>
+                                        <p data-i18n="settings.lang_desc"></p>
+                                    </div>
+                                    <select id="setting-lang" class="form-select" aria-labelledby="setting-lang-label"></select>
+                                </div>
+                            </section>
+
+                            <section class="settings-section" id="settings-sound" data-section="sound">
+                                <h2 data-i18n="settings.section_sound"></h2>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-notify-label" data-i18n="settings.notify_title"></h3>
+                                        <p data-i18n="settings.notify_desc"></p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-notify" aria-labelledby="setting-notify-label">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-feedback-label" data-i18n="settings.sound_feedback_title"></h3>
+                                        <p data-i18n="settings.sound_feedback_desc"></p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="setting-sound-feedback" aria-labelledby="setting-feedback-label">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 data-i18n="settings.notify_test"></h3>
+                                    </div>
+                                    <button class="btn secondary" id="btn-notify-test" data-i18n="settings.notify_test"></button>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 id="setting-volume-label" data-i18n="toolbar.volume"></h3>
+                                    </div>
+                                    <div class="inline-control">
+                                        <input type="range" id="setting-volume" min="0" max="100" value="50" aria-labelledby="setting-volume-label">
+                                        <span class="range-value" id="setting-volume-value">50%</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="settings-section" id="settings-shortcuts" data-section="shortcuts">
+                                <h2 data-i18n="settings.section_shortcuts"></h2>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 data-i18n="settings.shortcut_title"></h3>
+                                        <p data-i18n="settings.shortcut_desc"></p>
+                                    </div>
+                                    <div class="inline-control">
+                                        <button id="btn-record-shortcut" class="btn secondary shortcut-btn" data-i18n="settings.shortcut_record_placeholder"></button>
+                                        <button id="btn-clear-shortcut" class="btn secondary icon-btn" data-i18n-title="settings.shortcut_clear" title="" data-i18n-aria-label="settings.shortcut_clear" aria-label="">
+                                            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-info">
+                                        <h3 data-i18n="settings.launcher_title"></h3>
+                                        <p data-i18n="settings.launcher_desc"></p>
+                                    </div>
+                                    <div class="inline-control">
+                                        <button id="btn-record-launcher" class="btn secondary shortcut-btn" data-i18n="settings.shortcut_record_placeholder"></button>
+                                        <button id="btn-clear-launcher" class="btn secondary icon-btn" data-i18n-title="settings.shortcut_clear" title="" data-i18n-aria-label="settings.shortcut_clear" aria-label="">
+                                            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="settings-section" id="settings-data" data-section="data">
+                                <h2 data-i18n="settings.section_data"></h2>
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="cloud.title"></h3>
+                                            <p data-i18n="cloud.desc"></p>
+                                        </div>
+                                        <span class="status-badge" id="cloud-badge" data-i18n="cloud.disconnected"></span>
+                                    </div>
+                                    <div class="cloud-grid">
+                                        <label class="field">
+                                            <span data-i18n="cloud.provider"></span>
+                                            <select id="cloud-provider" class="form-select">
+                                                <option value="none" data-i18n="cloud.provider_none"></option>
+                                                <option value="onedrive" data-i18n="cloud.provider_onedrive"></option>
+                                                <option value="googledrive" data-i18n="cloud.provider_googledrive"></option>
+                                                <option value="dropbox" data-i18n="cloud.provider_dropbox"></option>
+                                                <option value="custom" data-i18n="cloud.provider_custom"></option>
+                                            </select>
+                                        </label>
+                                        <div class="field field-wide">
+                                            <span data-i18n="cloud.folder"></span>
+                                            <div class="path-row">
+                                                <code id="cloud-path">-</code>
+                                                <button class="btn secondary icon-btn" id="btn-cloud-open" data-i18n-title="cloud.open_folder" title="" data-i18n-aria-label="cloud.open_folder" aria-label="">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="cloud-meta" id="cloud-meta" data-i18n="cloud.never"></p>
+                                    <div class="button-row">
+                                        <button class="btn secondary" id="btn-cloud-choose" data-i18n="cloud.choose_folder"></button>
+                                        <button class="btn primary" id="btn-cloud-connect" data-i18n="cloud.connect"></button>
+                                        <button class="btn secondary" id="btn-cloud-sync" data-i18n="cloud.sync_now"></button>
+                                        <button class="btn secondary" id="btn-cloud-restore" data-i18n="cloud.restore"></button>
+                                        <button class="btn secondary" id="btn-cloud-disconnect" data-i18n="cloud.disconnect"></button>
+                                    </div>
+                                    <div class="setting-item compact">
+                                        <div class="setting-info">
+                                            <h3 data-i18n="cloud.auto_sync"></h3>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="setting-cloud-auto">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="hint" id="cloud-hint" data-i18n="cloud.empty_local"></p>
+                                </div>
+                            </section>
+
+                            <section class="settings-section" id="settings-updates" data-section="updates">
+                                <h2 data-i18n="settings.section_updates"></h2>
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="settings.updates_title"></h3>
+                                            <p data-i18n="settings.updates_desc"></p>
+                                        </div>
+                                    </div>
+                                    <p class="cloud-meta" id="updates-meta"></p>
+                                    <div class="button-row">
+                                        <button class="btn primary" id="btn-update-check" data-i18n="settings.updates_check"></button>
+                                        <button class="btn secondary" id="btn-update-install" data-i18n="settings.updates_download" hidden></button>
+                                    </div>
+                                    <div class="progress-track" id="update-progress" hidden><div class="progress-bar" id="update-progress-bar"></div></div>
+                                </div>
+
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="support.title"></h3>
+                                            <p data-i18n="docs.community"></p>
+                                        </div>
+                                    </div>
+                                    <div class="button-row">
+                                        <button class="btn secondary" id="btn-support-issue" data-i18n="support.open_issue"></button>
+                                        <button class="btn secondary" id="btn-support-email" data-i18n="support.email"></button>
+                                        <button class="btn secondary" id="btn-support-copy" data-i18n="support.copy_system"></button>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
                     </div>
 
-                    <!-- About View -->
+                    <!-- Documentation -->
+                    <div id="view-docs" class="view">
+                        <div class="view-header">
+                            <div>
+                                <h1 data-i18n="docs.title"></h1>
+                                <p data-i18n="docs.desc"></p>
+                            </div>
+                            <button class="btn secondary" id="btn-docs-github" data-i18n="docs.open_github"></button>
+                        </div>
+                        <div class="doc-grid" id="doc-grid">
+                            <article class="doc-card" data-doc-card="getting_started">
+                                <span class="doc-index">01</span>
+                                <h3 data-i18n="docs.getting_started"></h3>
+                                <p data-i18n="docs.getting_started_desc"></p>
+                                <button class="doc-link" data-docs="getting_started" data-i18n="docs.getting_started"></button>
+                            </article>
+                            <article class="doc-card" data-doc-card="profiles">
+                                <span class="doc-index">02</span>
+                                <h3 data-i18n="docs.profiles"></h3>
+                                <p data-i18n="docs.profiles_desc"></p>
+                                <button class="doc-link" data-docs="profiles" data-i18n="docs.profiles"></button>
+                            </article>
+                            <article class="doc-card" data-doc-card="sync">
+                                <span class="doc-index">03</span>
+                                <h3 data-i18n="docs.sync"></h3>
+                                <p data-i18n="docs.sync_desc"></p>
+                                <button class="doc-link" data-docs="sync" data-i18n="docs.sync"></button>
+                            </article>
+                            <article class="doc-card" data-doc-card="shortcuts">
+                                <span class="doc-index">04</span>
+                                <h3 data-i18n="docs.shortcuts"></h3>
+                                <p data-i18n="docs.shortcuts_desc"></p>
+                                <button class="doc-link" data-docs="shortcuts" data-i18n="docs.shortcuts"></button>
+                            </article>
+                            <article class="doc-card" data-doc-card="privacy">
+                                <span class="doc-index">05</span>
+                                <h3 data-i18n="docs.privacy"></h3>
+                                <p data-i18n="docs.privacy_desc"></p>
+                                <button class="doc-link" data-docs="privacy" data-i18n="docs.privacy"></button>
+                            </article>
+                        </div>
+                        <div class="doc-body" id="doc-body">
+                            <h2 id="doc-body-title"></h2>
+                            <p id="doc-body-text"></p>
+                            <button class="btn secondary" id="btn-doc-open" data-i18n="docs.open_github"></button>
+                        </div>
+                    </div>
+
+                    <!-- Diagnostics -->
+                    <div id="view-diagnostics" class="view">
+                        <div class="view-header">
+                            <div>
+                                <h1 data-i18n="diag.title"></h1>
+                                <p data-i18n="diag.desc"></p>
+                            </div>
+                            <div class="button-row">
+                                <button class="btn secondary" id="btn-diag-refresh" data-i18n="diag.refresh"></button>
+                                <button class="btn primary" id="btn-diag-copy" data-i18n="diag.copy"></button>
+                            </div>
+                        </div>
+                        <div class="diag-grid">
+                            <div class="info-card">
+                                <div class="info-card-head"><div><h3 data-i18n="diag.health"></h3></div></div>
+                                <dl class="diag-list">
+                                    <div><dt data-i18n="diag.db"></dt><dd id="diag-db" data-i18n="diag.ok"></dd></div>
+                                    <div><dt data-i18n="diag.hook"></dt><dd id="diag-hook" data-i18n="diag.ok"></dd></div>
+                                    <div><dt data-i18n="diag.tray"></dt><dd id="diag-tray" data-i18n="diag.ok"></dd></div>
+                                </dl>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-head"><div><h3 data-i18n="diag.system"></h3></div></div>
+                                <dl class="diag-list">
+                                    <div><dt data-i18n="diag.os"></dt><dd id="diag-os">-</dd></div>
+                                    <div><dt data-i18n="diag.version"></dt><dd id="diag-version">-</dd></div>
+                                    <div><dt data-i18n="diag.locale"></dt><dd id="diag-locale">-</dd></div>
+                                    <div><dt data-i18n="diag.app"></dt><dd id="diag-app">-</dd></div>
+                                    <div><dt data-i18n="diag.data_dir"></dt><dd id="diag-data-dir" class="wrap">-</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="button-row diag-actions">
+                            <button class="btn secondary" id="btn-diag-export" data-i18n="diag.export"></button>
+                            <button class="btn secondary" id="btn-diag-logs" data-i18n="diag.logs"></button>
+                            <button class="btn secondary" id="btn-diag-report" data-i18n="diag.report"></button>
+                        </div>
+                    </div>
+
+                    <!-- About / Legal -->
                     <div id="view-about" class="view">
                         <div class="about-container">
-                            <img src="../public/Tactile.svg" alt="Tactile" class="about-app-logo">
-                            <h2>Tactile</h2>
-                            <p class="version" id="app-version-display">Version 1.0.0</p>
-                            <p class="about-subtitle" data-i18n="about.subtitle">Günlük iş akışınız için tatmin edici mekanik klavye switch geri bildirimi.</p>
-                            
-                            <div class="developer-card">
-                                <img src="../public/Vellium-logo.svg" alt="Vellium Logo" class="developer-logo">
-                                <div class="developer-info">
-                                    <span class="dev-label" data-i18n="about.developer">GELİŞTİRİCİ</span>
-                                    <span class="dev-name">Vellium.dev</span>
-                                    <a href="#" id="link-website" class="dev-link">vellium.dev</a>
+                            <div class="about-hero">
+                                <img src="../public/Tactile.svg" alt="Tactile" class="about-app-logo">
+                                <div>
+                                    <h2>Tactile</h2>
+                                    <p class="version" id="app-version-display"></p>
+                                    <p class="about-subtitle" data-i18n="about.subtitle"></p>
                                 </div>
-                                <button class="btn dev-btn" id="btn-web-site" data-i18n="about.website">Web Sitesi</button>
                             </div>
-                            
+
+                            <div class="about-grid">
+                                <div class="developer-card">
+                                    <div class="developer-head">
+                                        <img src="../public/Vellium-logo.svg" alt="Vellium.dev" class="developer-logo">
+                                        <div class="developer-info">
+                                            <span class="dev-label" data-i18n="about.publisher"></span>
+                                            <span class="dev-name">Vellium.dev</span>
+                                            <a href="#" id="link-website" class="dev-link">vellium.dev</a>
+                                        </div>
+                                        <button class="btn dev-btn" id="btn-web-site" data-i18n="about.website"></button>
+                                    </div>
+                                    <p class="dev-muted" data-i18n="about.publisher_desc"></p>
+                                </div>
+
+                                <div class="about-links-card">
+                                    <button class="about-link-row" id="btn-about-github">
+                                        <span data-i18n="about.github"></span>
+                                        <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><polyline points="4 2 8 6 4 10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+                                    </button>
+                                    <button class="about-link-row" id="btn-about-sponsor">
+                                        <span data-i18n="about.sponsor"></span>
+                                        <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><polyline points="4 2 8 6 4 10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+                                    </button>
+                                    <button class="about-link-row" id="btn-about-docs">
+                                        <span data-i18n="about.docs"></span>
+                                        <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><polyline points="4 2 8 6 4 10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+                                    </button>
+                                    <div class="about-link-row static">
+                                        <span data-i18n="about.license"></span>
+                                        <span class="about-value">MIT</span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="legal-section">
-                                <span class="legal-label" data-i18n="about.legal">YASAL</span>
-                                <div class="legal-item" id="link-terms">
+                                <span class="legal-label" data-i18n="about.legal"></span>
+                                <div class="legal-item" id="link-terms" role="button" tabindex="0">
                                     <div class="legal-icon">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                            <polyline points="14 2 14 8 20 8"></polyline>
-                                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                                            <polyline points="10 9 9 9 8 9"></polyline>
-                                        </svg>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                     </div>
                                     <div class="legal-text">
-                                        <span class="legal-title" data-i18n="about.terms_title">Kullanım Koşulları (EULA)</span>
-                                        <span class="legal-desc" data-i18n="about.terms_desc">Son kullanıcı lisans sözleşmesi</span>
+                                        <span class="legal-title" data-i18n="about.terms_title"></span>
+                                        <span class="legal-desc" data-i18n="about.terms_desc"></span>
                                     </div>
-                                    <span class="arrow-icon">❯</span>
+                                    <svg class="arrow-icon" width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><polyline points="4 2 8 6 4 10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
                                 </div>
-                                <div class="legal-item" id="link-privacy">
+                                <div class="legal-item" id="link-privacy" role="button" tabindex="0">
                                     <div class="legal-icon">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                        </svg>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                                     </div>
                                     <div class="legal-text">
-                                        <span class="legal-title" data-i18n="about.privacy_title">Gizlilik Politikası</span>
-                                        <span class="legal-desc" data-i18n="about.privacy_desc">Veri toplama ve gizlilik bilgileri</span>
+                                        <span class="legal-title" data-i18n="about.privacy_title"></span>
+                                        <span class="legal-desc" data-i18n="about.privacy_desc"></span>
                                     </div>
-                                    <span class="arrow-icon">❯</span>
+                                    <svg class="arrow-icon" width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><polyline points="4 2 8 6 4 10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
                                 </div>
-                                <div class="legal-item" id="link-licenses">
+                                <div class="legal-item" id="link-licenses" role="button" tabindex="0">
                                     <div class="legal-icon">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                                        </svg>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                                     </div>
                                     <div class="legal-text">
-                                        <span class="legal-title" data-i18n="about.licenses_title">Üçüncü Taraf Lisansları</span>
-                                        <span class="legal-desc" data-i18n="about.licenses_desc">Açık kaynaklı kütüphane lisans bildirimleri</span>
+                                        <span class="legal-title" data-i18n="about.licenses_title"></span>
+                                        <span class="legal-desc" data-i18n="about.licenses_desc"></span>
                                     </div>
-                                    <span class="arrow-icon">❯</span>
+                                    <svg class="arrow-icon" width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><polyline points="4 2 8 6 4 10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
                                 </div>
                             </div>
-                            
+
                             <div class="about-footer-text">
-                                <span data-i18n="about.copyright">Telif Hakkı © 2026 Vellium. Tüm hakları saklıdır.</span><br>
-                                <span data-i18n="about.registered">Tactile, Vellium.dev'in tescilli bir ürünüdür.</span>
+                                <span data-i18n="about.copyright"></span><br>
+                                <span data-i18n="about.registered"></span><br>
+                                <span data-i18n="about.made_with"></span>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </main>
         </div>
     </div>
 
+    <!-- Welcome wizard -->
+    <div class="wizard-overlay" id="wizard-overlay" role="dialog" aria-modal="true">
+        <div class="wizard-card">
+            <div class="wizard-progress" id="wizard-progress"></div>
+
+            <section class="wizard-step active" data-wizard-step="language">
+                <div class="wizard-mark"><img src="../public/Tactile.svg" alt="Tactile" class="wizard-logo"></div>
+                <h1 id="wizard-lang-title" data-i18n="wizard.lang_title"></h1>
+                <p data-i18n="wizard.lang_desc"></p>
+                <select id="wizard-language" class="form-select wizard-select" aria-labelledby="wizard-lang-title"></select>
+            </section>
+
+            <section class="wizard-step" data-wizard-step="theme">
+                <h1 id="wizard-theme-title" data-i18n="wizard.theme_title"></h1>
+                <p data-i18n="wizard.theme_desc"></p>
+                <div class="theme-choices" id="wizard-themes">
+                    <button class="theme-choice" data-theme-choice="system"><span data-i18n="settings.theme_system"></span></button>
+                    <button class="theme-choice" data-theme-choice="dark"><span data-i18n="settings.theme_dark"></span></button>
+                    <button class="theme-choice" data-theme-choice="light"><span data-i18n="settings.theme_light"></span></button>
+                    <button class="theme-choice" data-theme-choice="custom"><span data-i18n="settings.theme_custom"></span></button>
+                </div>
+                <div class="inline-control wizard-color-row" id="wizard-color-row" hidden>
+                    <input type="text" id="wizard-custom-color" class="form-input color-input" maxlength="7" spellcheck="false" value="#D4AF37" aria-label="Custom color" data-i18n-aria-label="settings.theme_custom">
+                    <button class="btn secondary" id="btn-wizard-color" data-i18n="settings.apply"></button>
+                </div>
+            </section>
+
+            <section class="wizard-step" data-wizard-step="welcome">
+                <div class="wizard-mark"><img src="../public/Tactile.svg" alt="Tactile" class="wizard-logo"></div>
+                <h1 data-i18n="wizard.welcome_title"></h1>
+                <p data-i18n="wizard.welcome_body"></p>
+            </section>
+
+            <section class="wizard-step" data-wizard-step="tour">
+                <div class="tour-art" aria-hidden="true">
+                    <div class="tour-rail"><span></span><span></span><span></span></div>
+                    <div class="tour-panel"><span></span><span></span><span></span></div>
+                    <div class="tour-main"><span></span><span></span><span></span><span></span></div>
+                </div>
+                <h1 data-i18n="wizard.tour_title"></h1>
+                <p data-i18n="wizard.tour_body"></p>
+                <p class="wizard-ready" data-i18n="wizard.done"></p>
+            </section>
+
+            <footer class="wizard-footer">
+                <div class="wizard-footer-left">
+                    <button class="btn ghost" id="wizard-skip" data-i18n="wizard.skip"></button>
+                </div>
+                <span class="wizard-step-count" id="wizard-step-count"></span>
+                <div class="wizard-footer-right">
+                    <button class="btn secondary" id="wizard-back" data-i18n="wizard.back"></button>
+                    <button class="btn primary" id="wizard-next" data-i18n="wizard.next"></button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
     <!-- Profile Creation Modal Overlay -->
-    <div class="modal-overlay" id="create-profile-modal">
+    <div class="modal-overlay" id="create-profile-modal" role="dialog" aria-modal="true" aria-labelledby="modal-create-title-text">
         <div class="modal-card">
             <header class="modal-header">
                 <div class="modal-header-title">
                     <span class="modal-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </span>
-                    <span data-i18n="modal.create_title">Yeni Ses Listesi (Profil) Oluştur</span>
+                    <span id="modal-create-title-text" data-i18n="modal.create_title"></span>
                 </div>
-                <button class="modal-close-btn" id="modal-create-close-x">✕</button>
+                <button class="modal-close-btn" id="modal-create-close-x" aria-label="" data-i18n-aria-label="dialog.close">
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                </button>
             </header>
-            
             <div class="modal-content">
                 <div class="form-group">
-                    <label for="input-new-profile-name" data-i18n="modal.profile_name">Profil (Liste) Adı</label>
-                    <input type="text" id="input-new-profile-name" class="form-input" data-i18n-placeholder="modal.profile_name_placeholder" placeholder="ör. Özel mekanik switch'lerim">
+                    <label for="input-new-profile-name" data-i18n="modal.profile_name"></label>
+                    <input type="text" id="input-new-profile-name" class="form-input" data-i18n-placeholder="modal.profile_name_placeholder" placeholder="">
                 </div>
                 <div class="form-group">
-                    <label for="input-new-profile-desc" data-i18n="modal.description">Açıklama</label>
-                    <input type="text" id="input-new-profile-desc" class="form-input" data-i18n-placeholder="modal.description_placeholder" placeholder="ör. Premium Linear switch ses profili.">
+                    <label for="input-new-profile-desc" data-i18n="modal.description"></label>
+                    <input type="text" id="input-new-profile-desc" class="form-input" data-i18n-placeholder="modal.description_placeholder" placeholder="">
                 </div>
                 <div class="form-group">
-                    <label for="select-new-profile-type" data-i18n="modal.switch_type">Switch Türü</label>
-                    <select id="select-new-profile-type" class="form-select">
-                        <option value="Linear">Linear</option>
-                        <option value="Tactile">Tactile</option>
-                        <option value="Clicky">Clicky</option>
-                    </select>
+                    <label for="select-new-profile-type" data-i18n="modal.switch_type"></label>
+                    <select id="select-new-profile-type" class="form-select"></select>
                 </div>
                 <div class="form-group">
-                    <label for="select-new-profile-material" data-i18n="modal.material">Malzeme</label>
+                    <label for="select-new-profile-material" data-i18n="modal.material"></label>
                     <select id="select-new-profile-material" class="form-select">
                         <option value="PBT">PBT</option>
                         <option value="ABS">ABS</option>
                         <option value="Mixed">Mixed</option>
-                        <option value="__NEW__" data-i18n="modal.add_new_material">+ Yeni Malzeme Ekle...</option>
+                        <option value="__NEW__" data-i18n="modal.add_new_material"></option>
                     </select>
                 </div>
                 <div class="form-group material-new-input-wrap" id="wrap-new-profile-material-new" style="display: none; max-height: 0; overflow: hidden; opacity: 0; transition: all 0.3s ease;">
-                    <label for="input-new-profile-material-new" data-i18n="modal.new_material">Yeni Malzeme Adı</label>
-                    <input type="text" id="input-new-profile-material-new" class="form-input" data-i18n-placeholder="modal.new_material_placeholder" placeholder="ör. Pom, Pirinç, Çelik">
+                    <label for="input-new-profile-material-new" data-i18n="modal.new_material"></label>
+                    <input type="text" id="input-new-profile-material-new" class="form-input" data-i18n-placeholder="modal.new_material_placeholder" placeholder="">
                 </div>
-                
                 <div class="form-group" style="margin-top: 12px;">
-                    <label data-i18n="modal.sound_file">Ses Dosyası (İsteğe Bağlı)</label>
-                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
-                        <button class="btn secondary" id="btn-select-profile-sound" style="margin: 0; min-width: 150px; font-family: inherit; font-size: 13px;" data-i18n="modal.select_sound">Ses Dosyası Seç</button>
-                        <span id="label-selected-profile-sound" style="color: var(--text-secondary); font-size: 13px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 250px;" data-i18n="modal.no_sound_selected">Seçilmedi (Boş Paket)</span>
+                    <label data-i18n="modal.sound_file"></label>
+                    <div class="inline-control">
+                        <button class="btn secondary" id="btn-select-profile-sound" data-i18n="modal.select_sound"></button>
+                        <span id="label-selected-profile-sound" class="muted-label" data-i18n="modal.no_sound_selected"></span>
                     </div>
                 </div>
             </div>
-            
             <footer class="modal-footer">
-                <span data-i18n="modal.creates_empty">Boş bir özel paket oluşturur.</span>
-                <button class="btn primary" id="modal-create-save-btn" data-i18n="modal.create_list">Liste Oluştur</button>
+                <span data-i18n="modal.creates_empty"></span>
+                <button class="btn primary" id="modal-create-save-btn" data-i18n="modal.create_list"></button>
             </footer>
         </div>
     </div>
 
-    <!-- Add Sound / Remap Key Modal Overlay -->
-    <div class="modal-overlay" id="add-sound-modal">
+    <!-- Add Sound Modal -->
+    <div class="modal-overlay" id="add-sound-modal" role="dialog" aria-modal="true" aria-labelledby="modal-add-title-text">
         <div class="modal-card">
             <header class="modal-header">
                 <div class="modal-header-title">
                     <span class="modal-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 18V5l12-2v13"></path>
-                            <circle cx="6" cy="18" r="3"></circle>
-                            <circle cx="18" cy="16" r="3"></circle>
-                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
                     </span>
-                    <span data-i18n="modal.add_sound_title">Listeye (Profile) Ses Ekle</span>
+                    <span id="modal-add-title-text" data-i18n="modal.add_sound_title"></span>
                 </div>
-                <button class="modal-close-btn" id="modal-add-close-x">✕</button>
+                <button class="modal-close-btn" id="modal-add-close-x" aria-label="" data-i18n-aria-label="dialog.close">
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                </button>
             </header>
-            
             <div class="modal-content">
                 <input type="hidden" id="input-add-sound-profile-id">
                 <div class="form-group">
-                    <label for="input-add-sound-title" data-i18n="modal.sound_title">Ses Başlığı / Switch Adı</label>
-                    <input type="text" id="input-add-sound-title" class="form-input" data-i18n-placeholder="modal.sound_title_placeholder" placeholder="ör. Boşluk tuşu basma, Cherry Blue Click">
+                    <label for="input-add-sound-title" data-i18n="modal.sound_title"></label>
+                    <input type="text" id="input-add-sound-title" class="form-input" data-i18n-placeholder="modal.sound_title_placeholder" placeholder="">
                 </div>
                 <div class="form-group">
-                    <label for="input-add-sound-desc" data-i18n="modal.description">Açıklama</label>
-                    <input type="text" id="input-add-sound-desc" class="form-input" data-i18n-placeholder="modal.sound_desc_placeholder" placeholder="ör. Derin ses imzalı basma">
+                    <label for="input-add-sound-desc" data-i18n="modal.description"></label>
+                    <input type="text" id="input-add-sound-desc" class="form-input" data-i18n-placeholder="modal.sound_desc_placeholder" placeholder="">
                 </div>
                 <div class="form-group">
-                    <label for="input-add-sound-keycode" data-i18n="modal.keycode_label">Tuş Koduna Ata (ör. 57: Boşluk, 28: Enter, 14: Geri Silme)</label>
-                    <input type="number" id="input-add-sound-keycode" class="form-input" data-i18n-placeholder="modal.keycode_placeholder" placeholder="Tuş kodu numarası girin" min="1" value="57">
+                    <label for="input-add-sound-keycode" data-i18n="modal.keycode_label"></label>
+                    <input type="number" id="input-add-sound-keycode" class="form-input" data-i18n-placeholder="modal.keycode_placeholder" placeholder="" min="1" value="57">
                 </div>
             </div>
-            
             <footer class="modal-footer">
-                <span data-i18n="modal.select_file">Atanacak dosyayı seçin:</span>
-                <button class="btn primary" id="modal-add-select-btn" data-i18n="modal.choose_audio">Ses Dosyası Seç ve Kaydet</button>
+                <span data-i18n="modal.select_file"></span>
+                <button class="btn primary" id="modal-add-select-btn" data-i18n="modal.choose_audio"></button>
             </footer>
         </div>
     </div>
 
-    <!-- Edit Profile Detail Modal Overlay -->
-    <div class="modal-overlay" id="edit-profile-modal">
+    <!-- Edit Profile Modal -->
+    <div class="modal-overlay" id="edit-profile-modal" role="dialog" aria-modal="true" aria-labelledby="modal-edit-title-text">
         <div class="modal-card">
             <header class="modal-header">
                 <div class="modal-header-title">
                     <span class="modal-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path>
-                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/></svg>
                     </span>
-                    <span data-i18n="modal.edit_title">Profil Detaylarını Düzenle</span>
+                    <span id="modal-edit-title-text" data-i18n="modal.edit_title"></span>
                 </div>
-                <button class="modal-close-btn" id="modal-edit-close-x">✕</button>
+                <button class="modal-close-btn" id="modal-edit-close-x" aria-label="" data-i18n-aria-label="dialog.close">
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                </button>
             </header>
-            
             <div class="modal-content">
                 <input type="hidden" id="input-edit-profile-id">
                 <div class="form-group">
-                    <label for="input-edit-profile-name" data-i18n="modal.edit_profile_name">Profil Adı</label>
+                    <label for="input-edit-profile-name" data-i18n="modal.edit_profile_name"></label>
                     <input type="text" id="input-edit-profile-name" class="form-input">
                 </div>
                 <div class="form-group">
-                    <label for="select-edit-profile-type" data-i18n="modal.edit_category">Kategori</label>
-                    <select id="select-edit-profile-type" class="form-select">
-                        <!-- Loaded dynamically -->
-                    </select>
+                    <label for="select-edit-profile-type" data-i18n="modal.edit_category"></label>
+                    <select id="select-edit-profile-type" class="form-select"></select>
                 </div>
                 <div class="form-group">
-                    <label for="select-edit-profile-material" data-i18n="modal.material">Malzeme</label>
+                    <label for="select-edit-profile-material" data-i18n="modal.material"></label>
                     <select id="select-edit-profile-material" class="form-select">
                         <option value="PBT">PBT</option>
                         <option value="ABS">ABS</option>
                         <option value="Mixed">Mixed</option>
-                        <option value="__NEW__" data-i18n="modal.add_new_material">+ Yeni Malzeme Ekle...</option>
+                        <option value="__NEW__" data-i18n="modal.add_new_material"></option>
                     </select>
                 </div>
                 <div class="form-group material-new-input-wrap" id="wrap-edit-profile-material-new" style="display: none; max-height: 0; overflow: hidden; opacity: 0; transition: all 0.3s ease;">
-                    <label for="input-edit-profile-material-new" data-i18n="modal.new_material">Yeni Malzeme Adı</label>
-                    <input type="text" id="input-edit-profile-material-new" class="form-input" data-i18n-placeholder="modal.new_material_placeholder" placeholder="ör. Pom, Pirinç, Çelik">
+                    <label for="input-edit-profile-material-new" data-i18n="modal.new_material"></label>
+                    <input type="text" id="input-edit-profile-material-new" class="form-input" data-i18n-placeholder="modal.new_material_placeholder" placeholder="">
                 </div>
                 <div class="form-group">
-                    <label for="input-edit-profile-desc" data-i18n="modal.description">Açıklama</label>
+                    <label for="input-edit-profile-desc" data-i18n="modal.description"></label>
                     <input type="text" id="input-edit-profile-desc" class="form-input">
                 </div>
             </div>
-            
             <footer class="modal-footer">
-                <button class="btn" id="modal-edit-delete-btn" style="background: rgba(232, 17, 35, 0.2); border-color: #E81123; color: white;" data-i18n="modal.delete_profile">Profili Sil</button>
-                <button class="btn primary" id="modal-edit-save-btn" data-i18n="modal.save_changes">Değişiklikleri Kaydet</button>
+                <button class="btn" id="modal-edit-delete-btn" data-i18n="modal.delete_profile"></button>
+                <button class="btn primary" id="modal-edit-save-btn" data-i18n="modal.save_changes"></button>
             </footer>
         </div>
     </div>
 
-    <!-- Add Category Modal Overlay -->
-    <div class="modal-overlay" id="create-category-modal">
+    <!-- Category Modal -->
+    <div class="modal-overlay" id="create-category-modal" role="dialog" aria-modal="true" aria-labelledby="modal-category-title-text">
         <div class="modal-card">
             <header class="modal-header">
                 <div class="modal-header-title">
                     <span class="modal-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                     </span>
-                    <span data-i18n="modal.create_category_title">Yeni Kategori Listesi Oluştur</span>
+                    <span id="modal-category-title-text" data-i18n="modal.create_category_title"></span>
                 </div>
-                <button class="modal-close-btn" id="modal-category-close-x">✕</button>
+                <button class="modal-close-btn" id="modal-category-close-x" aria-label="" data-i18n-aria-label="dialog.close">
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                </button>
             </header>
-            
             <div class="modal-content">
                 <div class="form-group">
-                    <label for="input-new-category-name" data-i18n="modal.category_name">Kategori Adı</label>
-                    <input type="text" id="input-new-category-name" class="form-input" data-i18n-placeholder="modal.category_name_placeholder" placeholder="ör. Tactile Özel, Clicky Premium">
+                    <label for="input-new-category-name" data-i18n="modal.category_name"></label>
+                    <input type="text" id="input-new-category-name" class="form-input" data-i18n-placeholder="modal.category_name_placeholder" placeholder="">
                 </div>
             </div>
-            
             <footer class="modal-footer">
-                <span data-i18n="modal.category_footer">Kenar çubuğuna yeni kategori listesi ekler.</span>
-                <button class="btn primary" id="modal-category-save-btn" data-i18n="modal.create_category">Kategori Oluştur</button>
+                <span data-i18n="modal.category_footer"></span>
+                <button class="btn primary" id="modal-category-save-btn" data-i18n="modal.create_category"></button>
             </footer>
         </div>
     </div>
 
-    <!-- Legal Modal Overlay -->
-    <div class="modal-overlay" id="legal-modal">
-        <div class="modal-card">
+    <!-- Legal Modal -->
+    <div class="modal-overlay" id="legal-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+        <div class="modal-card legal-modal-card">
             <header class="modal-header">
                 <div class="modal-header-title">
                     <span class="modal-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10 9 9 9 8 9"></polyline>
-                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     </span>
-                    <span id="modal-title-text">Kullanım Koşulları (EULA)</span>
+                    <span id="modal-title-text"></span>
                 </div>
-                <button class="modal-close-btn" id="modal-close-x">✕</button>
+                <button class="modal-close-btn" id="modal-close-x" aria-label="" data-i18n-aria-label="dialog.close">
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                </button>
             </header>
-            
-            <div class="modal-content" id="modal-body-content">
-                <!-- Loaded dynamically by JS -->
-            </div>
-            
+            <div class="modal-content" id="modal-body-content"></div>
             <footer class="modal-footer">
                 <a href="#" id="modal-external-link" class="modal-link">vellium.dev/terms</a>
-                <button class="btn primary" id="modal-ok-btn" data-i18n="modal.ok">Tamam</button>
+                <button class="btn primary" id="modal-ok-btn" data-i18n="modal.ok"></button>
             </footer>
         </div>
     </div>
 
-    <!-- Custom Context Menu -->
-    <div class="custom-context-menu" id="custom-context-menu" style="display: none; position: fixed; z-index: 10000; background: #162432; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 160px; padding: 6px 0;">
-        <button class="context-item" id="context-rename-cat" style="background: transparent; border: none; color: var(--text-primary); text-align: left; padding: 8px 16px; font-size: 13px; width: 100%; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path>
-            </svg>
-            <span data-i18n="context.rename">Yeniden Adlandır</span>
+    <!-- Context Menu -->
+    <div class="custom-context-menu" id="custom-context-menu" style="display: none;">
+        <button class="context-item" id="context-rename-cat">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/></svg>
+            <span data-i18n="context.rename"></span>
         </button>
-        <button class="context-item" id="context-delete-cat" style="background: transparent; border: none; color: #E81123; text-align: left; padding: 8px 16px; font-size: 13px; width: 100%; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 8px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#E81123" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            <span data-i18n="context.delete">Sil</span>
+        <button class="context-item danger" id="context-delete-cat">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <span data-i18n="context.delete"></span>
         </button>
     </div>
 
-    <!-- Manage Categories Modal Overlay -->
-    <div class="modal-overlay" id="manage-categories-modal">
+    <!-- Manage Categories Modal -->
+    <div class="modal-overlay" id="manage-categories-modal" role="dialog" aria-modal="true" aria-labelledby="modal-manage-title-text">
         <div class="modal-card">
             <header class="modal-header">
                 <div class="modal-header-title">
                     <span class="modal-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     </span>
-                    <span data-i18n="modal.manage_title">Kategorileri Yönet</span>
+                    <span id="modal-manage-title-text" data-i18n="modal.manage_title"></span>
                 </div>
-                <button class="modal-close-btn" id="modal-manage-close-x">✕</button>
+                <button class="modal-close-btn" id="modal-manage-close-x" aria-label="" data-i18n-aria-label="dialog.close">
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                </button>
             </header>
-            
             <div class="modal-content">
-                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;" data-i18n="modal.manage_desc">Kenar çubuğunda sıralamak için kategorileri sürükleyip bırakın.</p>
-                <div id="manage-categories-list" style="display: flex; flex-direction: column; gap: 8px;">
-                    <!-- Loaded dynamically -->
-                </div>
+                <p class="muted-label" data-i18n="modal.manage_desc"></p>
+                <div id="manage-categories-list" class="manage-list"></div>
             </div>
-            
             <footer class="modal-footer">
-                <span data-i18n="modal.drag_sort">Sıralamak için sürükleyin.</span>
-                <button class="btn primary" id="modal-manage-ok-btn" data-i18n="modal.done">Tamam</button>
+                <span data-i18n="modal.drag_sort"></span>
+                <button class="btn primary" id="modal-manage-ok-btn" data-i18n="modal.done"></button>
             </footer>
         </div>
     </div>
 
-    <!-- Custom Dialog / Notification System overlay -->
-    <div class="modal-overlay" id="custom-dialog-overlay" style="z-index: 11000;">
-        <div class="modal-card" style="width: 420px;">
+    <!-- Custom Dialog -->
+    <div class="modal-overlay" id="custom-dialog-overlay" role="dialog" aria-modal="true" aria-labelledby="dialog-title-text" style="z-index: 11000;">
+        <div class="modal-card dialog-card">
             <header class="modal-header">
                 <div class="modal-header-title">
                     <span class="modal-icon" id="dialog-icon-slot">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     </span>
-                    <span id="dialog-title-text" data-i18n="dialog.notification">Bildirim</span>
+                    <span id="dialog-title-text" data-i18n="dialog.notification"></span>
                 </div>
             </header>
-            <div class="modal-content" style="padding: 20px;">
-                <p id="dialog-body-message" style="color: var(--text-primary); font-size: 14px; margin-bottom: 16px;"></p>
+            <div class="modal-content">
+                <p id="dialog-body-message"></p>
                 <div id="dialog-input-group" style="display: none;" class="form-group">
-                    <input type="text" id="dialog-prompt-input" class="form-input" style="width: 100%;">
+                    <input type="text" id="dialog-prompt-input" class="form-input" aria-labelledby="dialog-body-message">
                 </div>
             </div>
-            <footer class="modal-footer" style="justify-content: flex-end; gap: 12px;">
-                <button class="btn" id="dialog-cancel-btn" style="display: none;" data-i18n="dialog.cancel">İptal</button>
-                <button class="btn primary" id="dialog-confirm-btn" data-i18n="dialog.ok">Tamam</button>
+            <footer class="modal-footer end">
+                <button class="btn" id="dialog-cancel-btn" style="display: none;" data-i18n="dialog.cancel"></button>
+                <button class="btn primary" id="dialog-confirm-btn" data-i18n="dialog.ok"></button>
             </footer>
         </div>
     </div>
 
+    <!-- Toast host -->
+    <div class="toast-host" id="toast-host" aria-live="polite"></div>
+
+    <script src="./locales/languages.js"></script>
+    <script src="./locales/af.js"></script>
+    <script src="./locales/am.js"></script>
+    <script src="./locales/ar.js"></script>
+    <script src="./locales/az.js"></script>
+    <script src="./locales/bg.js"></script>
+    <script src="./locales/bn.js"></script>
+    <script src="./locales/bs.js"></script>
+    <script src="./locales/ca.js"></script>
+    <script src="./locales/cs.js"></script>
+    <script src="./locales/da.js"></script>
+    <script src="./locales/de.js"></script>
+    <script src="./locales/el.js"></script>
+    <script src="./locales/en.js"></script>
+    <script src="./locales/es.js"></script>
+    <script src="./locales/et.js"></script>
+    <script src="./locales/eu.js"></script>
+    <script src="./locales/fa.js"></script>
+    <script src="./locales/fi.js"></script>
+    <script src="./locales/fil.js"></script>
+    <script src="./locales/fr.js"></script>
+    <script src="./locales/gu.js"></script>
+    <script src="./locales/ha.js"></script>
+    <script src="./locales/he.js"></script>
+    <script src="./locales/hi.js"></script>
+    <script src="./locales/hr.js"></script>
+    <script src="./locales/hu.js"></script>
+    <script src="./locales/hy.js"></script>
+    <script src="./locales/id.js"></script>
+    <script src="./locales/ig.js"></script>
+    <script src="./locales/it.js"></script>
+    <script src="./locales/ja.js"></script>
+    <script src="./locales/ka.js"></script>
+    <script src="./locales/kk.js"></script>
+    <script src="./locales/km.js"></script>
+    <script src="./locales/kn.js"></script>
+    <script src="./locales/ko.js"></script>
+    <script src="./locales/ky.js"></script>
+    <script src="./locales/lo.js"></script>
+    <script src="./locales/lt.js"></script>
+    <script src="./locales/lv.js"></script>
+    <script src="./locales/mk.js"></script>
+    <script src="./locales/ml.js"></script>
+    <script src="./locales/mn.js"></script>
+    <script src="./locales/mr.js"></script>
+    <script src="./locales/ms.js"></script>
+    <script src="./locales/my.js"></script>
+    <script src="./locales/nb.js"></script>
+    <script src="./locales/ne.js"></script>
+    <script src="./locales/nl.js"></script>
+    <script src="./locales/pa.js"></script>
+    <script src="./locales/pl.js"></script>
+    <script src="./locales/pt.js"></script>
+    <script src="./locales/ro.js"></script>
+    <script src="./locales/ru.js"></script>
+    <script src="./locales/si.js"></script>
+    <script src="./locales/sk.js"></script>
+    <script src="./locales/sl.js"></script>
+    <script src="./locales/sq.js"></script>
+    <script src="./locales/sr.js"></script>
+    <script src="./locales/sv.js"></script>
+    <script src="./locales/sw.js"></script>
+    <script src="./locales/ta.js"></script>
+    <script src="./locales/te.js"></script>
+    <script src="./locales/th.js"></script>
+    <script src="./locales/tr.js"></script>
+    <script src="./locales/uk.js"></script>
+    <script src="./locales/ur.js"></script>
+    <script src="./locales/uz.js"></script>
+    <script src="./locales/vi.js"></script>
+    <script src="./locales/yo.js"></script>
+    <script src="./locales/zh-CN.js"></script>
+    <script src="./locales/zh-TW.js"></script>
+    <script src="./locales/zu.js"></script>
     <script src="./i18n.js"></script>
     <script src="./assets/howler.min.js"></script>
     <script src="./app.js"></script>

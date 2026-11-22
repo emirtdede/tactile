@@ -1,7 +1,7 @@
 // Tactile UI Logic
 
 let profiles = [];
-let audio_instances = {}; // For previewing sounds in UI
+let audio_instances = {}; // sound_id -> Howl (multi) / { single: Howl }
 let current_view = 'linear';
 let active_profile_id = null;
 let settings = {};
@@ -9,108 +9,395 @@ let categories = [];
 let materials = ['PBT', 'ABS', 'Mixed'];
 let active_preview_howl = null; // Currently playing preview sound instance
 
+// Single-pack playback metadata (avoids reaching into Howler internals).
+let single_has_sprites = false;
+let single_sprite_ids = new Set();
+
+// Guards against out-of-order async responses (preview / activation).
+let preview_request_id = 0;
+let activation_request_id = 0;
+
+// Only register document-level listeners once.
+let global_listeners_bound = false;
+
+// Cached app version so the label can be repainted on language change.
+let app_version = '';
+
+// Last line of defence: a rejected promise anywhere in the renderer must be
+// logged instead of disappearing silently (the settings helpers already handle
+// their own failures, but a bug in an unmatched path would otherwise be
+// invisible in production).
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
+});
+
+function escapeHtml(value) {
+    return String(value === null || value === undefined ? '' : value).replace(/[&<>"']/g, (character) => {
+        switch (character) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            default: return '&#39;';
+        }
+    });
+}
+
+/**
+ * Persist a setting through the IPC bridge.
+ *
+ * Every settings write goes through this single helper so that a rejected
+ * `invoke` can never surface as an unhandled promise rejection, and so the
+ * user never sees a raw system error. Returns `true` on success, `false` on
+ * failure (the caller can decide whether the UI needs to revert).
+ */
+async function persistSetting(key, value) {
+    try {
+        const result = await window.api.updateSetting(key, value);
+        // The main process answers false when it rejected the value (an
+        // unregisterable hotkey, an unknown key, a key it failed to normalise).
+        return result !== false;
+    } catch (err) {
+        console.error(`Failed to persist setting "${key}":`, err);
+        return false;
+    }
+}
+
+function getVolume() {
+    const input = document.getElementById('global-volume');
+    const parsed = input ? Number.parseInt(input.value, 10) : 50;
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(100, parsed)) / 100 : 0.5;
+}
+
+// ─── Appearance helpers ──────────────────────────────────────────────────────
+
+const DEFAULT_ACCENT = '#D4AF37';
+
+function isValidHexColor(value) {
+    return /^#[0-9a-fA-F]{6}$/.test(String(value || ''));
+}
+
+function normalizeHex(value) {
+    return isValidHexColor(value) ? String(value).toUpperCase() : null;
+}
+
+function hexToRgb(hex) {
+    const value = String(hex).replace('#', '');
+    return {
+        r: Number.parseInt(value.slice(0, 2), 16),
+        g: Number.parseInt(value.slice(2, 4), 16),
+        b: Number.parseInt(value.slice(4, 6), 16)
+    };
+}
+
+function mixHex(hex, target, amount) {
+    const from = hexToRgb(hex);
+    const to = hexToRgb(target);
+    const channel = (a, b) => Math.round(a + (b - a) * amount).toString(16).padStart(2, '0');
+    return `#${channel(from.r, to.r)}${channel(from.g, to.g)}${channel(from.b, to.b)}`.toUpperCase();
+}
+
+// WCAG 2.1 relative luminance and contrast ratio. Accent text must stay readable
+// for every custom colour the user can pick, not only the two built-in themes.
+function relativeLuminance(hex) {
+    const { r, g, b } = hexToRgb(hex);
+    const channel = (value) => {
+        const c = value / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+function contrastRatio(a, b) {
+    const first = relativeLuminance(a);
+    const second = relativeLuminance(b);
+    const lighter = Math.max(first, second);
+    const darker = Math.min(first, second);
+    return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * Returns `color` when it already reaches 4.5:1 on `background`, otherwise the
+ * closest step toward black or white that does. Used only for text and icons,
+ * while fills keep the user's exact colour.
+ */
+function accessibleAccent(color, background) {
+    if (!isValidHexColor(color) || !isValidHexColor(background)) return color;
+    if (contrastRatio(color, background) >= 4.5) return color.toUpperCase();
+
+    const target = relativeLuminance(background) > 0.5 ? '#000000' : '#FFFFFF';
+    let candidate = color;
+    for (let step = 1; step <= 10; step += 1) {
+        candidate = mixHex(color, target, step / 10);
+        if (contrastRatio(candidate, background) >= 4.5) return candidate;
+    }
+    return candidate;
+}
+
+function prefersDarkScheme() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function resolvedTheme(mode = settings.theme || 'system') {
+    if (mode === 'light' || mode === 'dark') return mode;
+    return prefersDarkScheme() ? 'dark' : 'light';
+}
+
+function accentColor() {
+    if ((settings.theme || 'system') === 'custom' && isValidHexColor(settings.custom_color)) {
+        return settings.custom_color.toUpperCase();
+    }
+    return resolvedTheme() === 'light' ? '#B8860B' : DEFAULT_ACCENT;
+}
+
+function applyTheme(mode) {
+    const nextMode = mode || 'system';
+    settings.theme = nextMode;
+    const resolved = resolvedTheme(nextMode);
+    const body = document.body;
+
+    body.classList.toggle('light-theme', resolved === 'light');
+    body.classList.toggle('custom-theme', nextMode === 'custom');
+    body.classList.toggle('high-contrast', settings.high_contrast === 'true');
+    body.classList.toggle('reduce-motion', settings.reduce_motion === 'true');
+
+    const accent = accentColor();
+    if (nextMode === 'custom') {
+        const baseTarget = resolved === 'light' ? '#FFFFFF' : '#081018';
+        const baseBackground = mixHex(accent, baseTarget, resolved === 'light' ? 0.9 : 0.86);
+        body.style.setProperty('--accent-gold', accent);
+        body.style.setProperty('--accent-gold-hover', mixHex(accent, '#FFFFFF', 0.22));
+        // Text and icons get a version that passes 4.5:1 on the generated
+        // surface; the fill colour stays exactly what the user picked.
+        body.style.setProperty('--accent-text', accessibleAccent(accent, baseBackground));
+        body.style.setProperty('--bg-base', baseBackground);
+        body.style.setProperty('--bg-sidebar', mixHex(accent, baseTarget, resolved === 'light' ? 0.86 : 0.9));
+    } else {
+        ['--accent-gold', '--accent-gold-hover', '--accent-text', '--bg-base', '--bg-sidebar'].forEach((property) => {
+            body.style.removeProperty(property);
+        });
+    }
+
+    window.api.setZoom(String(settings.zoom || '100')).catch((err) => {
+        console.warn('Failed to apply interface zoom:', err);
+    });
+}
+
+/**
+ * Re-tints the bundled SVG for "match theme" and custom colour, so the window,
+ * taskbar and desktop shortcut all use the same mark as the interface.
+ */
+async function iconDataUri(mode) {
+    const base = resolvedTheme(mode === 'light' || mode === 'dark' ? mode : settings.theme) === 'light'
+        ? 'dark'
+        : 'light';
+    const uri = await window.api.getSvgDataUri(base);
+    if (!uri) return null;
+    if (mode !== 'theme' && mode !== 'custom') return uri;
+
+    try {
+        const svg = decodeURIComponent(escape(atob(uri.split(',')[1])));
+        const accent = mode === 'custom' && isValidHexColor(settings.custom_color)
+            ? settings.custom_color.toUpperCase()
+            : accentColor();
+        const tinted = svg.replace(/(fill|stroke)="(?!none|transparent|url\()[^"]*"/gi, `$1="${accent}"`);
+        return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(tinted)))}`;
+    } catch (err) {
+        console.warn('Failed to tint the application icon:', err);
+        return uri;
+    }
+}
+
+// ─── Toasts ──────────────────────────────────────────────────────────────────
+
+let toastTimer = null;
+
+function showToast(message, kind = 'info') {
+    const host = document.getElementById('toast-host');
+    if (!host) return;
+    host.innerHTML = '';
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${kind}`;
+    toast.textContent = message;
+    host.appendChild(toast);
+    void toast.offsetHeight;
+    toast.classList.add('visible');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        toastTimer = null;
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 200);
+    }, 2600);
+}
+
+function getUniqueHowls() {
+    return [...new Set(Object.values(audio_instances).filter(Boolean))];
+}
+
+function unloadAllAudio() {
+    getUniqueHowls().forEach((howl) => {
+        try {
+            howl.unload();
+        } catch (err) {
+            console.warn('Failed to unload audio instance:', err);
+        }
+    });
+    audio_instances = {};
+    single_has_sprites = false;
+    single_sprite_ids = new Set();
+}
+
+function applyVolumeToAllAudio(volume) {
+    getUniqueHowls().forEach((howl) => {
+        try {
+            howl.volume(volume);
+        } catch (err) {
+            // A Howl can be unloaded while the volume slider is dragged.
+        }
+    });
+}
+
 // Custom Dialog Promise wrappers
+
+/**
+ * Shared setup for the three custom dialogs.
+ *
+ * Each dialog re-used the same six DOM lookups and the same
+ * add/remove-listener dance. One helper keeps them consistent: a caller only
+ * decides what the buttons say and what each button resolves to.
+ */
+function prepareDialog({ title, message, showInput = false, showCancel = true, confirmLabel, cancelLabel }) {
+    const overlay = document.getElementById('custom-dialog-overlay');
+    document.getElementById('dialog-title-text').innerText = title;
+    document.getElementById('dialog-body-message').innerText = message;
+    document.getElementById('dialog-input-group').style.display = showInput ? 'block' : 'none';
+
+    const cancelBtn = document.getElementById('dialog-cancel-btn');
+    const confirmBtn = document.getElementById('dialog-confirm-btn');
+
+    cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
+    cancelBtn.innerText = cancelLabel || t('dialog.cancel');
+    confirmBtn.innerText = confirmLabel;
+
+    return { overlay, cancelBtn, confirmBtn };
+}
+
+/**
+ * Wire a dialog's buttons, close it on either choice and resolve once.
+ * `onConfirm`/`onCancel` return the value to resolve with.
+ */
+function runDialog({ overlay, cancelBtn, confirmBtn }, onConfirm, onCancel) {
+    const cleanup = () => {
+        overlay.classList.remove('active');
+        confirmBtn.removeEventListener('click', handleConfirm);
+        cancelBtn.removeEventListener('click', handleCancel);
+    };
+    const handleConfirm = () => { cleanup(); onConfirm(); };
+    const handleCancel = () => { cleanup(); onCancel(); };
+
+    confirmBtn.addEventListener('click', handleConfirm);
+    if (cancelBtn.style.display !== 'none') cancelBtn.addEventListener('click', handleCancel);
+    overlay.classList.add('active');
+}
+
 function showCustomAlert(message, title = t('dialog.notification')) {
     return new Promise((resolve) => {
-        const overlay = document.getElementById('custom-dialog-overlay');
-        document.getElementById('dialog-title-text').innerText = title;
-        document.getElementById('dialog-body-message').innerText = message;
-        document.getElementById('dialog-input-group').style.display = 'none';
-        document.getElementById('dialog-cancel-btn').style.display = 'none';
-        
-        const confirmBtn = document.getElementById('dialog-confirm-btn');
-        confirmBtn.innerText = t('dialog.ok');
-        
-        const closeHandler = () => {
-            overlay.classList.remove('active');
-            confirmBtn.removeEventListener('click', closeHandler);
-            resolve();
-        };
-        confirmBtn.addEventListener('click', closeHandler);
-        overlay.classList.add('active');
+        const parts = prepareDialog({
+            title,
+            message,
+            showCancel: false,
+            confirmLabel: t('dialog.ok')
+        });
+        runDialog(parts, () => resolve(), () => resolve());
     });
 }
 
 function showCustomConfirm(message, title = t('dialog.confirm_action')) {
     return new Promise((resolve) => {
-        const overlay = document.getElementById('custom-dialog-overlay');
-        document.getElementById('dialog-title-text').innerText = title;
-        document.getElementById('dialog-body-message').innerText = message;
-        document.getElementById('dialog-input-group').style.display = 'none';
-        
-        const cancelBtn = document.getElementById('dialog-cancel-btn');
-        const confirmBtn = document.getElementById('dialog-confirm-btn');
-        cancelBtn.style.display = 'inline-block';
-        cancelBtn.innerText = t('dialog.cancel');
-        confirmBtn.innerText = t('dialog.confirm');
-        
-        const onConfirm = () => {
-            overlay.classList.remove('active');
-            confirmBtn.removeEventListener('click', onConfirm);
-            cancelBtn.removeEventListener('click', onCancel);
-            resolve(true);
-        };
-        
-        const onCancel = () => {
-            overlay.classList.remove('active');
-            confirmBtn.removeEventListener('click', onConfirm);
-            cancelBtn.removeEventListener('click', onCancel);
-            resolve(false);
-        };
-        
-        confirmBtn.addEventListener('click', onConfirm);
-        cancelBtn.addEventListener('click', onCancel);
-        overlay.classList.add('active');
+        const parts = prepareDialog({
+            title,
+            message,
+            confirmLabel: t('dialog.confirm')
+        });
+        runDialog(parts, () => resolve(true), () => resolve(false));
     });
 }
 
 function showCustomPrompt(message, defaultValue = "", title = t('dialog.input_required')) {
     return new Promise((resolve) => {
-        const overlay = document.getElementById('custom-dialog-overlay');
-        document.getElementById('dialog-title-text').innerText = title;
-        document.getElementById('dialog-body-message').innerText = message;
-        document.getElementById('dialog-input-group').style.display = 'block';
-        
         const inputField = document.getElementById('dialog-prompt-input');
         inputField.value = defaultValue;
-        
-        const cancelBtn = document.getElementById('dialog-cancel-btn');
-        const confirmBtn = document.getElementById('dialog-confirm-btn');
-        cancelBtn.style.display = 'inline-block';
-        cancelBtn.innerText = t('dialog.cancel');
-        confirmBtn.innerText = t('dialog.save');
-        
-        const onConfirm = () => {
-            const val = inputField.value;
-            overlay.classList.remove('active');
-            confirmBtn.removeEventListener('click', onConfirm);
-            cancelBtn.removeEventListener('click', onCancel);
-            resolve(val);
-        };
-        
-        const onCancel = () => {
-            overlay.classList.remove('active');
-            confirmBtn.removeEventListener('click', onConfirm);
-            cancelBtn.removeEventListener('click', onCancel);
-            resolve(null);
-        };
-        
-        confirmBtn.addEventListener('click', onConfirm);
-        cancelBtn.addEventListener('click', onCancel);
-        overlay.classList.add('active');
+
+        const parts = prepareDialog({
+            title,
+            message,
+            showInput: true,
+            confirmLabel: t('dialog.save')
+        });
+        runDialog(parts, () => resolve(inputField.value), () => resolve(null));
         inputField.focus();
     });
 }
 
+/**
+ * Format-recovery prompt shown when the cloud folder holds a usable backup but
+ * the local database is empty: restore it, or deliberately start fresh.
+ */
+function showRestorePrompt() {
+    return new Promise((resolve) => {
+        const parts = prepareDialog({
+            title: t('cloud.restore_found_title'),
+            message: t('cloud.restore_found_desc'),
+            confirmLabel: t('cloud.restore_btn'),
+            cancelLabel: t('cloud.fresh_btn')
+        });
+        runDialog(parts, () => resolve(true), () => resolve(false));
+    });
+}
+
 // Helper to load and render dynamic materials filters
+const ALL_MATERIALS = '__all__';
+
+// The three seeded categories are stored with fixed English names so that
+// profile.type keeps matching them in the database; only their label is
+// translated. A user-created category is shown exactly as named.
+const BUILTIN_CATEGORY_KEYS = {
+    Linear: 'switch.linear',
+    Tactile: 'switch.tactile',
+    Clicky: 'switch.clicky'
+};
+
+function categoryLabel(name) {
+    const key = BUILTIN_CATEGORY_KEYS[name];
+    return key ? t(key) : name;
+}
+
+function refreshSidebarStats() {
+    const profileCount = document.getElementById('stat-profiles');
+    const categoryCount = document.getElementById('stat-categories');
+    if (profileCount) profileCount.textContent = String(profiles.length);
+    if (categoryCount) categoryCount.textContent = String(categories.length);
+}
+
+function getActiveMaterialFilter() {
+    const activeChip = document.querySelector('.filters .chip.active');
+    const value = activeChip ? activeChip.getAttribute('data-material') : null;
+    return value || ALL_MATERIALS;
+}
+
+function setActiveMaterialFilter(value) {
+    document.querySelectorAll('.filters .chip').forEach((chip) => {
+        chip.classList.toggle('active', chip.getAttribute('data-material') === value);
+    });
+}
+
 function loadAndRenderMaterials(skipSelectSync = false) {
     const filtersContainer = document.querySelector('.filters');
     if (!filtersContainer) return;
-    
-    // Read currently active filter
-    const activeChip = filtersContainer.querySelector('.chip.active');
-    const activeText = activeChip ? activeChip.innerText.trim() : 'All';
-    
+
+    // Read the active filter by its stable data value, not by its translated label.
+    const activeFilter = getActiveMaterialFilter();
+
     // Reset materials array to standard defaults, then append active ones
     materials = ['PBT', 'ABS', 'Mixed'];
     const uniqueFromProfiles = [...new Set(profiles.map(p => p.material).filter(Boolean))];
@@ -119,36 +406,39 @@ function loadAndRenderMaterials(skipSelectSync = false) {
             materials.push(m);
         }
     });
-    
-    filtersContainer.innerHTML = `<button class="chip">${t('filter.all')}</button>`;
+
+    filtersContainer.innerHTML = '';
+    const allChip = document.createElement('button');
+    allChip.className = 'chip';
+    allChip.setAttribute('data-material', ALL_MATERIALS);
+    allChip.innerText = t('filter.all');
+    filtersContainer.appendChild(allChip);
+
     materials.forEach(mat => {
         const btn = document.createElement('button');
         btn.className = 'chip';
+        btn.setAttribute('data-material', mat);
         btn.innerText = mat;
         filtersContainer.appendChild(btn);
     });
-    
-    // Restore active state
-    let foundActive = false;
-    filtersContainer.querySelectorAll('.chip').forEach(c => {
-        if (c.innerText.trim() === activeText) {
-            c.classList.add('active');
-            foundActive = true;
-        }
-    });
-    if (!foundActive) {
-        filtersContainer.querySelector('.chip').classList.add('active');
-    }
-    
-    // Rebind chip clicks
-    filtersContainer.querySelectorAll('.chip').forEach(chip => {
-        chip.addEventListener('click', (e) => {
-            filtersContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
+
+    // Restore the previous selection, falling back to "All".
+    const stillExists = [...filtersContainer.querySelectorAll('.chip')]
+        .some((chip) => chip.getAttribute('data-material') === activeFilter);
+    setActiveMaterialFilter(stillExists ? activeFilter : ALL_MATERIALS);
+
+    // One delegated listener on the container; chips are re-created on every
+    // call, so per-chip listeners here used to pile up.
+    if (!filtersContainer.dataset.bound) {
+        filtersContainer.addEventListener('click', (event) => {
+            const chip = event.target.closest('.chip');
+            if (!chip) return;
+            setActiveMaterialFilter(chip.getAttribute('data-material') || ALL_MATERIALS);
             renderProfiles(current_view);
         });
-    });
-    
+        filtersContainer.dataset.bound = 'true';
+    }
+
     if (skipSelectSync) return;
 
     // Sync the selects options dynamically (options only, no event listeners)
@@ -187,8 +477,13 @@ async function loadAndRenderCategories() {
     const categoriesListContainer = document.getElementById('dynamic-categories-list');
     const selectNewProfileType = document.getElementById('select-new-profile-type');
     const selectEditProfileType = document.getElementById('select-edit-profile-type');
-    
-    categories = await window.api.getCategories();
+
+    try {
+        categories = await window.api.getCategories();
+    } catch (err) {
+        console.error('Failed to load categories:', err);
+        categories = [];
+    }
     
     // Render in sidebar
     categoriesListContainer.innerHTML = '';
@@ -196,40 +491,51 @@ async function loadAndRenderCategories() {
         const btn = document.createElement('button');
         btn.className = `nav-item ${current_view === cat.id ? 'active' : ''}`;
         btn.setAttribute('data-view', cat.id);
-        btn.innerText = cat.name;
+        btn.innerText = categoryLabel(cat.name);
         
         // Add right-click context menu listener
         btn.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             const ctxMenu = document.getElementById('custom-context-menu');
-            ctxMenu.style.display = 'block';
-            ctxMenu.style.left = `${e.clientX}px`;
-            ctxMenu.style.top = `${e.clientY}px`;
+            if (!ctxMenu) return;
+            ctxMenu.style.display = 'flex';
+            ctxMenu.style.left = `${Math.min(e.clientX, Math.max(0, window.innerWidth - 170))}px`;
+            ctxMenu.style.top = `${Math.min(e.clientY, Math.max(0, window.innerHeight - 90))}px`;
             
             // Bind context actions
             document.getElementById('context-rename-cat').onclick = async () => {
+                ctxMenu.style.display = 'none';
                 const newName = await showCustomPrompt(t('msg.rename_category'), cat.name, t('msg.rename_category_title'));
                 if (newName && newName !== cat.name) {
-                    await window.api.renameCategory(cat.id, newName);
-                    await loadAndRenderCategories();
-                    profiles = await window.api.getProfiles();
-                    renderProfiles(current_view);
+                    try {
+                        await window.api.renameCategory(cat.id, newName);
+                        await loadAndRenderCategories();
+                        profiles = await window.api.getProfiles();
+                        renderProfiles(current_view);
+                    } catch (err) {
+                        console.error('Failed to rename category:', err);
+                        await showCustomAlert(t('msg.operation_failed'));
+                    }
                 }
-                ctxMenu.style.display = 'none';
             };
             
             document.getElementById('context-delete-cat').onclick = async () => {
+                ctxMenu.style.display = 'none';
                 const confirmed = await showCustomConfirm(tf('msg.confirm_delete_category', cat.name), t('msg.delete_category_title'));
-                if (confirmed) {
+                if (!confirmed) return;
+
+                try {
                     await window.api.deleteCategory(cat.id);
-                    if (current_view === cat.id) {
-                        current_view = 'linear';
-                    }
                     await loadAndRenderCategories();
                     profiles = await window.api.getProfiles();
-                    renderProfiles(current_view);
+                    if (!categories.some((item) => item.id === current_view)) {
+                        current_view = categories.length > 0 ? categories[0].id : 'settings';
+                    }
+                    switchView(current_view);
+                } catch (err) {
+                    console.error('Failed to delete category:', err);
+                    await showCustomAlert(t('msg.operation_failed'));
                 }
-                ctxMenu.style.display = 'none';
             };
         });
 
@@ -241,178 +547,225 @@ async function loadAndRenderCategories() {
         categoriesListContainer.appendChild(btn);
     });
 
-    // Close context menu on general click
-    document.addEventListener('click', () => {
-        document.getElementById('custom-context-menu').style.display = 'none';
-    });
+    // Close context menu on general click. Registered once: this function
+    // runs on every category change and used to leak a new listener each time.
+    if (!global_listeners_bound) {
+        document.addEventListener('click', () => {
+            const ctxMenu = document.getElementById('custom-context-menu');
+            if (ctxMenu) ctxMenu.style.display = 'none';
+        });
+        global_listeners_bound = true;
+    }
 
     // Populate selects
+    refreshSidebarStats();
+    if (!selectNewProfileType || !selectEditProfileType) return;
+
     selectNewProfileType.innerHTML = '';
     selectEditProfileType.innerHTML = '';
     categories.forEach(cat => {
         const opt1 = document.createElement('option');
         opt1.value = cat.name; // Keep DB compatibility
-        opt1.innerText = cat.name;
+        opt1.innerText = categoryLabel(cat.name);
         selectNewProfileType.appendChild(opt1);
 
         const opt2 = document.createElement('option');
         opt2.value = cat.name;
-        opt2.innerText = cat.name;
+        opt2.innerText = categoryLabel(cat.name);
         selectEditProfileType.appendChild(opt2);
     });
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Window Controls
+    // `minimize`/`maximize`/`close` are fire-and-forget (`ipcRenderer.send`),
+    // so they return undefined and must not be chained with `.catch()`.
     document.getElementById('btn-min').addEventListener('click', () => window.api.minimize());
     document.getElementById('btn-max').addEventListener('click', () => window.api.maximize());
     document.getElementById('btn-close').addEventListener('click', () => window.api.close());
 
+    // Delegated card actions (preview / activate / edit / add sound). The cards
+    // are re-created on every render, so a single delegated listener on each
+    // grid replaces per-card inline onclick handlers.
+    ['profiles-grid', 'custom-grid'].forEach((gridId) => {
+        const grid = document.getElementById(gridId);
+        if (grid) grid.addEventListener('click', handleProfileGridClick);
+    });
+
     // Audio Playback Listeners (Must be registered early to receive initial soundpack load events)
     window.api.onLoadPackSounds((soundData) => {
-        // Unload old
-        Object.values(audio_instances).forEach(h => h.unload());
-        audio_instances = {};
-        
-        const vol = parseInt(document.getElementById('global-volume').value) / 100;
-        
+        unloadAllAudio();
+        if (!soundData) return;
+
+        const volume = getVolume();
+
         if (soundData.type === 'single') {
-            const hasSprites = soundData.sprite && Object.keys(soundData.sprite).length > 0;
-            const createHowlSingle = () => {
-                const howlOptions = {
-                    src: soundData.src,
-                    format: soundData.format,
-                    volume: vol,
-                    html5: false, // Always use Web Audio API for zero latency and overlap support
-                    preload: true,
-                    onload: function() {
-                        // Ensure __default sprite exists after loading for sprite-less custom profiles
-                        if (!hasSprites) {
-                            if (!this._sprite || !this._sprite.__default) {
-                                this._sprite = this._sprite || {};
-                                if (this._duration > 0) {
-                                    this._sprite.__default = [0, this._duration * 1000];
-                                }
-                            }
-                        }
-                        console.log("[Howl] Loaded single pack. Duration:", this._duration, "Sprites:", Object.keys(this._sprite));
-                    },
-                    onloaderror: (id, err) => {
-                        console.error("Howler Load Error for Single Pack:", err);
-                    },
-                    onplayerror: (id, err) => {
-                        console.error("Howler Play Error for Single Pack:", err);
-                    }
-                };
-                if (hasSprites) {
-                    howlOptions.sprite = soundData.sprite;
+            if (!Array.isArray(soundData.src) || soundData.src.length === 0) {
+                console.warn('Single pack has no playable source; skipping load.');
+                return;
+            }
+
+            const sprite = soundData.sprite && typeof soundData.sprite === 'object' ? soundData.sprite : {};
+            single_has_sprites = Object.keys(sprite).length > 0;
+            single_sprite_ids = new Set(Object.keys(sprite));
+
+            const howlOptions = {
+                src: soundData.src,
+                format: Array.isArray(soundData.format) ? soundData.format : undefined,
+                volume,
+                html5: false, // Web Audio API: zero latency and overlapping playback
+                preload: true,
+                onloaderror: (id, err) => {
+                    console.error('Howler load error (single pack):', err);
+                },
+                onplayerror: (id, err) => {
+                    console.error('Howler play error (single pack):', err);
                 }
-                return new Howl(howlOptions);
             };
-            audio_instances['single'] = createHowlSingle();
-        } else {
-            for (const kc in soundData.data) {
-                audio_instances[kc] = new Howl({
-                    src: [soundData.data[kc].src],
-                    format: soundData.data[kc].format,
-                    volume: vol,
-                    html5: false, // Forces Web Audio API
+
+            if (single_has_sprites) howlOptions.sprite = sprite;
+            audio_instances.single = new Howl(howlOptions);
+            return;
+        }
+
+        const data = soundData.data && typeof soundData.data === 'object' ? soundData.data : {};
+        const sources = soundData.sources && typeof soundData.sources === 'object' ? soundData.sources : null;
+
+        // Several keycodes usually share the same file. Create one Howl per
+        // file instead of one per keycode: this used to build ~100 decoders
+        // (and duplicate the base64 payload) for every pack switch.
+        const fileHowls = new Map();
+
+        for (const [soundId, entry] of Object.entries(data)) {
+            const source = sources ? sources[entry] : entry;
+            if (!source || !source.src) continue;
+
+            const cacheKey = Array.isArray(source.src) ? source.src.join('|') : String(source.src);
+            let howl = fileHowls.get(cacheKey);
+
+            if (!howl) {
+                howl = new Howl({
+                    src: source.src,
+                    format: source.format,
+                    volume,
+                    html5: false,
                     preload: true,
                     onloaderror: (id, err) => {
-                        console.error("Howler Load Error for Key:", kc, err, soundData.data[kc].src);
+                        console.error('Howler load error (multi pack):', soundId, err);
                     }
                 });
+                fileHowls.set(cacheKey, howl);
             }
+
+            audio_instances[soundId] = howl;
         }
     });
 
     window.api.onPlaySound((data) => {
         try {
-            const vol = parseInt(document.getElementById('global-volume').value) / 100;
-            
+            if (!data || !data.sound_id) return;
+            const volume = getVolume();
+
             if (data.type === 'single') {
-                const howl = audio_instances['single'];
-                if (!howl) return;
-                
-                // Guard: don't attempt play if not loaded yet
-                if (howl._state !== 'loaded') return;
-                
-                // Determine if this is a sprite-based profile
-                const hasSprites = howl._sprite && Object.keys(howl._sprite).filter(k => k !== '__default').length > 0;
-                
-                if (!hasSprites) {
-                    // Guard: ensure __default sprite exists for custom profiles with no key mappings
-                    if (!howl._sprite || !howl._sprite.__default) {
-                        if (howl._duration && howl._duration > 0) {
-                            howl._sprite = howl._sprite || {};
-                            howl._sprite.__default = [0, howl._duration * 1000];
-                        } else {
-                            return; // Duration unknown, can't play
-                        }
-                    }
+                const howl = audio_instances.single;
+                if (!howl || howl.state() !== 'loaded') return;
+
+                howl.volume(volume);
+
+                if (single_has_sprites) {
+                    if (single_sprite_ids.has(data.sound_id)) howl.play(data.sound_id);
+                    return;
                 }
-                
-                howl.volume(vol);
-                if (howl._sprite[data.sound_id]) {
-                    // Has a specific sprite for this key — play it (normal sprite-based packs)
-                    howl.play(data.sound_id);
-                } else if (!hasSprites && !data.sound_id.endsWith('-up')) {
-                    // No sprite match AND it's a keydown event → play the whole file
-                    // Skip keyup ("-up") events for custom profiles without keyup mappings
-                    howl.play();
-                }
-            } else {
-                const h = audio_instances[data.sound_id];
-                if (h) {
-                    h.volume(vol);
-                    h.play();
-                }
+
+                // Spriteless custom pack: play the whole file on keydown only.
+                if (!String(data.sound_id).endsWith('-up')) howl.play();
+                return;
             }
+
+            const howl = audio_instances[data.sound_id];
+            if (!howl) return;
+            howl.volume(volume);
+            howl.play();
         } catch (err) {
-            console.error("DEBUG: onPlaySound failed with:", err, "for data:", data);
+            console.error('Failed to play key sound:', err);
         }
     });
 
     // Load initial data
-    settings = await window.api.getSettings();
-    profiles = await window.api.getProfiles();
-    
-    // Set active profile on startup to load sounds into memory
-    active_profile_id = settings.selected_profile;
-    if (active_profile_id && active_profile_id !== 'default') {
-        setActiveProfile(active_profile_id);
-    } else if (profiles.length > 0) {
-        setActiveProfile(profiles[0].id);
+    try {
+        settings = await window.api.getSettings();
+        profiles = await window.api.getProfiles();
+    } catch (err) {
+        console.error('Failed to load initial application data:', err);
+        settings = {};
+        profiles = [];
+        await showCustomAlert(t('msg.unexpected_error'));
     }
 
-    // Apply saved language before applying dynamic translations
-    const savedLang = settings.language || 'tr';
+    settings = {
+        volume: '50',
+        tray_icon: 'true',
+        start_minimized: 'false',
+        theme: 'system',
+        app_icon: 'theme',
+        muted: 'false',
+        language: '',
+        tray_click_single: 'open',
+        tray_click_double: 'none',
+        shortcut_toggle_mute: 'Control+K',
+        shortcut_quick_task: 'Control+Alt+N',
+        selected_profile: 'default',
+        close_behavior: 'tray',
+        zoom: '100',
+        high_contrast: 'false',
+        reduce_motion: 'false',
+        notifications: 'true',
+        sound_feedback: 'true',
+        custom_color: '#D4AF37',
+        cloud_provider: 'none',
+        cloud_folder: '',
+        cloud_auto: 'true',
+        cloud_last_sync: '',
+        onboarding_done: 'false',
+        ...settings
+    };
+
+    // Apply the saved language before applying dynamic translations. A stored
+    // supported code wins; anything else (empty seed, legacy value) follows the
+    // OS locale so a first launch is never stuck in a language the user cannot read.
+    const savedLang = resolveLanguage(settings.language);
+    settings.language = savedLang;
     setLang(savedLang);
+    applyDocumentLanguage();
     applyTranslations();
 
-    document.getElementById('app-version-display').innerText = `Version ${await window.api.getAppVersion()}`;
+    // The main process already loaded the selected profile's sounds before
+    // the window finished loading. Calling setActiveProfile here would send
+    // the whole payload a second time.
+    active_profile_id = settings.selected_profile;
+    if ((!active_profile_id || active_profile_id === 'default') && profiles.length > 0) {
+        active_profile_id = profiles[0].id;
+    }
+
+    try {
+        app_version = await window.api.getAppVersion();
+    } catch (err) {
+        console.warn('Failed to read app version:', err);
+    }
+    // The version label is built with tf(), not a data-i18n hook, so it has to be
+    // repainted explicitly whenever the language changes.
+    updateVersionLabel();
 
     // Apply Settings
     document.getElementById('global-volume').value = settings.volume;
     document.getElementById('setting-tray').checked = settings.tray_icon === 'true';
     document.getElementById('setting-startup').checked = settings.start_minimized === 'true'; // Map to start minimized / startup behavior
     
-    // Helper to stop and unload any active preview
-    const stopPreview = () => {
-        if (active_preview_howl) {
-            try {
-                active_preview_howl.stop();
-                active_preview_howl.unload();
-            } catch (err) {}
-            active_preview_howl = null;
-        }
-    };
-
     // Mute UI Control & Synchronization
     const btnMute = document.getElementById('btn-toggle-mute');
     function updateMuteUI(isMuted) {
         if (isMuted) {
-            stopPreview();
+            stopActivePreview();
             btnMute.innerHTML = `
                 <svg class="volume-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -420,7 +773,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <line x1="17" y1="9" x2="23" y2="15"></line>
                 </svg>
             `;
-            btnMute.title = "Ses Aç";
+            btnMute.title = t('tray.unmute');
+            btnMute.setAttribute('aria-label', t('tray.unmute'));
         } else {
             btnMute.innerHTML = `
                 <svg class="volume-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -428,8 +782,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                 </svg>
             `;
-            btnMute.title = "Sessiz";
+            btnMute.title = t('tray.mute');
+            btnMute.setAttribute('aria-label', t('tray.mute'));
         }
+        btnMute.setAttribute('aria-pressed', String(Boolean(isMuted)));
         const settingMute = document.getElementById('setting-mute');
         if (settingMute) {
             settingMute.checked = isMuted;
@@ -441,99 +797,140 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const langSelect = document.getElementById('setting-lang');
     if (langSelect) {
+        // Endonyms come from src/locales/languages.js so the picker never needs
+        // 73 hand-written <option> nodes and can never drift from the locale files.
+        langSelect.innerHTML = '';
+        for (const lang of getAvailableLanguages()) {
+            const option = document.createElement('option');
+            option.value = lang.code;
+            option.textContent = lang.name;
+            langSelect.appendChild(option);
+        }
         langSelect.value = savedLang;
         langSelect.addEventListener('change', async (e) => {
             const nextLang = e.target.value;
+            if (!isSupportedLang(nextLang)) return;
             setLang(nextLang);
-            await window.api.updateSetting('language', nextLang);
+            applyDocumentLanguage();
+            await persistSetting('language', nextLang);
             applyTranslations();
+            updateVersionLabel();
             
             // Re-render categories and profiles to update all textual filters and navigation
             await loadAndRenderCategories();
             loadAndRenderMaterials();
             renderProfiles(current_view);
             updateActiveProfileBadge();
+            updateMuteUI(settings.muted === 'true');
+            updateShortcutButtonLabel();
         });
     }
 
     // Theme Initial State & Synchronization
-    const currentTheme = settings.theme || 'dark';
-    if (currentTheme === 'light') {
-        document.body.classList.add('light-theme');
-    } else {
-        document.body.classList.remove('light-theme');
-    }
-    
+    applyTheme(settings.theme || 'system');
+
     const themeSelect = document.getElementById('setting-theme');
+    const customColorRow = document.getElementById('custom-color-row');
+    const customColorInput = document.getElementById('setting-custom-color');
+
+    const syncCustomColorRow = () => {
+        if (customColorRow) customColorRow.hidden = themeSelect.value !== 'custom';
+        if (customColorInput) customColorInput.value = settings.custom_color || DEFAULT_ACCENT;
+    };
+    syncCustomColorRow();
+
     if (themeSelect) {
-        themeSelect.value = currentTheme;
+        themeSelect.value = settings.theme || 'system';
         themeSelect.addEventListener('change', async (e) => {
             const nextTheme = e.target.value;
-            settings.theme = nextTheme;
-            await window.api.updateSetting('theme', nextTheme);
-            if (nextTheme === 'light') {
-                document.body.classList.add('light-theme');
-            } else {
-                document.body.classList.remove('light-theme');
-            }
+            applyTheme(nextTheme);
+            syncCustomColorRow();
+            await persistSetting('theme', nextTheme);
+            await applyAppIcon(settings.app_icon || 'theme');
         });
     }
 
-    const applyAppIcon = async (iconType) => {
+    document.getElementById('btn-apply-color').addEventListener('click', async () => {
+        const value = normalizeHex(customColorInput ? customColorInput.value : '');
+        if (!value) {
+            await showCustomAlert(t('settings.invalid_color'));
+            return;
+        }
+        settings.custom_color = value;
+        settings.theme = 'custom';
+        if (themeSelect) themeSelect.value = 'custom';
+        if (customColorInput) customColorInput.value = value;
+        syncCustomColorRow();
+        applyTheme('custom');
+        await persistSetting('custom_color', value);
+        await persistSetting('theme', 'custom');
+        await applyAppIcon(settings.app_icon || 'theme');
+        showToast(t('toast.saved'));
+    });
+
+    const applyAppIcon = async (iconMode) => {
         try {
-            const dataUri = await window.api.getSvgDataUri(iconType);
+            const dataUri = await iconDataUri(iconMode);
             if (!dataUri) return;
             const pngDataUrl = await rasterizeSvgToPng(dataUri);
-            await window.api.setDynamicAppIcon(pngDataUrl, iconType);
+            // Pass the selected mode (not just the light/dark base): main needs
+            // "custom" to know it should write the tinted shortcut icon.
+            await window.api.setDynamicAppIcon(pngDataUrl, iconMode || 'theme');
         } catch (err) {
-            console.error("Failed to apply app icon:", err);
+            console.error('Failed to apply app icon:', err);
         }
     };
 
     const appIconSelect = document.getElementById('setting-app-icon');
     if (appIconSelect) {
-        appIconSelect.value = settings.app_icon || 'light';
+        appIconSelect.value = settings.app_icon || 'theme';
         appIconSelect.addEventListener('change', async (e) => {
             const nextIcon = e.target.value;
             settings.app_icon = nextIcon;
-            await window.api.updateSetting('app_icon', nextIcon);
+            await persistSetting('app_icon', nextIcon);
             await applyAppIcon(nextIcon);
         });
     }
 
     // Apply app icon on startup
-    applyAppIcon(settings.app_icon || 'light');
-
-    // Settings event listeners
-    document.getElementById('global-volume').addEventListener('input', (e) => {
-        window.api.updateSetting('volume', e.target.value);
-        const hVol = parseInt(e.target.value) / 100;
-        if (active_preview_howl) {
-            try {
-                active_preview_howl.volume(hVol);
-            } catch (err) {}
+    applyAppIcon(settings.app_icon || 'theme');
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if ((settings.theme || 'system') === 'system') {
+            applyTheme('system');
+            applyAppIcon(settings.app_icon || 'theme');
         }
     });
 
+    // Settings event listeners
+    document.getElementById('global-volume').addEventListener('input', (e) => {
+        window.api.updateSetting('volume', e.target.value)
+            .catch((err) => console.error('Failed to persist volume:', err));
+        const hVol = parseInt(e.target.value, 10) / 100;
+        applyVolumeToAllAudio(hVol);
+        setPreviewVolume(hVol);
+    });
+
     document.getElementById('setting-tray').addEventListener('change', (e) => {
-        window.api.updateSetting('tray_icon', e.target.checked ? 'true' : 'false');
+        window.api.updateSetting('tray_icon', e.target.checked ? 'true' : 'false')
+            .catch((err) => console.error('Failed to persist tray icon setting:', err));
     });
 
     document.getElementById('setting-startup').addEventListener('change', (e) => {
-        window.api.updateSetting('start_minimized', e.target.checked ? 'true' : 'false');
+        window.api.updateSetting('start_minimized', e.target.checked ? 'true' : 'false')
+            .catch((err) => console.error('Failed to persist startup setting:', err));
     });
 
     document.getElementById('setting-mute').addEventListener('change', async (e) => {
         const nextMute = e.target.checked;
         settings.muted = nextMute ? 'true' : 'false';
-        await window.api.updateSetting('muted', settings.muted);
+        await persistSetting('muted', settings.muted);
         updateMuteUI(nextMute);
     });
 
     btnMute.addEventListener('click', async () => {
         const nextMute = settings.muted !== 'true';
         settings.muted = nextMute ? 'true' : 'false';
-        await window.api.updateSetting('muted', settings.muted);
+        await persistSetting('muted', settings.muted);
         updateMuteUI(nextMute);
     });
 
@@ -547,12 +944,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         settings.volume = vol.toString();
         document.getElementById('global-volume').value = vol;
         const hVol = vol / 100;
-        Object.values(audio_instances).forEach(h => h.volume(hVol));
-        if (active_preview_howl) {
-            try {
-                active_preview_howl.volume(hVol);
-            } catch (err) {}
-        }
+        applyVolumeToAllAudio(hVol);
+        setPreviewVolume(hVol);
     });
 
     // Apply initial values for new settings
@@ -566,9 +959,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const formatShortcutForUser = (shortcut) => {
         if (!shortcut) return '';
+        // `CommandOrControl` must be replaced before `Control`: doing it the
+        // other way round left the label showing "CommandOrCTRL".
         return shortcut
-            .replace(/Control/g, 'CTRL')
             .replace(/CommandOrControl/g, 'CTRL')
+            .replace(/Control/g, 'CTRL')
             .replace(/Shift/g, 'SHIFT')
             .replace(/Alt/g, 'ALT')
             .replace(/Meta/g, 'META')
@@ -590,13 +985,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (traySingleSelect) {
         traySingleSelect.addEventListener('change', async (e) => {
             settings.tray_click_single = e.target.value;
-            await window.api.updateSetting('tray_click_single', settings.tray_click_single);
+            await persistSetting('tray_click_single', settings.tray_click_single);
         });
     }
     if (trayDoubleSelect) {
         trayDoubleSelect.addEventListener('change', async (e) => {
             settings.tray_click_double = e.target.value;
-            await window.api.updateSetting('tray_click_double', settings.tray_click_double);
+            await persistSetting('tray_click_double', settings.tray_click_double);
         });
     }
 
@@ -627,6 +1022,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event.shiftKey) parts.push('Shift');
         if (event.metaKey) parts.push('Meta');
 
+        // A modifier-less hotkey would hijack a normal key across the whole OS
+        // (the user could no longer type it anywhere). Reject it here so the
+        // user gets immediate feedback instead of a silent failure in main.
+        if (parts.length === 0) {
+            await showCustomAlert(t('settings.shortcut_requires_modifier'));
+            return;
+        }
+
         // Map javascript key names to Electron globalShortcut key strings
         let electronKey = key.toUpperCase();
         if (key === ' ') electronKey = 'Space';
@@ -637,15 +1040,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const shortcutString = parts.join('+');
         
         stopRecording();
-        
-        // Register the new shortcut via Main Process
-        const res = await window.api.registerShortcut(shortcutString);
-        if (res.success) {
-            settings.shortcut_toggle_mute = shortcutString;
+
+        // Persist through the settings channel: the main process re-registers
+        // every hotkey and answers false when the combination is already owned
+        // by another application.
+        const previous = settings.shortcut_toggle_mute || '';
+        settings.shortcut_toggle_mute = shortcutString;
+        const saved = await persistSetting('shortcut_toggle_mute', shortcutString);
+        if (saved) {
             updateShortcutButtonLabel();
         } else {
-            showCustomAlert(t('settings.shortcut_error'));
+            settings.shortcut_toggle_mute = previous;
             updateShortcutButtonLabel();
+            await showCustomAlert(t('settings.shortcut_error'));
         }
     };
 
@@ -654,12 +1061,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnRecordShortcut.innerText = t('settings.shortcut_recording');
         btnRecordShortcut.classList.add('recording');
         window.addEventListener('keydown', handleShortcutKeyDown, true);
+        // Leaving the window (alt-tab) while recording used to keep the capture
+        // listener alive: every key in the app was swallowed until the user
+        // came back and pressed Escape.
+        window.addEventListener('blur', cancelRecording);
     }
 
     function stopRecording() {
         isRecordingShortcut = false;
         btnRecordShortcut.classList.remove('recording');
         window.removeEventListener('keydown', handleShortcutKeyDown, true);
+        window.removeEventListener('blur', cancelRecording);
+    }
+
+    function cancelRecording() {
+        if (!isRecordingShortcut) return;
+        stopRecording();
+        updateShortcutButtonLabel();
     }
 
     btnRecordShortcut.addEventListener('click', () => {
@@ -673,25 +1091,57 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     btnClearShortcut.addEventListener('click', async () => {
         stopRecording();
-        await window.api.unregisterShortcut();
         settings.shortcut_toggle_mute = '';
+        await persistSetting('shortcut_toggle_mute', '');
         updateShortcutButtonLabel();
     });
 
+    // Escape closes the dialog the user is looking at. Without this, every
+    // modal (create/edit profile, categories, legal, message boxes) could only
+    // be dismissed by aiming at a small ✕, and the shortcut recorder owns
+    // Escape while it is active, so that case is skipped.
+    const MODAL_CLOSE_BUTTONS = {
+        'create-profile-modal': 'modal-create-close-x',
+        'add-sound-modal': 'modal-add-close-x',
+        'edit-profile-modal': 'modal-edit-close-x',
+        'create-category-modal': 'modal-category-close-x',
+        'legal-modal': 'modal-close-x',
+        'manage-categories-modal': 'modal-manage-close-x'
+    };
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || isRecordingShortcut) return;
+
+        const openOverlays = [...document.querySelectorAll('.modal-overlay.active')];
+        if (openOverlays.length === 0) {
+            const ctxMenu = document.getElementById('custom-context-menu');
+            if (ctxMenu) ctxMenu.style.display = 'none';
+            return;
+        }
+
+        const overlay = openOverlays[openOverlays.length - 1];
+
+        if (overlay.id === 'custom-dialog-overlay') {
+            // A resolve must happen or the awaiting caller hangs forever.
+            const cancelBtn = document.getElementById('dialog-cancel-btn');
+            const confirmBtn = document.getElementById('dialog-confirm-btn');
+            const target = cancelBtn && cancelBtn.style.display !== 'none' ? cancelBtn : confirmBtn;
+            if (target) target.click();
+            return;
+        }
+
+        const closeButtonId = MODAL_CLOSE_BUTTONS[overlay.id];
+        const closeButton = closeButtonId ? document.getElementById(closeButtonId) : null;
+        if (closeButton) closeButton.click();
+    });
+
     // Navigation
-    document.querySelectorAll('.nav-item').forEach(btn => {
+    document.querySelectorAll('.rail-item').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.rail-item').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            const view = btn.getAttribute('data-view');
-            
-            // Clear search box when switching tabs
-            const searchInput = document.getElementById('search-input');
-            if (searchInput) searchInput.value = '';
-            const btnClearSearch = document.getElementById('btn-clear-search');
-            if (btnClearSearch) btnClearSearch.style.display = 'none';
-            
-            switchView(view);
+            // switchView() also resets the search box for every view change.
+            switchView(btn.getAttribute('data-view'));
         });
     });
 
@@ -710,9 +1160,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     if (searchInput) {
+        let searchRenderTimer = null;
         searchInput.addEventListener('input', () => {
             updateSearchClearButton();
-            renderProfiles(current_view);
+            if (searchRenderTimer) clearTimeout(searchRenderTimer);
+            searchRenderTimer = setTimeout(() => {
+                searchRenderTimer = null;
+                renderProfiles(current_view);
+            }, 120);
         });
     }
 
@@ -725,22 +1180,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Material Filter Chips
-    document.querySelectorAll('.chip').forEach(chip => {
-        chip.addEventListener('click', (e) => {
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            renderProfiles(current_view);
-        });
-    });
+    // Material filter chips are wired once by loadAndRenderMaterials().
 
     // ─── Material Select: Show/Hide "New Material Name" input ───
     function bindMaterialSelectToggle(selectId, wrapId, inputId) {
         const sel = document.getElementById(selectId);
         if (!sel) return;
+
+        // The hide animation is delayed by 300 ms. Without cancelling it, picking
+        // "__NEW__" again within that window set display:block and the stale
+        // timer then hid the field again, leaving an invisible input.
+        let hideTimer = null;
+
         sel.addEventListener('change', () => {
             const wrap = document.getElementById(wrapId);
             const inp  = document.getElementById(inputId);
+
+            if (hideTimer) {
+                clearTimeout(hideTimer);
+                hideTimer = null;
+            }
+
             if (sel.value === '__NEW__') {
                 if (wrap) {
                     wrap.style.display = 'block';
@@ -756,7 +1216,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     wrap.style.maxHeight = '0';
                     wrap.style.opacity = '0';
                     wrap.style.marginTop = '0';
-                    setTimeout(() => { wrap.style.display = 'none'; }, 300);
+                    hideTimer = setTimeout(() => {
+                        hideTimer = null;
+                        wrap.style.display = 'none';
+                    }, 300);
                 }
                 if (inp) inp.value = '';
             }
@@ -775,16 +1238,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // External Links
     document.getElementById('link-website').addEventListener('click', (e) => {
-        e.preventDefault(); window.api.openExternal('https://vellium.dev');
+        e.preventDefault();
+        window.api.openExternal('https://vellium.dev')
+            .catch((err) => console.error('Failed to open website link:', err));
     });
     document.getElementById('btn-web-site').addEventListener('click', (e) => {
-        e.preventDefault(); window.api.openExternal('https://vellium.dev');
+        e.preventDefault();
+        window.api.openExternal('https://vellium.dev')
+            .catch((err) => console.error('Failed to open website link:', err));
     });
 
-    // Custom Pack Import & Remap Toggles
+    // Custom Pack Import
     const dropZone = document.getElementById('drop-zone');
-    const selectAppendProfile = document.getElementById('select-append-profile');
-    const keycodeInput = document.getElementById('input-target-keycode');
+
+    // Both the drop zone and the folder picker end with the same refresh. It
+    // also rebuilds the material chips: an imported pack can introduce a
+    // material that was not in the list yet.
+    const handlePackImportResult = async (res) => {
+        if (res && res.success) {
+            const importedName = res.profile && res.profile.name ? res.profile.name : '';
+            await showCustomAlert(`${t('msg.import_success')} ${importedName}`.trim());
+            profiles = await window.api.getProfiles();
+            loadAndRenderMaterials();
+            renderProfiles(current_view);
+            return;
+        }
+
+        const reason = res && res.error ? res.error : t('msg.operation_failed');
+        await showCustomAlert(`${t('msg.import_failed')} ${reason}`);
+    };
     
     // Drag & Drop Folder Import
     if (dropZone) {
@@ -802,16 +1284,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             dropZone.style.borderColor = 'var(--border-subtle)';
             
             const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                const folderPath = files[0].path; // Electron file path
-                const res = await window.api.importFolderPack(folderPath);
-                if (res.success) {
-                    await showCustomAlert(`${t('msg.import_success')} ${res.profile.name}`);
-                    profiles = await window.api.getProfiles(); // Reload local list
-                    if (selectAppendProfile) populateAppendProfiles();
-                    renderProfiles(current_view);
-                } else {
-                    await showCustomAlert(`${t('msg.import_failed')} ${res.error}`);
+            if (files.length > 0 && files[0].path) {
+                try {
+                    await handlePackImportResult(await window.api.importFolderPack(files[0].path));
+                } catch (err) {
+                    console.error('Folder drop import failed:', err);
+                    await showCustomAlert(t('msg.import_failed'));
                 }
             }
         });
@@ -821,59 +1299,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnSelectFolder = document.getElementById('btn-select-folder');
     if (btnSelectFolder) {
         btnSelectFolder.addEventListener('click', async () => {
-            const folderPath = await window.api.selectDirectory();
-            if (folderPath) {
-                const res = await window.api.importFolderPack(folderPath);
-                if (res.success) {
-                    await showCustomAlert(`${t('msg.import_success')} ${res.profile.name}`);
-                    profiles = await window.api.getProfiles();
-                    if (selectAppendProfile) populateAppendProfiles();
-                    renderProfiles(current_view);
-                } else {
-                    await showCustomAlert(`${t('msg.import_failed')} ${res.error}`);
-                }
-            }
-        });
-    }
-
-    // Populator for Append dropdown
-    const populateAppendProfiles = () => {
-        if (!selectAppendProfile) return;
-        selectAppendProfile.innerHTML = '';
-        profiles.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.id;
-            opt.innerText = p.name;
-            selectAppendProfile.appendChild(opt);
-        });
-    };
-
-    // Trigger select profile listing on load
-    if (selectAppendProfile) {
-        setTimeout(populateAppendProfiles, 500);
-    }
-
-    // Select & Remap individual key file
-    const btnAppendFile = document.getElementById('btn-append-file');
-    if (btnAppendFile) {
-        btnAppendFile.addEventListener('click', async () => {
-            const targetId = selectAppendProfile ? selectAppendProfile.value : null;
-            const keycode = keycodeInput ? keycodeInput.value : null;
-            if (!targetId || !keycode) {
-                await showCustomAlert(t('msg.select_profile_keycode'));
+            let folderPath = null;
+            try {
+                folderPath = await window.api.selectDirectory();
+            } catch (err) {
+                console.error('Failed to open the folder picker:', err);
                 return;
             }
+            if (!folderPath) return;
 
-            const filePath = await window.api.selectAudioFile();
-            if (filePath) {
-                const res = await window.api.importMixedZipPack(targetId, keycode, filePath);
-                if (res.success) {
-                    await showCustomAlert(t('msg.audio_assigned'));
-                    profiles = await window.api.getProfiles();
-                    renderProfiles(current_view);
-                } else {
-                    await showCustomAlert(`${t('msg.assign_failed')} ${res.error}`);
-                }
+            try {
+                await handlePackImportResult(await window.api.importFolderPack(folderPath));
+            } catch (err) {
+                console.error('Folder import failed:', err);
+                await showCustomAlert(t('msg.import_failed'));
             }
         });
     }
@@ -888,15 +1327,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         createCategoryModal.classList.remove('active');
     });
     document.getElementById('modal-category-save-btn').addEventListener('click', async () => {
-        const name = document.getElementById('input-new-category-name').value;
+        const input = document.getElementById('input-new-category-name');
+        const name = input.value.trim();
         if (!name) {
             await showCustomAlert(t('msg.enter_category_name'));
             return;
         }
-        await window.api.createCategory(name);
-        document.getElementById('input-new-category-name').value = '';
-        createCategoryModal.classList.remove('active');
-        await loadAndRenderCategories();
+
+        try {
+            await window.api.createCategory(name);
+            input.value = '';
+            createCategoryModal.classList.remove('active');
+            await loadAndRenderCategories();
+        } catch (err) {
+            console.error('Failed to create category:', err);
+            await showCustomAlert(t('msg.operation_failed'));
+        }
     });
 
     // Manage Categories Modal & Drag Reorder
@@ -937,16 +1383,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 gap: 12px;
             `;
             item.innerHTML = `
-                <span style="flex-grow: 1;">☰ ${cat.name}</span>
+                <span style="flex-grow: 1;">☰ ${escapeHtml(categoryLabel(cat.name))}</span>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <button class="btn btn-rename-cat" title="Rename" style="padding: 6px; font-size: 12px; flex: none; width: auto; background: transparent; border: none; color: var(--accent-gold); cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button class="btn btn-rename-cat" title="${escapeHtml(t('context.rename'))}" aria-label="${escapeHtml(t('context.rename'))}" style="padding: 6px; font-size: 12px; flex: none; width: auto; background: transparent; border: none; color:(--accent-text); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path>
                         </svg>
                     </button>
-                    <button class="btn btn-delete-cat" title="Delete" style="padding: 6px; font-size: 12px; flex: none; width: auto; background: transparent; border: none; color: #E81123; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button class="btn btn-delete-cat" title="${escapeHtml(t('context.delete'))}" aria-label="${escapeHtml(t('context.delete'))}" style="padding: 6px; font-size: 12px; flex: none; width: auto; background: transparent; border: none; color: #E81123; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <polyline points="3 6 5 6 21 6"></polyline>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                             <line x1="10" y1="11" x2="10" y2="17"></line>
@@ -960,27 +1406,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.querySelector('.btn-rename-cat').addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const newName = await showCustomPrompt(t('msg.rename_category'), cat.name, t('msg.rename_category_title'));
-                if (newName && newName !== cat.name) {
+                if (!newName || newName === cat.name) return;
+
+                try {
                     await window.api.renameCategory(cat.id, newName);
                     await loadAndRenderCategories();
                     profiles = await window.api.getProfiles();
                     renderManageCategories();
                     renderProfiles(current_view);
+                } catch (err) {
+                    console.error('Failed to rename category:', err);
+                    await showCustomAlert(t('msg.operation_failed'));
                 }
             });
 
             item.querySelector('.btn-delete-cat').addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const confirmed = await showCustomConfirm(tf('msg.confirm_delete_category', cat.name), t('msg.delete_category_title'));
-                if (confirmed) {
+                if (!confirmed) return;
+
+                try {
                     await window.api.deleteCategory(cat.id);
-                    if (current_view === cat.id) {
-                        current_view = 'linear';
-                    }
                     await loadAndRenderCategories();
                     profiles = await window.api.getProfiles();
+                    if (!categories.some((entry) => entry.id === current_view)) {
+                        current_view = categories.length > 0 ? categories[0].id : 'settings';
+                    }
                     renderManageCategories();
                     renderProfiles(current_view);
+                    switchView(current_view);
+                } catch (err) {
+                    console.error('Failed to delete category:', err);
+                    await showCustomAlert(t('msg.operation_failed'));
                 }
             });
             // Bind Category Drag & Drop Events
@@ -1004,16 +1461,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const draggedId = e.dataTransfer.getData('text/plain');
                 if (draggedId && draggedId !== cat.id) {
                     const draggedIdx = categories.findIndex(x => x.id === draggedId);
-                    const targetIdx = categories.findIndex(x => x.id === cat.id);
+                    let targetIdx = categories.findIndex(x => x.id === cat.id);
                     if (draggedIdx !== -1 && targetIdx !== -1) {
                         const temp = categories[draggedIdx];
                         categories.splice(draggedIdx, 1);
+                        // Compensate for the index shift caused by the removal.
+                        if (draggedIdx < targetIdx) targetIdx -= 1;
                         categories.splice(targetIdx, 0, temp);
 
                         // Save category order
-                        await window.api.updateCategoryOrder(categories.map(x => x.id));
-                        await loadAndRenderCategories();
-                        renderManageCategories();
+                        try {
+                            await window.api.updateCategoryOrder(categories.map((x) => x.id));
+                            await loadAndRenderCategories();
+                            renderManageCategories();
+                        } catch (err) {
+                            console.error('Failed to save category order:', err);
+                            await showCustomAlert(t('msg.operation_failed'));
+                        }
                     }
                 }
             });
@@ -1050,10 +1514,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     document.getElementById('btn-select-profile-sound').addEventListener('click', async () => {
-        const filePath = await window.api.selectAudioFile();
+        let filePath = null;
+        try {
+            filePath = await window.api.selectAudioFile();
+        } catch (err) {
+            console.error('Failed to open the audio file picker:', err);
+            return;
+        }
         if (filePath) {
             selectedSoundPath = filePath;
-            const fileName = filePath.substring(filePath.lastIndexOf('\\') + 1).substring(filePath.lastIndexOf('/') + 1);
+            const fileName = filePath.split(/[\\/]/).pop();
             document.getElementById('label-selected-profile-sound').innerText = fileName;
         }
     });
@@ -1065,12 +1535,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('modal-create-save-btn').addEventListener('click', async () => {
         try {
-            const name = document.getElementById('input-new-profile-name').value;
+            const name = document.getElementById('input-new-profile-name').value.trim();
             const type = document.getElementById('select-new-profile-type').value;
             let material = document.getElementById('select-new-profile-material').value;
             const desc = document.getElementById('input-new-profile-desc').value;
-
-            console.log('[CREATE] name:', name, 'type:', type, 'material:', material, 'desc:', desc);
 
             if (!name) {
                 await showCustomAlert(t('msg.enter_profile_name'));
@@ -1080,41 +1548,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (material === '__NEW__') {
                 const customInput = document.getElementById('input-new-profile-material-new');
                 const customVal = customInput ? customInput.value.trim() : '';
-                console.log('[CREATE] custom material:', customVal);
                 if (!customVal) {
-                    await showCustomAlert(t('msg.enter_material_name'));
+                    await showCustomAlert(t('msg.enter_custom_material'));
                     return;
                 }
                 material = customVal;
                 if (!materials.includes(material)) {
                     materials.push(material);
-                    
-                    // Force sync dropdown lists to contain the new material
-                    document.getElementById('select-new-profile-material').innerHTML = '';
-                    document.getElementById('select-edit-profile-material').innerHTML = '';
                     loadAndRenderMaterials();
                 }
             }
 
-            console.log('[CREATE] calling createProfile with:', name, type, material, desc, selectedSoundPath);
             const res = await window.api.createProfile(name, type, material, desc, selectedSoundPath);
-            console.log('[CREATE] result:', res);
             
             if (res.success) {
                 await showCustomAlert(`${t('msg.profile_created')} ${name}`);
                 
                 resetCreateProfileForm();
                 createProfileModal.classList.remove('active');
-                profiles = await window.api.getProfiles(); // Reload local list
+                profiles = await window.api.getProfiles();
                 loadAndRenderMaterials();
-                populateAppendProfiles();
                 renderProfiles(current_view);
             } else {
-                await showCustomAlert(`${t('msg.profile_create_failed')} ${res.error}`);
+                await showCustomAlert(`${t('msg.profile_create_failed')} ${res.error || t('msg.operation_failed')}`);
             }
         } catch (err) {
-            console.error('[CREATE] Error:', err);
-            await showCustomAlert(t('msg.error_occurred') + err.message);
+            console.error('Failed to create profile:', err);
+            await showCustomAlert(t('msg.unexpected_error'));
         }
     });
 
@@ -1124,6 +1584,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const targetKeycodeInput = document.getElementById('input-add-sound-keycode');
 
     window.openAddSoundModal = (profileId) => {
+        if (!profileId) return;
         targetProfileIdInput.value = profileId;
         addSoundModal.classList.add('active');
     };
@@ -1134,22 +1595,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('modal-add-select-btn').addEventListener('click', async () => {
         const profileId = targetProfileIdInput.value;
-        const keycode = targetKeycodeInput.value;
+        const keycode = targetKeycodeInput.value.trim();
         if (!profileId || !keycode) {
-            showCustomAlert(t('msg.select_profile_keycode'));
+            await showCustomAlert(t('msg.select_profile_keycode'));
             return;
         }
 
-        const filePath = await window.api.selectAudioFile();
-        if (filePath) {
+        if (!/^[0-9]{1,6}(-up)?$/.test(keycode)) {
+            await showCustomAlert(t('msg.invalid_keycode'));
+            return;
+        }
+
+        try {
+            const filePath = await window.api.selectAudioFile();
+            if (!filePath) return;
+
             const res = await window.api.importMixedZipPack(profileId, keycode, filePath);
             if (res.success) {
-                showCustomAlert(t('msg.audio_assigned'));
+                await showCustomAlert(t('msg.audio_assigned'));
                 addSoundModal.classList.remove('active');
-                profiles = await window.api.getProfiles(); // Refresh details
+                profiles = await window.api.getProfiles();
+                renderProfiles(current_view);
             } else {
-                showCustomAlert(`${t('msg.assign_failed')} ${res.error}`);
+                await showCustomAlert(`${t('msg.assign_failed')} ${res.error || t('msg.operation_failed')}`);
             }
+        } catch (err) {
+            console.error('Failed to assign sound file:', err);
+            await showCustomAlert(t('msg.unexpected_error'));
         }
     });
 
@@ -1162,14 +1634,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const editProfileDescInput = document.getElementById('input-edit-profile-desc');
 
     window.openEditProfileModal = async (profileId) => {
-        const details = await window.api.getProfileDetails(profileId);
-        if (!details) return;
-        editProfileIdInput.value = details.id;
-        editProfileNameInput.value = details.name;
-        editProfileTypeSelect.value = details.type;
-        editProfileMaterialSelect.value = details.material;
-        editProfileDescInput.value = details.description || '';
-        editProfileModal.classList.add('active');
+        try {
+            const details = await window.api.getProfileDetails(profileId);
+            if (!details) {
+                await showCustomAlert(t('msg.profile_not_found'));
+                return;
+            }
+            editProfileIdInput.value = details.id;
+            editProfileNameInput.value = details.name;
+            editProfileTypeSelect.value = details.type;
+            editProfileMaterialSelect.value = details.material;
+            editProfileDescInput.value = details.description || '';
+            editProfileModal.classList.add('active');
+        } catch (err) {
+            console.error('Failed to open edit profile modal:', err);
+            await showCustomAlert(t('msg.unexpected_error'));
+        }
     };
 
     document.getElementById('modal-edit-close-x').addEventListener('click', () => {
@@ -1183,7 +1663,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let material = editProfileMaterialSelect.value;
         const desc = editProfileDescInput.value;
 
-        if (!name) {
+        if (!name.trim()) {
             await showCustomAlert(t('msg.profile_name_empty'));
             return;
         }
@@ -1192,21 +1672,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const customInput = document.getElementById('input-edit-profile-material-new');
             const customVal = customInput ? customInput.value.trim() : '';
             if (!customVal) {
-                await showCustomAlert('Please enter a custom material name!');
+                await showCustomAlert(t('msg.enter_custom_material'));
                 return;
             }
             material = customVal;
-            if (!materials.includes(material)) {
-                materials.push(material);
-                
-                // Force sync dropdown lists to contain the new material
-                document.getElementById('select-new-profile-material').innerHTML = '';
-                document.getElementById('select-edit-profile-material').innerHTML = '';
-                loadAndRenderMaterials();
-            }
         }
 
-        await window.api.updateProfileDetails(id, name, type, material, desc);
+        try {
+            await window.api.updateProfileDetails(id, name.trim(), type, material, desc);
+        } catch (err) {
+            console.error('Failed to update profile:', err);
+            await showCustomAlert(t('msg.operation_failed'));
+            return;
+        }
         
         // Clean custom material input fields and reset state
         const targetWrap = document.getElementById('wrap-edit-profile-material-new');
@@ -1219,18 +1697,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (targetInput) targetInput.value = '';
 
         editProfileModal.classList.remove('active');
-        profiles = await window.api.getProfiles();
+
+        try {
+            profiles = await window.api.getProfiles();
+        } catch (err) {
+            console.error('Failed to reload profiles after edit:', err);
+        }
+        loadAndRenderMaterials();
         renderProfiles(current_view);
+        updateActiveProfileBadge();
     });
 
     document.getElementById('modal-edit-delete-btn').addEventListener('click', async () => {
         const id = editProfileIdInput.value;
         const name = editProfileNameInput.value;
         const confirmed = await showCustomConfirm(tf('msg.confirm_delete_profile', name));
-        if (confirmed) {
+        if (!confirmed) return;
+
+        try {
             await window.api.deleteProfile(id);
             editProfileModal.classList.remove('active');
             profiles = await window.api.getProfiles();
+
+            // The main process may have picked a replacement active profile.
+            const nextSettings = await window.api.getSettings();
+            active_profile_id = nextSettings.selected_profile;
             
             // Clear material option selectors and rebuild filters on delete
             document.getElementById('select-new-profile-material').innerHTML = '';
@@ -1238,6 +1729,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadAndRenderMaterials();
 
             renderProfiles(current_view);
+            updateActiveProfileBadge();
+        } catch (err) {
+            console.error('Failed to delete profile:', err);
+            await showCustomAlert(t('msg.operation_failed'));
         }
     });
 
@@ -1247,23 +1742,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalBody = document.getElementById('modal-body-content');
     const modalLink = document.getElementById('modal-external-link');
     
+    // One table instead of three near-identical branches (DRY). The link
+    // handler always catches, so a failed open never becomes an unhandled
+    // rejection.
+    const LEGAL_PAGES = {
+        terms: { title: 'legal.terms_title', body: 'legal.terms_body', slug: 'eula' },
+        licenses: { title: 'legal.licenses_title', body: 'legal.licenses_body', slug: 'licenses' },
+        privacy: { title: 'legal.privacy_title', body: 'legal.privacy_body', slug: 'privacy' }
+    };
+
     const showLegalModal = (type) => {
-        if (type === 'terms') {
-            modalTitle.innerText = t('legal.terms_title');
-            modalLink.innerText = 'vellium.dev/eula';
-            modalLink.onclick = (e) => { e.preventDefault(); window.api.openExternal('https://vellium.dev/eula'); };
-            modalBody.innerHTML = t('legal.terms_body');
-        } else if (type === 'licenses') {
-            modalTitle.innerText = t('legal.licenses_title');
-            modalLink.innerText = 'vellium.dev/licenses';
-            modalLink.onclick = (e) => { e.preventDefault(); window.api.openExternal('https://vellium.dev/licenses'); };
-            modalBody.innerHTML = t('legal.licenses_body');
-        } else {
-            modalTitle.innerText = t('legal.privacy_title');
-            modalLink.innerText = 'vellium.dev/privacy';
-            modalLink.onclick = (e) => { e.preventDefault(); window.api.openExternal('https://vellium.dev/privacy'); };
-            modalBody.innerHTML = t('legal.privacy_body');
-        }
+        const page = LEGAL_PAGES[type] || LEGAL_PAGES.privacy;
+        const url = `https://vellium.dev/${page.slug}`;
+
+        modalTitle.innerText = t(page.title);
+        modalLink.innerText = `vellium.dev/${page.slug}`;
+        modalLink.onclick = (e) => {
+            e.preventDefault();
+            window.api.openExternal(url)
+                .catch((err) => console.error('Failed to open legal page:', err));
+        };
+        // Legal bodies are trusted, locale-controlled translation strings.
+        modalBody.innerHTML = t(page.body);
+
         legalModal.classList.add('active');
     };
 
@@ -1282,9 +1783,735 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
+    // ─── v1.0.0 settings: window close, accessibility, feedback ─────────────
+
+    const closeSelect = document.getElementById('setting-close-behavior');
+    if (closeSelect) closeSelect.value = settings.close_behavior || 'tray';
+
+    const zoomInput = document.getElementById('setting-zoom');
+    const zoomValue = document.getElementById('zoom-value');
+    const renderZoom = (value) => {
+        const parsed = Math.max(80, Math.min(150, Number.parseInt(value, 10) || 100));
+        settings.zoom = String(parsed);
+        if (zoomInput) zoomInput.value = parsed;
+        if (zoomValue) zoomValue.textContent = `${parsed}%`;
+        window.api.setZoom(String(parsed)).catch((err) => console.warn('Failed to set zoom:', err));
+        return parsed;
+    };
+
+    if (zoomInput) {
+        renderZoom(settings.zoom || '100');
+        zoomInput.addEventListener('input', (e) => renderZoom(e.target.value));
+        zoomInput.addEventListener('change', async (e) => {
+            await persistSetting('zoom', String(renderZoom(e.target.value)));
+        });
+    }
+
+    document.getElementById('btn-zoom-reset').addEventListener('click', async () => {
+        await persistSetting('zoom', String(renderZoom(100)));
+        showToast(t('toast.saved'));
+    });
+
+    const bindToggle = (id, key, apply) => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.checked = settings[key] === 'true';
+        input.addEventListener('change', async (e) => {
+            settings[key] = e.target.checked ? 'true' : 'false';
+            await persistSetting(key, settings[key]);
+            if (apply) apply();
+        });
+    };
+
+    bindToggle('setting-contrast', 'high_contrast', () => applyTheme(settings.theme));
+    bindToggle('setting-motion', 'reduce_motion', () => applyTheme(settings.theme));
+    bindToggle('setting-notify', 'notifications');
+    bindToggle('setting-sound-feedback', 'sound_feedback');
+
+    document.getElementById('btn-notify-test').addEventListener('click', async () => {
+        await window.api.showNotification(t('notify.test_title'), t('notify.test_body'));
+        showToast(t('toast.copied'));
+    });
+
+    if (closeSelect) {
+        closeSelect.addEventListener('change', async (e) => {
+            settings.close_behavior = e.target.value;
+            await persistSetting('close_behavior', e.target.value);
+            showToast(t('toast.saved'));
+        });
+    }
+
+    // Quick-task shortcut recorder (Ctrl+Alt+N by default).
+    const btnRecordLauncher = document.getElementById('btn-record-launcher');
+    const btnClearLauncher = document.getElementById('btn-clear-launcher');
+    let recordingLauncher = false;
+
+    const updateLauncherLabel = () => {
+        if (!btnRecordLauncher) return;
+        btnRecordLauncher.innerText = settings.shortcut_quick_task
+            ? formatShortcutForUser(settings.shortcut_quick_task)
+            : t('settings.shortcut_record_placeholder');
+    };
+
+    const stopLauncherRecording = () => {
+        recordingLauncher = false;
+        if (btnRecordLauncher) btnRecordLauncher.classList.remove('recording');
+        window.removeEventListener('keydown', handleLauncherKeyDown, true);
+        window.removeEventListener('blur', cancelLauncherRecording);
+    };
+
+    function cancelLauncherRecording() {
+        if (!recordingLauncher) return;
+        stopLauncherRecording();
+        updateLauncherLabel();
+    }
+
+    async function handleLauncherKeyDown(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.key === 'Escape') {
+            stopLauncherRecording();
+            updateLauncherLabel();
+            return;
+        }
+        if (['Control', 'Shift', 'Alt', 'Meta'].includes(event.key)) return;
+
+        const parts = [];
+        if (event.ctrlKey) parts.push('Control');
+        if (event.altKey) parts.push('Alt');
+        if (event.shiftKey) parts.push('Shift');
+        if (event.metaKey) parts.push('Meta');
+        if (parts.length === 0) {
+            await showCustomAlert(t('settings.shortcut_requires_modifier'));
+            return;
+        }
+        let electronKey = event.key.toUpperCase();
+        if (event.key === ' ') electronKey = 'Space';
+        if (event.key.startsWith('Arrow')) electronKey = event.key.substring(5);
+        parts.push(electronKey);
+        const shortcut = parts.join('+');
+
+        stopLauncherRecording();
+        const previousQuickTask = settings.shortcut_quick_task || '';
+        settings.shortcut_quick_task = shortcut;
+        updateLauncherLabel();
+        // Persisting re-registers both hotkeys; success also means the
+        // combination was free and is now actually active.
+        const saved = await persistSetting('shortcut_quick_task', shortcut);
+        if (!saved) {
+            settings.shortcut_quick_task = previousQuickTask;
+            updateLauncherLabel();
+            await showCustomAlert(t('settings.shortcut_error'));
+        }
+    }
+
+    if (btnRecordLauncher) {
+        updateLauncherLabel();
+        btnRecordLauncher.addEventListener('click', () => {
+            if (recordingLauncher) {
+                stopLauncherRecording();
+                updateLauncherLabel();
+                return;
+            }
+            recordingLauncher = true;
+            btnRecordLauncher.innerText = t('settings.shortcut_recording');
+            btnRecordLauncher.classList.add('recording');
+            window.addEventListener('keydown', handleLauncherKeyDown, true);
+            window.addEventListener('blur', cancelLauncherRecording);
+        });
+    }
+
+    if (btnClearLauncher) {
+        btnClearLauncher.addEventListener('click', async () => {
+            stopLauncherRecording();
+            settings.shortcut_quick_task = '';
+            await persistSetting('shortcut_quick_task', '');
+            updateLauncherLabel();
+        });
+    }
+
+    // ─── Settings section navigation ────────────────────────────────────────
+    const sections = [...document.querySelectorAll('.settings-section')];
+    const sectionLinks = [...document.querySelectorAll('.section-link[data-section]')];
+
+    const activateSettingsSection = (name, scroll = true) => {
+        sectionLinks.forEach((link) => link.classList.toggle('active', link.dataset.section === name));
+        if (!scroll) return;
+        const target = document.getElementById(`settings-${name}`);
+        if (target) target.scrollIntoView({ behavior: settings.reduce_motion === 'true' ? 'auto' : 'smooth', block: 'start' });
+    };
+
+    sectionLinks.forEach((link) => {
+        link.addEventListener('click', () => activateSettingsSection(link.dataset.section));
+    });
+
+    // The scrolling element is the views container, not the settings column, so
+    // binding to `.settings-scroll` left the scroll spy dead: the active link
+    // never followed the content.
+    const settingsScroll = document.querySelector('.views-container');
+    if (settingsScroll) {
+        let spyFrame = 0;
+        settingsScroll.addEventListener('scroll', () => {
+            if (spyFrame) return;
+            spyFrame = requestAnimationFrame(() => {
+                spyFrame = 0;
+                const top = settingsScroll.getBoundingClientRect().top + 48;
+                let active = sections.length ? sections[0].dataset.section : 'general';
+                for (const section of sections) {
+                    if (section.getBoundingClientRect().top <= top) active = section.dataset.section;
+                }
+                sectionLinks.forEach((link) => link.classList.toggle('active', link.dataset.section === active));
+            });
+        }, { passive: true });
+    }
+
+    // ─── Sidebar stats ──────────────────────────────────────────────────────
+    const updateSidebarStats = () => {
+        const profileCount = document.getElementById('stat-profiles');
+        const categoryCount = document.getElementById('stat-categories');
+        if (profileCount) profileCount.textContent = String(profiles.length);
+        if (categoryCount) categoryCount.textContent = String(categories.length);
+    };
+    updateSidebarStats();
+
+    // ─── Cloud backup card ──────────────────────────────────────────────────
+    const cloudProvider = document.getElementById('cloud-provider');
+    const cloudPath = document.getElementById('cloud-path');
+    const cloudBadge = document.getElementById('cloud-badge');
+    const cloudMeta = document.getElementById('cloud-meta');
+    const cloudHint = document.getElementById('cloud-hint');
+    const cloudAuto = document.getElementById('setting-cloud-auto');
+    let cloudState = null;
+
+    const formatSyncDate = (iso) => {
+        if (!iso) return t('cloud.never');
+        try {
+            return new Date(iso).toLocaleString(currentLang || undefined);
+        } catch (err) {
+            return iso;
+        }
+    };
+
+    const renderCloud = (status) => {
+        if (!status) return;
+        cloudState = status;
+        if (cloudProvider) cloudProvider.value = status.provider || 'none';
+        if (cloudPath) cloudPath.textContent = status.backupDir || '-';
+        if (cloudBadge) {
+            cloudBadge.textContent = status.connected ? t('cloud.connected') : t('cloud.disconnected');
+            cloudBadge.classList.toggle('on', Boolean(status.connected));
+        }
+        if (cloudMeta) {
+            const last = status.lastSync ? formatSyncDate(status.lastSync) : t('cloud.never');
+            cloudMeta.textContent = `${tf('cloud.last_sync', last)} · ${tf('cloud.backups', status.backups || 0)}`;
+        }
+        if (cloudAuto) cloudAuto.checked = status.auto !== false;
+        if (cloudHint) {
+            // Only explain the fallback when a connection is actually set up
+            // but its provider folder is missing.
+            cloudHint.hidden = !status.connected || status.available !== false;
+            cloudHint.textContent = status.connected && status.available === false
+                ? t('cloud.fallback_note')
+                : '';
+        }
+
+        const statCloud = document.getElementById('stat-cloud');
+        if (statCloud) {
+            statCloud.textContent = status.connected ? t('sidebar.cloud_on') : t('sidebar.cloud_off');
+            statCloud.classList.toggle('on', Boolean(status.connected));
+        }
+
+        const syncBtn = document.getElementById('btn-cloud-sync');
+        const restoreBtn = document.getElementById('btn-cloud-restore');
+        const disconnectBtn = document.getElementById('btn-cloud-disconnect');
+        const openBtn = document.getElementById('btn-cloud-open');
+        if (syncBtn) syncBtn.disabled = !status.connected;
+        if (restoreBtn) restoreBtn.disabled = !status.hasBackup;
+        if (disconnectBtn) disconnectBtn.disabled = !status.connected;
+        if (openBtn) openBtn.disabled = false;
+    };
+
+    const refreshCloud = async () => {
+        try {
+            renderCloud(await window.api.getCloudStatus());
+        } catch (err) {
+            console.error('Failed to read cloud status:', err);
+        }
+    };
+    await refreshCloud();
+
+    if (cloudProvider) {
+        cloudProvider.addEventListener('change', async (e) => {
+            if (e.target.value === 'none') return;
+            settings.cloud_provider = e.target.value;
+            await persistSetting('cloud_provider', e.target.value);
+            await refreshCloud();
+        });
+    }
+
+    if (cloudAuto) {
+        cloudAuto.addEventListener('change', async (e) => {
+            settings.cloud_auto = e.target.checked ? 'true' : 'false';
+            await persistSetting('cloud_auto', settings.cloud_auto);
+        });
+    }
+
+    document.getElementById('btn-cloud-choose').addEventListener('click', async () => {
+        const folder = await window.api.chooseCloudFolder();
+        if (!folder) return;
+        settings.cloud_folder = folder;
+        settings.cloud_provider = 'custom';
+        if (cloudProvider) cloudProvider.value = 'custom';
+        await persistSetting('cloud_folder', folder);
+        await persistSetting('cloud_provider', 'custom');
+        await refreshCloud();
+        showToast(t('toast.saved'));
+    });
+
+    document.getElementById('btn-cloud-connect').addEventListener('click', async () => {
+        const provider = cloudProvider ? cloudProvider.value : 'none';
+        if (provider === 'none') {
+            await showCustomAlert(t('cloud.empty_local'));
+            return;
+        }
+        let folder = settings.cloud_folder || '';
+        if (provider === 'custom') {
+            folder = await window.api.chooseCloudFolder();
+            if (!folder) return;
+        }
+        const result = await window.api.connectCloud(provider, folder);
+        renderCloud(result.status);
+        if (result.success) {
+            showToast(t('cloud.synced'));
+        } else if (result.error === 'empty_local' || result.error === 'backup_found') {
+            const restore = await showRestorePrompt();
+            if (restore) {
+                const restored = await window.api.restoreCloud();
+                if (restored.success) {
+                    showToast(t('cloud.restored'));
+                    await reloadAfterRestore();
+                } else {
+                    await showCustomAlert(t('cloud.error'));
+                }
+            } else {
+                // "Start fresh" is an explicit choice: replace the remote backup
+                // with this device's data instead of leaving the card half set up.
+                const synced = await window.api.syncCloud();
+                if (synced.status) renderCloud(synced.status);
+                showToast(synced.success ? t('cloud.synced') : t('cloud.error'));
+            }
+        } else {
+            await showCustomAlert(t('cloud.error'));
+        }
+    });
+
+    document.getElementById('btn-cloud-sync').addEventListener('click', async () => {
+        const result = await window.api.syncCloud();
+        if (result.status) renderCloud(result.status);
+        if (result.success) showToast(t('cloud.synced'));
+        else await showCustomAlert(result.error === 'empty_local' ? t('cloud.empty_local') : t('cloud.error'));
+    });
+
+    document.getElementById('btn-cloud-restore').addEventListener('click', async () => {
+        const confirmed = await showCustomConfirm(t('cloud.restore_found_desc'), t('cloud.restore_found_title'));
+        if (!confirmed) return;
+        const result = await window.api.restoreCloud();
+        if (result.success) {
+            showToast(t('cloud.restored'));
+            await reloadAfterRestore();
+        } else {
+            await showCustomAlert(t('cloud.error'));
+        }
+    });
+
+    document.getElementById('btn-cloud-disconnect').addEventListener('click', async () => {
+        const result = await window.api.disconnectCloud();
+        renderCloud(result.status);
+        showToast(t('toast.saved'));
+    });
+
+    document.getElementById('btn-cloud-open').addEventListener('click', async () => {
+        await window.api.openCloudFolder();
+    });
+
+    document.getElementById('btn-quick-backup').addEventListener('click', async () => {
+        if ((settings.cloud_provider || 'none') === 'none') {
+            switchView('settings');
+            activateSettingsSection('data');
+            return;
+        }
+        const result = await window.api.syncCloud();
+        if (result.status) renderCloud(result.status);
+        if (result.success) showToast(t('toast.sync'));
+        else showToast(t('toast.error'), 'error');
+    });
+
+    document.getElementById('btn-quick-import').addEventListener('click', () => switchView('custom'));
+
+    // ─── Documentation ──────────────────────────────────────────────────────
+    const DOCS_BASE = 'https://github.com/emirtdede/tactile/tree/main/docs';
+    const DOCS_BLOB_BASE = 'https://github.com/emirtdede/tactile/blob/main/docs/';
+    // Each card links to the Markdown file that actually documents the topic.
+    const DOC_SECTIONS = {
+        getting_started: { title: 'docs.getting_started', body: 'docs.getting_started_desc', file: 'FEATURES.md' },
+        profiles: { title: 'docs.profiles', body: 'docs.profiles_desc', file: 'FEATURES.md' },
+        sync: { title: 'docs.sync', body: 'docs.sync_desc', file: 'CLOUD_SYNC.md' },
+        shortcuts: { title: 'docs.shortcuts', body: 'docs.shortcuts_desc', file: 'FEATURES.md' },
+        privacy: { title: 'docs.privacy', body: 'docs.privacy_desc', file: 'SECURITY.md' }
+    };
+
+    const openDocInBrowser = (file) => {
+        window.api.openExternal(`${DOCS_BLOB_BASE}${file}`)
+            .catch((err) => console.error('Failed to open document:', err));
+    };
+
+    let activeDocFile = DOC_SECTIONS.getting_started.file;
+    const showDoc = (key) => {
+        const doc = DOC_SECTIONS[key] || DOC_SECTIONS.getting_started;
+        activeDocFile = doc.file;
+        const title = document.getElementById('doc-body-title');
+        const text = document.getElementById('doc-body-text');
+        if (title) title.textContent = t(doc.title);
+        if (text) text.textContent = t(doc.body);
+        document.querySelectorAll('.section-link[data-docs]').forEach((link) => {
+            link.classList.toggle('active', link.dataset.docs === key);
+        });
+        const body = document.getElementById('doc-body');
+        if (body) body.scrollIntoView({ behavior: settings.reduce_motion === 'true' ? 'auto' : 'smooth', block: 'nearest' });
+    };
+
+    document.querySelectorAll('[data-docs]').forEach((element) => {
+        element.addEventListener('click', () => showDoc(element.dataset.docs));
+    });
+
+    const docOpenButton = document.getElementById('btn-doc-open');
+    if (docOpenButton) {
+        docOpenButton.addEventListener('click', () => openDocInBrowser(activeDocFile));
+    }
+    showDoc('getting_started');
+
+    document.getElementById('btn-docs-github').addEventListener('click', () => {
+        window.api.openExternal(`${DOCS_BASE}`).catch((err) => console.error('Failed to open docs:', err));
+    });
+
+    // ─── Diagnostics ────────────────────────────────────────────────────────
+    let diagnosticsState = null;
+
+    const renderDiagnostics = (data) => {
+        diagnosticsState = data;
+        const set = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        };
+        set('diag-os', `${data.platform === 'win32' ? 'Windows' : data.platform === 'darwin' ? 'macOS' : 'Linux'} ${data.osRelease} (${data.arch})`);
+        set('diag-version', data.version);
+        set('diag-app', `Tactile ${data.version} (Electron ${data.electron})`);
+        set('diag-locale', `${data.locale}${data.language ? ` / ${data.language}` : ''}`);
+        set('diag-data-dir', data.dataDir);
+
+        const health = (element, ok) => {
+            if (!element) return;
+            element.textContent = ok ? t('diag.ok') : t('diag.warn');
+            element.classList.toggle('warn', !ok);
+        };
+        health(document.getElementById('diag-db'), data.dbOk);
+        health(document.getElementById('diag-hook'), data.hookOk);
+        health(document.getElementById('diag-tray'), data.trayOk);
+        health(document.getElementById('subnav-diag-db'), data.dbOk);
+        health(document.getElementById('subnav-diag-hook'), data.hookOk);
+        health(document.getElementById('subnav-diag-tray'), data.trayOk);
+    };
+
+    const diagnosticsText = () => {
+        if (!diagnosticsState) return '';
+        const d = diagnosticsState;
+        return [
+            'Tactile diagnostics',
+            `Version: ${d.version}`,
+            `Electron: ${d.electron}`,
+            `Platform: ${d.platform} ${d.osRelease} (${d.arch})`,
+            `Locale: ${d.locale}`,
+            `Language: ${d.language}`,
+            `Data folder: ${d.dataDir}`,
+            `Database: ${d.dbOk ? 'ok' : 'failed'}`,
+            `Keyboard hook: ${d.hookOk ? 'ok' : 'failed'}`,
+            `Tray: ${d.trayOk ? 'ok' : 'failed'}`,
+            `Cloud: ${d.cloud.provider} (${d.cloud.backupDir})`,
+            `Memory: ${d.memoryMB} MB`
+        ].join('\n');
+    };
+
+    const refreshDiagnostics = async () => {
+        try {
+            renderDiagnostics(await window.api.getDiagnostics());
+        } catch (err) {
+            console.error('Failed to collect diagnostics:', err);
+        }
+    };
+    await refreshDiagnostics();
+
+    document.getElementById('btn-diag-refresh').addEventListener('click', refreshDiagnostics);
+    document.getElementById('btn-diag-copy').addEventListener('click', async () => {
+        await window.api.copyText(diagnosticsText());
+        showToast(t('diag.copied'));
+    });
+    document.getElementById('btn-diag-export').addEventListener('click', async () => {
+        const result = await window.api.saveDiagnostics(diagnosticsText());
+        if (result.success) showToast(t('diag.exported'));
+    });
+    document.getElementById('btn-diag-logs').addEventListener('click', () => window.api.openLogsFolder());
+    document.getElementById('btn-diag-report').addEventListener('click', () => {
+        window.api.openExternal('https://github.com/emirtdede/tactile/issues/new').catch((err) => console.error('Failed to open issues:', err));
+    });
+
+    // ─── Support and about links ────────────────────────────────────────────
+    const GITHUB_URL = 'https://github.com/emirtdede/tactile';
+    const SPONSOR_URL = 'https://github.com/sponsors/emirtdede';
+
+    const openExternalSafe = (url) => window.api.openExternal(url)
+        .catch((err) => console.error('Failed to open external link:', err));
+
+    document.getElementById('btn-gh-repo').addEventListener('click', () => openExternalSafe(GITHUB_URL));
+    document.getElementById('btn-sponsor').addEventListener('click', () => openExternalSafe(SPONSOR_URL));
+    document.getElementById('btn-subnav-github').addEventListener('click', () => openExternalSafe(GITHUB_URL));
+    document.getElementById('btn-subnav-sponsor').addEventListener('click', () => openExternalSafe(SPONSOR_URL));
+    document.getElementById('btn-subnav-docs').addEventListener('click', () => switchView('docs'));
+    document.getElementById('btn-about-github').addEventListener('click', () => openExternalSafe(GITHUB_URL));
+    document.getElementById('btn-about-sponsor').addEventListener('click', () => openExternalSafe(SPONSOR_URL));
+    document.getElementById('btn-about-docs').addEventListener('click', () => switchView('docs'));
+    document.getElementById('btn-support-issue').addEventListener('click', () => openExternalSafe(`${GITHUB_URL}/issues/new`));
+    document.getElementById('btn-support-email').addEventListener('click', () => openExternalSafe('mailto:support@vellium.dev'));
+    document.getElementById('btn-support-copy').addEventListener('click', async () => {
+        await window.api.copyText(diagnosticsText());
+        showToast(t('toast.copied'));
+    });
+
+    document.getElementById('btn-about-github').title = t('about.sponsor_desc');
+    document.getElementById('btn-about-sponsor').title = t('about.sponsor_desc');
+    document.getElementById('btn-web-site').title = t('about.website_desc');
+
+    // ─── Updates ────────────────────────────────────────────────────────────
+    const updatesMeta = document.getElementById('updates-meta');
+    const updateInstall = document.getElementById('btn-update-install');
+    const updateProgress = document.getElementById('update-progress');
+    const updateProgressBar = document.getElementById('update-progress-bar');
+
+    const setUpdateMeta = (text) => {
+        if (updatesMeta) updatesMeta.textContent = text;
+    };
+    setUpdateMeta(tf('settings.updates_current', app_version || ''));
+
+    const renderUpdateState = (state) => {
+        if (!state) return;
+        switch (state.state) {
+            case 'checking':
+                setUpdateMeta(t('settings.updates_checking'));
+                break;
+            case 'latest':
+                setUpdateMeta(t('settings.updates_none'));
+                break;
+            case 'available':
+                setUpdateMeta(tf('settings.updates_available', state.version || ''));
+                if (updateInstall) updateInstall.hidden = false;
+                break;
+            case 'downloading':
+                setUpdateMeta(tf('settings.updates_downloading', state.percent || 0));
+                if (updateProgress) updateProgress.hidden = false;
+                if (updateProgressBar) updateProgressBar.style.width = `${state.percent || 0}%`;
+                break;
+            case 'ready':
+                setUpdateMeta(t('settings.updates_ready'));
+                break;
+            case 'store':
+                setUpdateMeta(t('settings.updates_store'));
+                break;
+            case 'development':
+                setUpdateMeta(tf('settings.updates_current', state.version || app_version || ''));
+                break;
+            case 'error':
+                setUpdateMeta(t('settings.updates_error'));
+                break;
+            default:
+                break;
+        }
+    };
+
+    window.api.onUpdateStatus((state) => renderUpdateState(state));
+
+    document.getElementById('btn-update-check').addEventListener('click', async () => {
+        setUpdateMeta(t('settings.updates_checking'));
+        const result = await window.api.checkForUpdates();
+        if (result.state === 'store') renderUpdateState({ state: 'store' });
+        else if (result.state === 'development' || result.state === 'unavailable') renderUpdateState({ state: 'development', version: result.version });
+        else if (result.state === 'error') renderUpdateState({ state: 'error' });
+    });
+
+    if (updateInstall) {
+        updateInstall.addEventListener('click', async () => {
+            const result = await window.api.downloadUpdate();
+            if (!result.success) renderUpdateState({ state: 'error' });
+        });
+    }
+
+    // ─── Welcome wizard ─────────────────────────────────────────────────────
+    const wizardOverlay = document.getElementById('wizard-overlay');
+    const wizardSteps = ['language', 'theme', 'welcome', 'tour'];
+    let wizardIndex = 0;
+    let wizardTheme = settings.theme || 'system';
+
+    const wizardLanguage = document.getElementById('wizard-language');
+    if (wizardLanguage) {
+        wizardLanguage.innerHTML = '';
+        for (const lang of getAvailableLanguages()) {
+            const option = document.createElement('option');
+            option.value = lang.code;
+            option.textContent = lang.name;
+            wizardLanguage.appendChild(option);
+        }
+        wizardLanguage.value = savedLang;
+        wizardLanguage.addEventListener('change', async (e) => {
+            if (!isSupportedLang(e.target.value)) return;
+            setLang(e.target.value);
+            applyDocumentLanguage();
+            applyTranslations();
+            settings.language = e.target.value;
+            updateVersionLabel();
+            await persistSetting('language', e.target.value);
+            updateWizard();
+        });
+    }
+
+    const wizardProgress = document.getElementById('wizard-progress');
+    const wizardStepCount = document.getElementById('wizard-step-count');
+    const wizardNext = document.getElementById('wizard-next');
+    const wizardBack = document.getElementById('wizard-back');
+
+    const markWizardTheme = (choice) => {
+        wizardTheme = choice;
+        document.querySelectorAll('.theme-choice').forEach((button) => {
+            button.classList.toggle('active', button.dataset.themeChoice === choice);
+        });
+        const row = document.getElementById('wizard-color-row');
+        if (row) row.hidden = choice !== 'custom';
+    };
+
+    document.querySelectorAll('.theme-choice').forEach((button) => {
+        button.addEventListener('click', () => markWizardTheme(button.dataset.themeChoice));
+    });
+
+    document.getElementById('btn-wizard-color').addEventListener('click', async () => {
+        const input = document.getElementById('wizard-custom-color');
+        const value = normalizeHex(input ? input.value : '');
+        if (!value) {
+            await showCustomAlert(t('settings.invalid_color'));
+            return;
+        }
+        settings.custom_color = value;
+        if (input) input.value = value;
+        applyTheme('custom');
+        // Persist immediately: choosing a colour and then closing the wizard
+        // used to lose the pick on the next launch.
+        await persistSetting('custom_color', value);
+        showToast(t('toast.saved'));
+    });
+
+    const updateWizard = () => {
+        const step = wizardSteps[wizardIndex];
+        document.querySelectorAll('.wizard-step').forEach((section) => {
+            section.classList.toggle('active', section.dataset.wizardStep === step);
+        });
+        if (wizardProgress) {
+            wizardProgress.style.setProperty('--progress', `${((wizardIndex + 1) / wizardSteps.length) * 100}%`);
+        }
+        if (wizardStepCount) {
+            wizardStepCount.textContent = tf('wizard.of', wizardIndex + 1, wizardSteps.length);
+        }
+        if (wizardBack) wizardBack.hidden = wizardIndex === 0;
+        if (wizardNext) {
+            wizardNext.textContent = wizardIndex === wizardSteps.length - 1
+                ? t('wizard.start')
+                : t('wizard.next');
+        }
+        markWizardTheme(wizardTheme);
+    };
+
+    const finishWizard = async () => {
+        settings.onboarding_done = 'true';
+        await persistSetting('onboarding_done', 'true');
+        if (wizardOverlay) wizardOverlay.classList.remove('active');
+    };
+
+    if (wizardNext) {
+        wizardNext.addEventListener('click', async () => {
+            if (wizardIndex === 1) {
+                settings.theme = wizardTheme;
+                applyTheme(wizardTheme);
+                await persistSetting('theme', wizardTheme);
+                await applyAppIcon(settings.app_icon || 'theme');
+            }
+            if (wizardIndex >= wizardSteps.length - 1) {
+                await finishWizard();
+                return;
+            }
+            wizardIndex += 1;
+            updateWizard();
+        });
+    }
+
+    if (wizardBack) {
+        wizardBack.addEventListener('click', () => {
+            wizardIndex = Math.max(0, wizardIndex - 1);
+            updateWizard();
+        });
+    }
+
+    document.getElementById('wizard-skip').addEventListener('click', finishWizard);
+
+    if (settings.onboarding_done !== 'true' && wizardOverlay) {
+        wizardIndex = 0;
+        wizardOverlay.classList.add('active');
+        updateWizard();
+    }
+
+    // ─── Restored settings ──────────────────────────────────────────────────
+    async function reloadAfterRestore() {
+        try {
+            settings = await window.api.getSettings();
+            profiles = await window.api.getProfiles();
+        } catch (err) {
+            console.error('Failed to reload restored data:', err);
+        }
+        applyTheme(settings.theme || 'system');
+        if (themeSelect) themeSelect.value = settings.theme || 'system';
+        syncCustomColorRow();
+        await loadAndRenderCategories();
+        loadAndRenderMaterials();
+        renderProfiles(current_view);
+        updateActiveProfileBadge();
+        updateSidebarStats();
+        await refreshCloud();
+        await refreshDiagnostics();
+        showToast(t('toast.restore'));
+    }
+
+    window.api.onSettingsRestored(() => {
+        reloadAfterRestore().catch((err) => console.error('Failed to refresh restored state:', err));
+    });
+
+    // ─── Cross-navigation (tray, jump list, quick task) ─────────────────────
+    window.api.onNavigate((view) => {
+        if (!view) return;
+        switchView(view);
+        if (view === 'settings') activateSettingsSection('general', false);
+        if (view === 'diagnostics') refreshDiagnostics();
+    });
+
+    document.getElementById('titlebar-context').textContent = t('nav.sounds');
+
     // Load initial categories
     await loadAndRenderCategories();
-    
+    updateSidebarStats();
+
     // Set initial view to first available category
     if (categories && categories.length > 0) {
         current_view = categories[0].id;
@@ -1300,7 +2527,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function switchView(view) {
     current_view = view;
-    
+
+    // Switching views always starts from an unfiltered list. Only the static
+    // sidebar items cleared the search box; a category button left the old
+    // query in place, so the new category looked empty (or half-filtered).
+    const searchInput = document.getElementById('search-input');
+    if (searchInput && searchInput.value !== '') {
+        searchInput.value = '';
+    }
+    const btnClearSearch = document.getElementById('btn-clear-search');
+    if (btnClearSearch) btnClearSearch.style.display = 'none';
+
     // Hide all views first
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     
@@ -1320,14 +2557,37 @@ function switchView(view) {
         }
     }
 
-    // Explicitly sync the sidebar active highlighting
-    document.querySelectorAll('.nav-item').forEach(b => {
-        if (b.getAttribute('data-view') === view) {
-            b.classList.add('active');
-        } else {
-            b.classList.remove('active');
-        }
+    const baseView = isCategory ? 'profiles' : view;
+
+    // Primary rail: profile categories all light up the library entry.
+    document.querySelectorAll('.rail-item').forEach((button) => {
+        button.classList.toggle('active', button.getAttribute('data-view') === baseView);
     });
+
+    // Dynamic category list in the second sidebar.
+    document.querySelectorAll('.category-list .nav-item').forEach((button) => {
+        button.classList.toggle('active', button.getAttribute('data-view') === view);
+    });
+
+    // Second sidebar panel follows the primary destination.
+    const panelName = ['settings', 'docs', 'diagnostics', 'about'].includes(baseView) ? baseView : 'profiles';
+    document.querySelectorAll('.subnav-panel').forEach((panel) => {
+        panel.classList.toggle('active', panel.getAttribute('data-panel') === panelName);
+    });
+
+    const contextKey = {
+        profiles: 'nav.sound_profiles',
+        custom: 'nav.import',
+        settings: 'nav.settings',
+        docs: 'nav.documents',
+        diagnostics: 'nav.diagnostics',
+        about: 'nav.about'
+    }[baseView] || 'nav.sounds';
+    const context = document.getElementById('titlebar-context');
+    if (context) context.textContent = t(contextKey);
+
+    const toolbar = document.getElementById('main-toolbar');
+    if (toolbar) toolbar.hidden = !(baseView === 'profiles' || baseView === 'custom');
 }
 
 function renderProfiles(type = current_view) {
@@ -1340,15 +2600,17 @@ function renderProfiles(type = current_view) {
     container.innerHTML = '';
 
     const isCustomView = type === 'custom';
-    
-    // Get currently active material filter chip
-    const activeChip = document.querySelector('.chip.active');
-    const activeChipText = activeChip ? activeChip.innerText.trim().toUpperCase() : 'ALL';
-    
-    // Support comparing against translated variants of 'All' / 'Tümü'
-    const isAllFilter = activeChipText === 'ALL' || 
-                        activeChipText === 'TÜMÜ' || 
-                        activeChipText === t('filter.all').toUpperCase();
+
+    // A category's id is the slug of the name it had when it was created. After
+    // renameCategory() the id keeps its old slug while every profile's `type`
+    // gets the new name, so comparing against the id made the whole view go
+    // blank. Match on the category's current name instead.
+    const viewCategory = categories.find((entry) => entry.id === type);
+    const viewType = viewCategory ? viewCategory.name : type;
+
+    // Read the active material filter from its stable data value.
+    const activeMaterial = getActiveMaterialFilter();
+    const isAllFilter = activeMaterial === ALL_MATERIALS;
     
     // Read search query
     const searchInputEl = document.getElementById('search-input');
@@ -1370,12 +2632,12 @@ function renderProfiles(type = current_view) {
         // Apply material filter
         if (!isAllFilter) {
             const pMat = (p.material || '').toUpperCase();
-            if (pMat !== activeChipText) return false;
+            if (pMat !== activeMaterial.toUpperCase()) return false;
         }
 
         if (isCustomView) return p.is_custom;
-        const normalizedType = p.type.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        const normalizedView = type.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const normalizedType = String(p.type || '').toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const normalizedView = String(viewType || '').toLowerCase().replace(/[^a-z0-9]/g, '-');
         return normalizedType === normalizedView;
     });
 
@@ -1400,28 +2662,38 @@ function renderProfiles(type = current_view) {
         card.addEventListener('drop', async (e) => {
             e.preventDefault();
             const draggedId = e.dataTransfer.getData('text/plain');
-            if (draggedId && draggedId !== p.id) {
-                // Reorder profiles
-                const draggedIdx = profiles.findIndex(x => x.id === draggedId);
-                const targetIdx = profiles.findIndex(x => x.id === p.id);
-                if (draggedIdx !== -1 && targetIdx !== -1) {
-                    const temp = profiles[draggedIdx];
-                    profiles.splice(draggedIdx, 1);
-                    profiles.splice(targetIdx, 0, temp);
-                    
-                    // Save new order to database
-                    await window.api.updateProfileOrder(profiles.map(x => x.id));
-                    renderProfiles(type);
-                }
+            if (!draggedId || draggedId === p.id) return;
+
+            // Reorder profiles
+            const draggedIdx = profiles.findIndex(x => x.id === draggedId);
+            let targetIdx = profiles.findIndex(x => x.id === p.id);
+            if (draggedIdx === -1 || targetIdx === -1) return;
+
+            const temp = profiles[draggedIdx];
+            profiles.splice(draggedIdx, 1);
+            // Removing the dragged item shifts every later index down by one.
+            // Without this adjustment the item lands one slot too far right.
+            if (draggedIdx < targetIdx) targetIdx -= 1;
+            profiles.splice(targetIdx, 0, temp);
+
+            try {
+                await window.api.updateProfileOrder(profiles.map(x => x.id));
+            } catch (err) {
+                console.error('Failed to save profile order:', err);
             }
+            renderProfiles(type);
         });
+
+        const addSoundButton = isCustomView
+            ? `<button class="btn" data-action="add-sound">${escapeHtml(t('modal.add_sound_title'))}</button>`
+            : '';
 
         card.innerHTML = `
             <div class="card-header" style="position: relative;">
-                <div class="card-title">${p.name}</div>
+                <div class="card-title">${escapeHtml(p.name)}</div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <div class="card-type">${p.material}</div>
-                    <button class="btn-edit-profile" onclick="window.openEditProfileModal('${p.id}')" style="background:transparent; border:none; cursor:pointer; color:var(--accent-gold); display:flex; align-items:center; justify-content:center; padding: 2px;">
+                    <div class="card-type">${escapeHtml(p.material || '')}</div>
+                    <button class="btn-edit-profile" data-action="edit" title="${escapeHtml(t('modal.edit_title'))}" aria-label="${escapeHtml(t('modal.edit_title'))}" style="background:transparent; border:none; cursor:pointer; color:(--accent-text); display:flex; align-items:center; justify-content:center; padding: 2px;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path>
@@ -1429,181 +2701,239 @@ function renderProfiles(type = current_view) {
                     </button>
                 </div>
             </div>
-            <div class="card-desc">${p.description || t('card.default_desc')}</div>
+            <div class="card-desc">${escapeHtml(p.description || t('card.default_desc'))}</div>
             <div class="card-actions">
-                <button class="btn" onclick="previewProfile('${p.id}')">${t('btn.preview')}</button>
-                <button class="btn ${isActive ? 'primary' : ''}" onclick="setActiveProfile('${p.id}')">
-                    ${isActive ? t('btn.active') : t('btn.set_active')}
+                <button class="btn" data-action="preview">${escapeHtml(t('btn.preview'))}</button>
+                <button class="btn ${isActive ? 'primary' : ''}" data-action="activate">
+                    ${escapeHtml(isActive ? t('btn.active') : t('btn.set_active'))}
                 </button>
+                ${addSoundButton}
             </div>
         `;
         container.appendChild(card);
     });
 
     if (filtered.length === 0) {
-        container.innerHTML = `<p style="color:var(--text-secondary); grid-column: 1/-1;">${t('profiles.empty')}</p>`;
+        const emptyState = document.createElement('p');
+        emptyState.style.color = 'var(--text-secondary)';
+        emptyState.style.gridColumn = '1/-1';
+        emptyState.innerText = t('profiles.empty');
+        container.appendChild(emptyState);
+    }
+}
+
+function handleProfileGridClick(event) {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+
+    const card = button.closest('.card');
+    const id = card ? card.getAttribute('data-id') : null;
+    if (!id) return;
+
+    const action = button.getAttribute('data-action');
+    if (action === 'edit') {
+        window.openEditProfileModal(id).catch((err) => console.error('Failed to open edit modal:', err));
+    } else if (action === 'preview') {
+        previewProfile(id).catch((err) => console.error('Failed to preview profile:', err));
+    } else if (action === 'activate') {
+        setActiveProfile(id).catch((err) => console.error('Failed to activate profile:', err));
+    } else if (action === 'add-sound') {
+        // Synchronous: just opens the modal, no promise to await.
+        window.openAddSoundModal(id);
+    }
+}
+
+function stopActivePreview() {
+    if (!active_preview_howl) return;
+    try {
+        active_preview_howl.stop();
+        active_preview_howl.unload();
+    } catch (err) {
+        // The instance may already be unloaded.
+    }
+    active_preview_howl = null;
+}
+
+function setPreviewVolume(volume) {
+    if (!active_preview_howl) return;
+    try {
+        active_preview_howl.volume(volume);
+    } catch (err) {
+        // The preview may have ended between the check and the call.
     }
 }
 
 async function setActiveProfile(id) {
-    if (active_preview_howl) {
-        try {
-            active_preview_howl.stop();
-            active_preview_howl.unload();
-        } catch (e) {}
-        active_preview_howl = null;
+    stopActivePreview();
+
+    const requestId = ++activation_request_id;
+    const previousId = active_profile_id;
+    active_profile_id = id;
+
+    let result;
+    try {
+        result = await window.api.setActiveProfile(id);
+    } catch (err) {
+        console.error('Failed to activate profile:', err);
+        result = { success: false };
     }
 
-    active_profile_id = id;
-    await window.api.setActiveProfile(id);
-    
+    // A newer activation won the race; don't touch the UI.
+    if (requestId !== activation_request_id) return;
+
+    if (!result || !result.success) {
+        active_profile_id = previousId;
+        await showCustomAlert(t('msg.profile_activate_failed'));
+        return;
+    }
+
     // Update card states in-place without re-rendering (preserves scroll position)
     document.querySelectorAll('.card[data-id]').forEach(card => {
-        const cardId = card.getAttribute('data-id');
-        const isActive = cardId === id;
-        
-        // Toggle active class on the card
+        const isActive = card.getAttribute('data-id') === id;
         card.classList.toggle('active', isActive);
-        
-        // Update the activate/active button
-        const actionBtns = card.querySelectorAll('.card-actions .btn');
-        const activateBtn = actionBtns[1]; // Second button is the activate button
+
+        // The activate button is addressed by its data-action, not by index.
+        const activateBtn = card.querySelector('[data-action="activate"]');
         if (activateBtn) {
             activateBtn.classList.toggle('primary', isActive);
             activateBtn.innerText = isActive ? t('btn.active') : t('btn.set_active');
         }
     });
-    
+
     updateActiveProfileBadge();
+
+    const active = profiles.find((profile) => profile.id === id);
+    if (active && settings.notifications !== 'false') {
+        window.api.showNotification(t('notify.profile_title'), tf('notify.profile_body', active.name))
+            .catch((err) => console.warn('Failed to show profile notification:', err));
+    }
+    if (settings.sound_feedback !== 'false') {
+        try {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 660;
+            gain.gain.value = 0.04;
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.start();
+            oscillator.stop(context.currentTime + 0.07);
+            oscillator.onended = () => context.close().catch(() => {});
+        } catch (err) {
+            // Audio feedback is decorative; never block activation.
+        }
+    }
 }
 
 function updateActiveProfileBadge() {
     const active = profiles.find(p => p.id === active_profile_id);
-    document.getElementById('active-profile-name').innerText = active ? active.name : t('toolbar.no_profile');
+    const badge = document.getElementById('active-profile-name');
+    badge.innerText = active ? active.name : t('toolbar.no_profile');
+    badge.title = active ? tf('tray.status_active', active.name) : t('toolbar.no_profile');
+}
+
+function updateVersionLabel() {
+    const el = document.getElementById('app-version-display');
+    if (el) el.innerText = app_version ? tf('about.version', app_version) : '';
+    const pill = document.getElementById('settings-version');
+    if (pill) pill.textContent = app_version ? `v${app_version}` : '';
 }
 
 async function previewProfile(id) {
     // Stop any currently playing preview
-    if (active_preview_howl) {
-        try {
-            active_preview_howl.stop();
-            active_preview_howl.unload();
-        } catch (e) {
-            console.warn("Error stopping previous preview:", e);
-        }
-        active_preview_howl = null;
-    }
+    stopActivePreview();
 
-    const details = await window.api.getProfileDetails(id);
-    if (!details) return;
-    
-    // Play a preview sound using Web Audio API (CORS-free via Base64 sent from Main Process)
-    const play_type = details.key_define_type || 'single';
-    const vol = parseInt(document.getElementById('global-volume').value) / 100;
-    const srcPath = details.sound_base64;
-    if (!srcPath) {
-        console.error("Preview failed: sound_base64 is not populated by Main Process");
+    const requestId = ++preview_request_id;
+
+    let details;
+    try {
+        details = await window.api.getProfileDetails(id);
+    } catch (err) {
+        console.error('Failed to load profile details for preview:', err);
+        await showCustomAlert(t('msg.preview_failed'));
         return;
     }
-    
-    if (play_type === 'single') {
-        const format = details.sound_format ? [details.sound_format] : undefined;
-        const defines = details.defines || {}; 
-        
-        // Ensure sprite values are formatted as arrays [start, duration]
-        let formattedSprite = {};
-        for (const [key, val] of Object.entries(defines)) {
-            if (Array.isArray(val) && val.length >= 2) {
-                formattedSprite[key] = [val[0], val[1]];
+
+    // A newer preview request (or the user stopped it) supersedes this one.
+    if (requestId !== preview_request_id || !details) return;
+
+    // Play a preview sound using Web Audio API (CORS-free via Base64 sent from Main Process)
+    const playType = details.key_define_type === 'multi' ? 'multi' : 'single';
+    const volume = getVolume();
+    const srcPath = details.sound_base64;
+
+    if (!srcPath) {
+        console.error('Preview failed: no sound payload was provided by the main process.');
+        await showCustomAlert(t('msg.preview_failed'));
+        return;
+    }
+
+    // Declared before `options` so the error callbacks below never touch a
+    // binding that is still in its temporal dead zone if Howler reports a
+    // failure synchronously.
+    let previewHowl = null;
+
+    const options = {
+        src: [srcPath],
+        volume,
+        html5: false, // Safe with Web Audio since we are using a Base64 data URI
+        preload: true,
+        onloaderror: (soundId, err) => {
+            console.error('Preview load error:', err);
+            releasePreview(previewHowl);
+        },
+        onplayerror: (soundId, err) => {
+            console.error('Preview play error:', err);
+            releasePreview(previewHowl);
+        }
+    };
+
+    let spriteId = null;
+
+    if (playType === 'single') {
+        if (details.sound_format) options.format = [details.sound_format];
+
+        const defines = details.defines && typeof details.defines === 'object' ? details.defines : {};
+        const sprite = {};
+        for (const [key, value] of Object.entries(defines)) {
+            if (Array.isArray(value) && value.length >= 2) {
+                sprite[key] = [value[0], value[1]];
             }
         }
 
-        const testKey = formattedSprite['57'] ? '57' : Object.keys(formattedSprite)[0];
-        if (testKey) {
-            const previewHowl = new Howl({
-                src: [srcPath],
-                format: format,
-                sprite: formattedSprite,
-                volume: vol,
-                html5: false, // Safe with Web Audio since we are using Base64 Data URI
-                preload: true,
-                onloaderror: (id, err) => {
-                    console.error("Preview load error (single-sprite):", err);
-                    previewHowl.unload();
-                    if (active_preview_howl === previewHowl) active_preview_howl = null;
-                }
-            });
-            active_preview_howl = previewHowl;
-            previewHowl.once('load', () => {
-                previewHowl.play(testKey);
-            });
-            previewHowl.once('end', () => {
-                previewHowl.unload();
-                if (active_preview_howl === previewHowl) active_preview_howl = null;
-            });
-            previewHowl.once('playerror', () => {
-                previewHowl.unload();
-                if (active_preview_howl === previewHowl) active_preview_howl = null;
-            });
-        } else {
-            const previewHowl = new Howl({
-                src: [srcPath],
-                format: format,
-                volume: vol,
-                html5: false,
-                preload: true,
-                onloaderror: (id, err) => {
-                    console.error("Preview load error (single-no-sprite):", err);
-                    previewHowl.unload();
-                    if (active_preview_howl === previewHowl) active_preview_howl = null;
-                }
-            });
-            active_preview_howl = previewHowl;
-            previewHowl.once('load', () => {
-                // For custom spriteless profile, ensure __default exists
-                if (!previewHowl._sprite || !previewHowl._sprite.__default) {
-                    previewHowl._sprite = previewHowl._sprite || {};
-                    if (previewHowl._duration > 0) {
-                        previewHowl._sprite.__default = [0, previewHowl._duration * 1000];
-                    }
-                }
-                previewHowl.play();
-            });
-            previewHowl.once('end', () => {
-                previewHowl.unload();
-                if (active_preview_howl === previewHowl) active_preview_howl = null;
-            });
-            previewHowl.once('playerror', () => {
-                previewHowl.unload();
-                if (active_preview_howl === previewHowl) active_preview_howl = null;
-            });
+        if (Object.keys(sprite).length > 0) {
+            options.sprite = sprite;
+            spriteId = sprite['57'] ? '57' : Object.keys(sprite)[0];
         }
-    } else {
-        // Multi
-        const previewHowl = new Howl({
-            src: [srcPath],
-            volume: vol,
-            html5: false,
-            preload: true,
-            onloaderror: (id, err) => {
-                console.error("Preview load error (multi):", err);
-                previewHowl.unload();
-                if (active_preview_howl === previewHowl) active_preview_howl = null;
-            }
-        });
-        active_preview_howl = previewHowl;
-        previewHowl.once('load', () => {
-            previewHowl.play();
-        });
-        previewHowl.once('end', () => {
-            previewHowl.unload();
-            if (active_preview_howl === previewHowl) active_preview_howl = null;
-        });
-        previewHowl.once('playerror', () => {
-            previewHowl.unload();
-            if (active_preview_howl === previewHowl) active_preview_howl = null;
-        });
     }
+
+    previewHowl = new Howl(options);
+    active_preview_howl = previewHowl;
+
+    previewHowl.once('load', () => {
+        if (requestId !== preview_request_id) {
+            releasePreview(previewHowl);
+            return;
+        }
+        // A spriteless pack plays the whole file; a sprite pack plays one sample.
+        if (spriteId) previewHowl.play(spriteId);
+        else previewHowl.play();
+    });
+
+    previewHowl.once('end', () => {
+        releasePreview(previewHowl);
+    });
+}
+
+function releasePreview(howl) {
+    if (!howl) return;
+    try {
+        howl.unload();
+    } catch (err) {
+        // Already unloaded.
+    }
+    if (active_preview_howl === howl) active_preview_howl = null;
 }
 
 function rasterizeSvgToPng(svgUrl, size = 256) {

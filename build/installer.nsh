@@ -1,11 +1,20 @@
 !addincludedir build
 
 !ifndef BUILD_UNINSTALLER
+    ; Variables must exist before the functions that use them are compiled, and
+    ; installer-languages.nsh defines those functions, so declare them first.
     Var TactileSetupSmallIcon
     Var TactileSetupBigIcon
     Var TactileSetupIconPrepared
     Var TactileShortcutLightIconPath
     Var TactileShortcutDarkIconPath
+    Var TactileLangCombo
+    Var TactileLangLabel
+    Var TactileSelectedLanguage
+
+    !include LogicLib.nsh
+    !include nsDialogs.nsh
+    !include installer-languages.nsh
 
     !define MUI_CUSTOMFUNCTION_GUIINIT PrimeTactileSetupWindowIcon
     !define MUI_PAGE_CUSTOMFUNCTION_SHOW StartTactileSetupWindowIconRefresh
@@ -17,11 +26,54 @@
     !macroend
 !endif
 
+!ifndef BUILD_UNINSTALLER
+    ; Adds a language to the setup combobox. Declared at the top level because
+    ; NSIS does not allow a macro definition inside another macro.
+    !macro TACTILE_ADD_LANG TACTILE_CODE TACTILE_LABEL
+        ${NSD_CB_AddString} $TactileLangCombo "${TACTILE_LABEL}"
+    !macroend
+!endif
+
 !macro customHeader
     !ifndef BUILD_UNINSTALLER
     !define TACTILE_WM_SETICON 0x0080
     !define TACTILE_IMAGE_ICON 1
     !define TACTILE_LR_LOADFROMFILE 0x00000010
+
+    ; The very first page of the wizard: users pick the setup and app language
+    ; before anything touches the disk. The Windows display language is
+    ; preselected, English is the fallback.
+    Function TactileLanguagePageCreate
+        !insertmacro MUI_HEADER_TEXT "Choose your language" "Tactile and this setup wizard will use the language you select. You can change it later in Settings."
+        nsDialogs::Create 1018
+        Pop $0
+        ${If} $0 == error
+            Abort
+        ${EndIf}
+
+        ${NSD_CreateLabel} 0 0 100% 24u "Select the language for Tactile. Windows display language is preselected when it is available; otherwise English is used."
+        Pop $TactileLangLabel
+
+        ${NSD_CreateComboBox} 0 34u 100% 120u ""
+        Pop $TactileLangCombo
+        !insertmacro TACTILE_LANGUAGE_ITEMS
+
+        Call TactileDetectInstallerLanguage
+        Call TactileSelectInstallerLanguage
+
+        nsDialogs::Show
+    FunctionEnd
+
+    Function TactileLanguagePageLeave
+        SendMessage $TactileLangCombo ${CB_GETCURSEL} 0 0 $0
+        ${If} $0 == -1
+            StrCpy $TactileSelectedLanguage "en"
+        ${Else}
+            Push $0
+            Call TactileLanguageCodeFromIndex
+            Pop $TactileSelectedLanguage
+        ${EndIf}
+    FunctionEnd
 
     Function PrepareTactileSetupWindowIcon
         StrCmp $TactileSetupIconPrepared "1" prepared
@@ -91,6 +143,12 @@
     !endif
 !macroend
 
+!macro customWelcomePage
+    !ifndef BUILD_UNINSTALLER
+    Page custom TactileLanguagePageCreate TactileLanguagePageLeave
+    !endif
+!macroend
+
 !macro customInstall
     SetRegView 64
     ReadRegStr $0 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\X64" "Version"
@@ -109,6 +167,19 @@
     DetailPrint "VC++ Redistributable installed"
     !ifndef BUILD_UNINSTALLER
         Call InstallTactileShortcutIconBridge
+
+        ; Hand the language picked on the first wizard page to the app. The main
+        ; process reads this once on first launch and deletes it.
+        CreateDirectory "$APPDATA\Tactile"
+        StrCmp $TactileSelectedLanguage "" 0 tactileWriteLanguage
+        StrCpy $TactileSelectedLanguage "en"
+        tactileWriteLanguage:
+        ClearErrors
+        FileOpen $0 "$APPDATA\Tactile\installer-language.txt" w
+        ${IfNot} ${Errors}
+            FileWrite $0 "$TactileSelectedLanguage"
+            FileClose $0
+        ${EndIf}
     !endif
 !macroend
 

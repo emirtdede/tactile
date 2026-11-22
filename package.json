@@ -6,24 +6,60 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
+    "test": "node --test tools/tests/",
+    "test:i18n": "node tools/i18n-status.js && node tools/i18n/placeholders.js",
     "build:icons": "node tools/build-icons.js",
-    "build:all": "node tools/build-icons.js && electron-builder -wml && node tools/refresh-icon-cache.js",
-    "build:win": "node tools/build-icons.js && electron-builder -w && node tools/refresh-icon-cache.js",
+    "build:win": "node tools/build-icons.js && electron-builder --win nsis --x64 && node tools/refresh-icon-cache.js",
+    "build:appx": "node tools/build-icons.js && electron-builder --win appx --x64",
     "build:mac": "electron-builder -m",
     "build:linux": "electron-builder -l",
     "build:clean": "node tools/clean-dist.js",
+    "capture": "electron tools/capture.js",
     "postinstall": "electron-builder install-app-deps"
   },
-  "keywords": [],
+  "keywords": [
+    "keyboard",
+    "mechanical-keyboard",
+    "key-sounds",
+    "typing",
+    "electron",
+    "windows",
+    "accessibility"
+  ],
   "homepage": "https://vellium.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emirtdede/tactile.git"
+  },
+  "bugs": {
+    "url": "https://github.com/emirtdede/tactile/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "author": {
     "name": "Vellium.dev",
-    "email": "support@vellium.dev"
+    "email": "support@vellium.dev",
+    "url": "https://vellium.dev"
   },
   "license": "MIT",
   "build": {
     "appId": "dev.vellium.tactile",
     "copyright": "Copyright (c) 2026 Vellium. All rights reserved.",
+    "artifactName": "${productName}-Setup-${version}.${ext}",
+    "files": [
+      "src/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "emirtdede",
+        "repo": "tactile",
+        "releaseType": "release"
+      }
+    ],
     "appx": {
       "publisher": "CN=VelliumPublisher",
       "identityName": "TactileApp",
@@ -32,7 +68,11 @@
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
       "allowToChangeInstallationDirectory": true,
+      "unicode": true,
+      "differentialPackage": true,
+      "deleteAppDataOnUninstall": false,
       "include": "./build/installer.nsh",
       "installerIcon": "build/installerIcon.ico",
       "uninstallerIcon": "build/uninstallerIcon.ico",
@@ -96,21 +136,14 @@
     }
   },
   "dependencies": {
-    "adm-zip": "^0.5.10",
-    "easy-volume": "^1.1.0",
-    "electron-fetch": "^1.9.1",
-    "electron-log": "^4.4.8",
-    "electron-store": "^6.0.0",
-    "fs-extra": "^9.0.1",
-    "glob": "^7.1.6",
-    "howler": "^2.2.4",
-    "mime-types": "^2.1.35",
-    "sharp": "^0.35.2",
-    "sql.js": "^1.8.0",
-    "uiohook-napi": "^1.5.5"
+    "electron-updater": "^6.3.9",
+    "sql.js": "1.17.0",
+    "uiohook-napi": "1.5.5"
   },
   "devDependencies": {
-    "electron": "^30.1.0",
-    "electron-builder": "^24.13.3"
+    "electron": "30.5.1",
+    "electron-builder": "24.13.3",
+    "fs-extra": "9.1.0",
+    "sharp": "0.35.5"
   }
 }

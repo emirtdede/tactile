@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main, development]
+    tags: ['v*']
+  pull_request:
+    branches: [main, development]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Static syntax check
+        run: |
+          for f in src/main.js src/preload.js src/app.js src/i18n.js src/cloud-sync.js src/db/database.js src/libs/audio.js src/libs/keycodes.js src/utils/remapper.js; do
+            node --check "$f"
+          done
+
+      - name: Unit and contract tests
+        run: npm test
+
+      - name: Language coverage
+        run: node tools/i18n-status.js
+
+      - name: Placeholder audit
+        run: node tools/i18n/placeholders.js
+
+      - name: Installer language list is generated from the registry
+        run: |
+          node tools/gen-installer-languages.js
+          git diff --exit-code -- build/installer-languages.nsh
+
+  windows-installer:
+    name: Windows installer
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: quality
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build icons and NSIS installer
+        run: npm run build:win
+
+      - name: Verify artifact metadata
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem dist -Filter 'Tactile-Setup-*.exe' | Select-Object -First 1
+          if (-not $exe) { throw 'Installer was not produced' }
+          $info = (Get-Item $exe.FullName).VersionInfo
+          if ($info.FileVersion -ne '1.0.0') { throw "Unexpected version: $($info.FileVersion)" }
+          Write-Host "Built $($exe.Name) $($exe.Length) bytes"
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: tactile-windows-installer
+          path: |
+            dist/Tactile-Setup-*.exe
+            dist/Tactile-Setup-*.exe.blockmap
+            dist/latest.yml
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            dist/Tactile-Setup-*.exe
+            dist/Tactile-Setup-*.exe.blockmap
+            dist/latest.yml

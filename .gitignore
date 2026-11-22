@@ -2,6 +2,13 @@ node_modules
 out
 dist
 gist
-*.
 .DS_Store
 .env
+*.log
+*.tmp
+.tmp-*
+i18n-placeholders.txt
+i18n-identical.txt
+testout.txt
+capture.txt
+dashout.txt
