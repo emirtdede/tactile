@@ -61,7 +61,7 @@
         'about.licenses_title': 'Лиценци на трети страни',
         'about.licenses_desc': 'Известувања за лиценците на библиотеките со отворен код',
         'about.copyright': 'Авторски права © 2026 Vellium. Сите права се задржани.',
-        'about.registered': 'Tactile е регистриран производ на Vellium.dev.',
+        'about.registered': 'Tactile е софтверски производ на Vellium.',
         'modal.create_title': 'Создај нова звучна листа (профил)',
         'modal.profile_name': 'Име на профилот (листата)',
         'modal.profile_name_placeholder': 'на пр. мои механички прекинувачи',

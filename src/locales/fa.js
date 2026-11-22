@@ -61,7 +61,7 @@
         'about.licenses_title': 'مجوزهای شخص ثالث',
         'about.licenses_desc': 'اطلاعیه‌های مجوز کتابخانه‌های متن‌باز',
         'about.copyright': 'حق نشر © 2026 Vellium. تمامی حقوق محفوظ است.',
-        'about.registered': 'Tactile محصول ثبت‌شده Vellium.dev است.',
+        'about.registered': 'Tactile محصول نرم افزاری Vellium است.',
         'modal.create_title': 'ایجاد فهرست صدای جدید (پروفایل)',
         'modal.profile_name': 'نام پروفایل (فهرست)',
         'modal.profile_name_placeholder': 'مثلاً کلیدهای مکانیکی من',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'Licence trećih strana',
         'about.licenses_desc': 'Obavijesti o licencama biblioteka otvorenog koda',
         'about.copyright': 'Autorska prava © 2026 Vellium. Sva prava pridržana.',
-        'about.registered': 'Tactile je registrirani proizvod tvrtke Vellium.dev.',
+        'about.registered': 'Tactile je softverski proizvod tvrtke Vellium.',
         'modal.create_title': 'Stvori novi popis zvukova (profil)',
         'modal.profile_name': 'Naziv profila (popisa)',
         'modal.profile_name_placeholder': 'npr. Moji mehanički prekidači',

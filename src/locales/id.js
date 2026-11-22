@@ -61,7 +61,7 @@
         'about.licenses_title': 'Lisensi Pihak Ketiga',
         'about.licenses_desc': 'Pemberitahuan lisensi pustaka sumber terbuka',
         'about.copyright': 'Hak Cipta © 2026 Vellium. Seluruh hak dilindungi.',
-        'about.registered': 'Tactile adalah produk terdaftar dari Vellium.dev.',
+        'about.registered': 'Tactile adalah produk perangkat lunak dari Vellium.',
         'modal.create_title': 'Buat Daftar Suara Baru (Profil)',
         'modal.profile_name': 'Nama Profil (Daftar)',
         'modal.profile_name_placeholder': 'mis. Switch mekanik kustom saya',

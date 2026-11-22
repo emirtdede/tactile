@@ -61,7 +61,7 @@
         'about.licenses_title': 'மூன்றாம் தரப்பு உரிமங்கள்',
         'about.licenses_desc': 'திறந்த மூல நூலக உரிம அறிவிப்புகள்',
         'about.copyright': 'பதிப்புரிமை © 2026 Vellium. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.',
-        'about.registered': 'Tactile என்பது Vellium.dev இன் பதிவுசெய்யப்பட்ட தயாரிப்பு.',
+        'about.registered': 'Tactile என்பது Vellium இன் மென்பொருள் தயாரிப்பு ஆகும்.',
         'modal.create_title': 'புதிய ஒலிப் பட்டியலை (சுயவிவரம்) உருவாக்கு',
         'modal.profile_name': 'சுயவிவர (பட்டியல்) பெயர்',
         'modal.profile_name_placeholder': 'எ.கா. எனது இயந்திர சுவிட்சுகள்',

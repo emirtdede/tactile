@@ -61,7 +61,7 @@
         'about.licenses_title': 'ਤੀਜੀ ਧਿਰ ਲਾਇਸੰਸ',
         'about.licenses_desc': 'ਓਪਨ ਸੋਰਸ ਲਾਇਬ੍ਰੇਰੀ ਲਾਇਸੰਸ ਸੂਚਨਾਵਾਂ',
         'about.copyright': 'ਕਾਪੀਰਾਈਟ © 2026 Vellium. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।',
-        'about.registered': 'Tactile, Vellium.dev ਦਾ ਰਜਿਸਟਰਡ ਉਤਪਾਦ ਹੈ।',
+        'about.registered': 'Tactile Vellium ਦਾ ਇੱਕ ਸਾਫਟਵੇਅਰ ਉਤਪਾਦ ਹੈ।',
         'modal.create_title': 'ਨਵੀਂ ਸਾਊਂਡ ਸੂਚੀ (ਪ੍ਰੋਫ਼ਾਈਲ) ਬਣਾਓ',
         'modal.profile_name': 'ਪ੍ਰੋਫ਼ਾਈਲ (ਸੂਚੀ) ਦਾ ਨਾਮ',
         'modal.profile_name_placeholder': 'ਜਿਵੇਂ ਮੇਰੇ ਮਕੈਨੀਕਲ ਸਵਿੱਚ',

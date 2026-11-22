@@ -61,7 +61,7 @@
         'about.licenses_title': 'Licence třetích stran',
         'about.licenses_desc': 'Licenční oznámení open-source knihoven',
         'about.copyright': 'Autorská práva © 2026 Vellium. Všechna práva vyhrazena.',
-        'about.registered': 'Tactile je registrovaný produkt společnosti Vellium.dev.',
+        'about.registered': 'Tactile je softwarový produkt společnosti Vellium.',
         'modal.create_title': 'Vytvořit nový seznam zvuků (profil)',
         'modal.profile_name': 'Název profilu (seznamu)',
         'modal.profile_name_placeholder': 'např. Moje mechanické spínače',

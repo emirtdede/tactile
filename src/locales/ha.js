@@ -61,7 +61,7 @@
         'about.licenses_title': 'Lasisin ɓangare na uku',
         'about.licenses_desc': 'Sanarwar lasisin ɗakunan karatu na buɗaɗɗen tushe',
         'about.copyright': 'Haƙƙin mallaka © 2026 Vellium. Duk haƙƙoƙi a tanade suke.',
-        'about.registered': 'Tactile samfurin Vellium.dev ne mai rijista.',
+        'about.registered': 'Tactile samfurin software ne na Vellium.',
         'modal.create_title': 'Ƙirƙiri sabon jerin sauti (fayil)',
         'modal.profile_name': 'Sunan fayil (jeri)',
         'modal.profile_name_placeholder': 'misali Maɓallan lantarki na',

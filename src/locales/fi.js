@@ -61,7 +61,7 @@
         'about.licenses_title': 'Kolmannen osapuolen lisenssit',
         'about.licenses_desc': 'Avoimen lähdekoodin kirjastojen lisenssitiedot',
         'about.copyright': 'Tekijänoikeus © 2026 Vellium. Kaikki oikeudet pidätetään.',
-        'about.registered': 'Tactile on Vellium.dev:n rekisteröity tuote.',
+        'about.registered': 'Tactile on Velliumin ohjelmistotuote.',
         'modal.create_title': 'Luo uusi ääniluettelo (profiili)',
         'modal.profile_name': 'Profiilin (luettelon) nimi',
         'modal.profile_name_placeholder': 'esim. Omat mekaaniset kytkimeni',

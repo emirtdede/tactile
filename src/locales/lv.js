@@ -61,7 +61,7 @@
         'about.licenses_title': 'Trešo pušu licences',
         'about.licenses_desc': 'Atvērtā koda bibliotēku licenču paziņojumi',
         'about.copyright': 'Autortiesības © 2026 Vellium. Visas tiesības aizsargātas.',
-        'about.registered': 'Tactile ir reģistrēts Vellium.dev produkts.',
+        'about.registered': 'Tactile ir Vellium programmatūras produkts.',
         'modal.create_title': 'Izveidot jaunu skaņu sarakstu (profilu)',
         'modal.profile_name': 'Profila (saraksta) nosaukums',
         'modal.profile_name_placeholder': 'piem., mani mehāniskie slēdži',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'മൂന്നാം കക്ഷി ലൈസൻസുകൾ',
         'about.licenses_desc': 'ഓപ്പൺ സോഴ്സ് ലൈബ്രറി ലൈസൻസ് അറിയിപ്പുകൾ',
         'about.copyright': 'പകർപ്പവകാശം © 2026 Vellium. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.',
-        'about.registered': 'Tactile, Vellium.dev-ന്റെ രജിസ്റ്റർ ചെയ്ത ഉൽപ്പന്നമാണ്.',
+        'about.registered': 'Tactile എന്നത് Vellium-ൻ്റെ ഒരു സോഫ്റ്റ്‌വെയർ ഉൽപ്പന്നമാണ്.',
         'modal.create_title': 'പുതിയ ശബ്ദ ലിസ്റ്റ് (പ്രൊഫൈൽ) സൃഷ്ടിക്കുക',
         'modal.profile_name': 'പ്രൊഫൈൽ (ലിസ്റ്റ്) പേര്',
         'modal.profile_name_placeholder': 'ഉദാ. എന്റെ മെക്കാനിക്കൽ സ്വിച്ചുകൾ',

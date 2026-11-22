@@ -61,7 +61,7 @@
         'about.licenses_title': 'තෙවන පාර්ශව බලපත්‍ර',
         'about.licenses_desc': 'විවෘත මූලාශ්‍ර පුස්තකාල බලපත්‍ර දැනුම්දීම්',
         'about.copyright': 'ප්‍රකාශන හිමිකම © 2026 Vellium. සියලුම හිමිකම් ඇවිරිණි.',
-        'about.registered': 'Tactile යනු Vellium.dev හි ලියාපදිංචි නිෂ්පාදනයකි.',
+        'about.registered': 'Tactile යනු Vellium හි මෘදුකාංග නිෂ්පාදනයකි.',
         'modal.create_title': 'නව ශබ්ද ලැයිස්තුවක් (පැතිකඩ) සාදන්න',
         'modal.profile_name': 'පැතිකඩ (ලැයිස්තුව) නම',
         'modal.profile_name_placeholder': 'උදා. මගේ යාන්ත්‍රික ස්විච්',

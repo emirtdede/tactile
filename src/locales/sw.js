@@ -61,7 +61,7 @@
         'about.licenses_title': 'Leseni za wahusika wengine',
         'about.licenses_desc': 'Notisi za leseni za maktaba huria',
         'about.copyright': 'Hakimiliki © 2026 Vellium. Haki zote zimehifadhiwa.',
-        'about.registered': 'Tactile ni bidhaa iliyosajiliwa ya Vellium.dev.',
+        'about.registered': 'Tactile ni bidhaa ya programu ya Vellium.',
         'modal.create_title': 'Unda orodha mpya ya sauti (wasifu)',
         'modal.profile_name': 'Jina la wasifu (orodha)',
         'modal.profile_name_placeholder': 'k.m. Swichi zangu halisi',

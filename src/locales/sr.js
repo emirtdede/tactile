@@ -61,7 +61,7 @@
         'about.licenses_title': 'Лиценце трећих страна',
         'about.licenses_desc': 'Обавештења о лиценцама библиотека отвореног кода',
         'about.copyright': 'Ауторска права © 2026 Vellium. Сва права задржана.',
-        'about.registered': 'Tactile је регистровани производ компаније Vellium.dev.',
+        'about.registered': 'Tactile је софтверски производ компаније Vellium.',
         'modal.create_title': 'Направи нову листу звукова (профил)',
         'modal.profile_name': 'Назив профила (листе)',
         'modal.profile_name_placeholder': 'нпр. Моји механички прекидачи',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'Ліцензії третіх сторін',
         'about.licenses_desc': 'Повідомлення про ліцензії бібліотек з відкритим кодом',
         'about.copyright': 'Авторське право © 2026 Vellium. Усі права захищені.',
-        'about.registered': 'Tactile - зареєстрований продукт Vellium.dev.',
+        'about.registered': 'Tactile є програмним продуктом Vellium.',
         'modal.create_title': 'Створити новий список звуків (профіль)',
         'modal.profile_name': 'Назва профілю (списку)',
         'modal.profile_name_placeholder': 'напр. Мої механічні перемикачі',

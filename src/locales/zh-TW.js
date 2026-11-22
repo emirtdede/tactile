@@ -61,7 +61,7 @@
         'about.licenses_title': '第三方授權',
         'about.licenses_desc': '開放原始碼函式庫授權聲明',
         'about.copyright': '版權所有 © 2026 Vellium。保留一切權利。',
-        'about.registered': 'Tactile 是 Vellium.dev 的註冊商標產品。',
+        'about.registered': 'Tactile 是 Vellium 的軟體產品。',
         'modal.create_title': '建立新的音效清單（設定檔）',
         'modal.profile_name': '設定檔（清單）名稱',
         'modal.profile_name_placeholder': '例如：我的機械開關',

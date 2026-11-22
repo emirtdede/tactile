@@ -61,7 +61,7 @@
         'about.licenses_title': 'Giấy phép bên thứ ba',
         'about.licenses_desc': 'Thông báo giấy phép thư viện mã nguồn mở',
         'about.copyright': 'Bản quyền © 2026 Vellium. Bảo lưu mọi quyền.',
-        'about.registered': 'Tactile là sản phẩm đã đăng ký của Vellium.dev.',
+        'about.registered': 'Tactile là sản phẩm phần mềm của Vellium.',
         'modal.create_title': 'Tạo danh sách âm thanh mới (hồ sơ)',
         'modal.profile_name': 'Tên hồ sơ (danh sách)',
         'modal.profile_name_placeholder': 'ví dụ: Switch cơ của tôi',

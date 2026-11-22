@@ -61,7 +61,7 @@
         'about.licenses_title': 'Licenties van derden',
         'about.licenses_desc': 'Licentiemeldingen van open-sourcebibliotheken',
         'about.copyright': 'Auteursrecht © 2026 Vellium. Alle rechten voorbehouden.',
-        'about.registered': 'Tactile is een geregistreerd product van Vellium.dev.',
+        'about.registered': 'Tactile is een softwareproduct van Vellium.',
         'modal.create_title': 'Nieuwe geluidslijst (profiel) maken',
         'modal.profile_name': 'Naam van profiel (lijst)',
         'modal.profile_name_placeholder': 'bijv. Mijn mechanische schakelaars',

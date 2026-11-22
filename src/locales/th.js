@@ -61,7 +61,7 @@
         'about.licenses_title': 'สัญญาอนุญาตของบุคคลที่สาม',
         'about.licenses_desc': 'ประกาศสัญญาอนุญาตของไลบรารีโอเพนซอร์ส',
         'about.copyright': 'ลิขสิทธิ์ © 2026 Vellium สงวนลิขสิทธิ์',
-        'about.registered': 'Tactile เป็นผลิตภัณฑ์จดทะเบียนของ Vellium.dev',
+        'about.registered': 'Tactile เป็นผลิตภัณฑ์ซอฟต์แวร์ของ Vellium',
         'modal.create_title': 'สร้างรายการเสียงใหม่ (โปรไฟล์)',
         'modal.profile_name': 'ชื่อโปรไฟล์ (รายการ)',
         'modal.profile_name_placeholder': 'เช่น สวิตช์เชิงกลของฉัน',

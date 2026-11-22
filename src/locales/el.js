@@ -61,7 +61,7 @@
         'about.licenses_title': 'Άδειες τρίτων',
         'about.licenses_desc': 'Σημειώσεις αδειών βιβλιοθηκών ανοιχτού κώδικα',
         'about.copyright': 'Πνευματικά δικαιώματα © 2026 Vellium. Όλα τα δικαιώματα διατηρούνται.',
-        'about.registered': 'Το Tactile είναι καταχωρισμένο προϊόν της Vellium.dev.',
+        'about.registered': 'Το Tactile είναι ένα προϊόν λογισμικού της Vellium.',
         'modal.create_title': 'Δημιουργία νέας λίστας ήχων (προφίλ)',
         'modal.profile_name': 'Όνομα προφίλ (λίστας)',
         'modal.profile_name_placeholder': 'π.χ. Οι μηχανικοί διακόπτες μου',

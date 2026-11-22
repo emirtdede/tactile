@@ -61,7 +61,7 @@
         'about.licenses_title': 'فریقِ ثالث کے لائسنس',
         'about.licenses_desc': 'اوپن سورس لائبریری لائسنس اطلاعات',
         'about.copyright': 'کاپی رائٹ © 2026 Vellium۔ جملہ حقوق محفوظ ہیں۔',
-        'about.registered': 'Tactile، Vellium.dev کی رجسٹرڈ مصنوع ہے۔',
+        'about.registered': 'Tactile Vellium کا ایک سافٹ ویئر پروڈکٹ ہے۔',
         'modal.create_title': 'نئی صوتی فہرست (پروفائل) بنائیں',
         'modal.profile_name': 'پروفائل (فہرست) کا نام',
         'modal.profile_name_placeholder': 'مثلاً میرے مکینیکل سوئچز',

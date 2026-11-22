@@ -61,7 +61,7 @@
         'about.licenses_title': 'Lesen Pihak Ketiga',
         'about.licenses_desc': 'Notis lesen pustaka sumber terbuka',
         'about.copyright': 'Hak Cipta © 2026 Vellium. Hak cipta terpelihara.',
-        'about.registered': 'Tactile ialah produk berdaftar Vellium.dev.',
+        'about.registered': 'Tactile ialah produk perisian Vellium.',
         'modal.create_title': 'Cipta Senarai Bunyi Baharu (Profil)',
         'modal.profile_name': 'Nama Profil (Senarai)',
         'modal.profile_name_placeholder': 'cth. suis mekanikal tersuai saya',

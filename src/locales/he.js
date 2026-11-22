@@ -61,7 +61,7 @@
         'about.licenses_title': 'רישיונות צד שלישי',
         'about.licenses_desc': 'הודעות רישיון של ספריות קוד פתוח',
         'about.copyright': 'זכויות יוצרים © 2026 Vellium. כל הזכויות שמורות.',
-        'about.registered': 'Tactile הוא מוצר רשום של Vellium.dev.',
+        'about.registered': 'Tactile הוא מוצר תוכנה של Vellium.',
         'modal.create_title': 'יצירת רשימת צלילים חדשה (פרופיל)',
         'modal.profile_name': 'שם הפרופיל (הרשימה)',
         'modal.profile_name_placeholder': 'לדוגמה: המתגים המכניים שלי',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'მესამე მხარის ლიცენზიები',
         'about.licenses_desc': 'ღია კოდის ბიბლიოთეკების ლიცენზიური შეტყობინებები',
         'about.copyright': 'საავტორო უფლება © 2026 Vellium. ყველა უფლება დაცულია.',
-        'about.registered': 'Tactile არის Vellium.dev-ის რეგისტრირებული პროდუქტი.',
+        'about.registered': 'Tactile არის Vellium-ის პროგრამული პროდუქტი.',
         'modal.create_title': 'ახალი ხმოვანი სიის (პროფილის) შექმნა',
         'modal.profile_name': 'პროფილის (სიის) სახელი',
         'modal.profile_name_placeholder': 'მაგ. ჩემი მორგებული მექანიკური გადამრთველები',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'तेस्रो पक्षका इजाजतपत्रहरू',
         'about.licenses_desc': 'खुला स्रोत पुस्तकालय इजाजतपत्र सूचनाहरू',
         'about.copyright': 'प्रतिलिपि अधिकार © 2026 Vellium. सर्वाधिकार सुरक्षित।',
-        'about.registered': 'Tactile, Vellium.dev को दर्ता भएको उत्पादन हो।',
+        'about.registered': 'Tactile Vellium को सफ्टवेयर उत्पादन हो।',
         'modal.create_title': 'नयाँ ध्वनि सूची (प्रोफाइल) बनाउनुहोस्',
         'modal.profile_name': 'प्रोफाइल (सूची) को नाम',
         'modal.profile_name_placeholder': 'जस्तै मेरा मेकानिकल स्विचहरू',

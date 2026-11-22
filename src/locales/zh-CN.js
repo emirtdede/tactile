@@ -61,7 +61,7 @@
         'about.licenses_title': '第三方许可证',
         'about.licenses_desc': '开源库许可声明',
         'about.copyright': '版权所有 © 2026 Vellium。保留所有权利。',
-        'about.registered': 'Tactile 是 Vellium.dev 的注册商标产品。',
+        'about.registered': 'Tactile 是 Vellium 的软件产品。',
         'modal.create_title': '创建新的声音列表（配置）',
         'modal.profile_name': '配置（列表）名称',
         'modal.profile_name_placeholder': '例如：我的机械开关',

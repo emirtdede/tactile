@@ -61,7 +61,7 @@
         'about.licenses_title': 'Üçüncü Taraf Lisansları',
         'about.licenses_desc': 'Açık kaynaklı kütüphane lisans bildirimleri',
         'about.copyright': 'Telif Hakkı © 2026 Vellium. Tüm hakları saklıdır.',
-        'about.registered': 'Tactile, Vellium.dev\'in tescilli bir ürünüdür.',
+        'about.registered': 'Tactile, Vellium\'un bir yazılım ürünüdür.',
         'modal.create_title': 'Yeni Ses Listesi (Profil) Oluştur',
         'modal.profile_name': 'Profil (Liste) Adı',
         'modal.profile_name_placeholder': 'ör. Özel mekanik anahtarlarım',

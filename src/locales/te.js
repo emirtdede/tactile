@@ -61,7 +61,7 @@
         'about.licenses_title': 'మూడవ పక్ష లైసెన్సులు',
         'about.licenses_desc': 'ఓపెన్ సోర్స్ లైబ్రరీ లైసెన్స్ నోటీసులు',
         'about.copyright': 'కాపీరైట్ © 2026 Vellium. సర్వ హక్కులు రక్షితం.',
-        'about.registered': 'Tactile అనేది Vellium.dev యొక్క నమోదిత ఉత్పత్తి.',
+        'about.registered': 'Tactile అనేది Vellium యొక్క సాఫ్ట్‌వేర్ ఉత్పత్తి.',
         'modal.create_title': 'కొత్త శబ్ద జాబితా (ప్రొఫైల్) సృష్టించండి',
         'modal.profile_name': 'ప్రొఫైల్ (జాబితా) పేరు',
         'modal.profile_name_placeholder': 'ఉదా. నా మెకానికల్ స్విచ్‌లు',

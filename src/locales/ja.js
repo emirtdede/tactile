@@ -61,7 +61,7 @@
         'about.licenses_title': '第三者ライセンス',
         'about.licenses_desc': 'オープンソースライブラリのライセンス通知',
         'about.copyright': '著作権 © 2026 Vellium. 無断複写・転載を禁じます。',
-        'about.registered': 'Tactile は Vellium.dev の登録製品です。',
+        'about.registered': 'TactileはVellium社のソフトウェア製品です。',
         'modal.create_title': '新しいサウンドリスト（プロファイル）を作成',
         'modal.profile_name': 'プロファイル（リスト）名',
         'modal.profile_name_placeholder': '例：マイカスタムメカニカルスイッチ',

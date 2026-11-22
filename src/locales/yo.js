@@ -61,7 +61,7 @@
         'about.licenses_title': 'Àwọn Ìwé Àṣẹ Ẹlẹ́ẹ̀kẹta',
         'about.licenses_desc': 'Àwọn ìkéde ìwé àṣẹ ilé-ìkàwé orísun-ṣí',
         'about.copyright': 'Àṣẹ àpilẹ̀kọ © 2026 Vellium. Gbogbo ẹ̀tọ́ ni a ti dáàbò bò.',
-        'about.registered': 'Tactile jẹ́ ọjà tó forúkọsílẹ̀ ti Vellium.dev.',
+        'about.registered': 'Tactile jẹ ọja sọfitiwia ti Vellium.',
         'modal.create_title': 'Dá àkójọ ohùn tuntun (profáìlì)',
         'modal.profile_name': 'Orúkọ profáìlì (àkójọ)',
         'modal.profile_name_placeholder': 'àpẹẹrẹ: Àwọn switch eléèméjì mi',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'တတိယပါတီ လိုင်စင်များ',
         'about.licenses_desc': 'အိုပင်ဆိုစ် စာကြည့်တိုက် လိုင်စင် အသိပေးချက်များ',
         'about.copyright': 'မူပိုင်ခွင့် © 2026 Vellium။ မူပိုင်ခွင့်အားလုံး လက်ဝယ်ရှိသည်။',
-        'about.registered': 'Tactile သည် Vellium.dev ၏ မှတ်ပုံတင်ထားသော ထုတ်ကုန် ဖြစ်သည်။',
+        'about.registered': 'Tactile သည် Vellium ၏ ဆော့ဖ်ဝဲထုတ်ကုန်တစ်ခုဖြစ်သည်။',
         'modal.create_title': 'အသံစာရင်းအသစ် (ပရိုဖိုင်) ဖန်တီးရန်',
         'modal.profile_name': 'ပရိုဖိုင် (စာရင်း) အမည်',
         'modal.profile_name_placeholder': 'ဥပမာ ကျွန်ုပ်၏ စက်ပိုင်းဆိုင်ရာ ဆွစ်ချ်များ',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'Mga Lisensya ng Ikatlong Partido',
         'about.licenses_desc': 'Mga abiso sa lisensya ng bukas na pinagmulang aklatan',
         'about.copyright': 'Karapatang-ari © 2026 Vellium. Nakalaan ang lahat ng karapatan.',
-        'about.registered': 'Ang Tactile ay rehistradong produkto ng Vellium.dev.',
+        'about.registered': 'Ang Tactile ay isang software na produkto ng Vellium.',
         'modal.create_title': 'Gumawa ng bagong listahan ng tunog (profile)',
         'modal.profile_name': 'Pangalan ng profile (listahan)',
         'modal.profile_name_placeholder': 'hal. Aking mga mekanikal na switch',

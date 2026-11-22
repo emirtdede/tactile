@@ -61,7 +61,7 @@
         'about.licenses_title': 'Üçüncü tərəf lisenziyaları',
         'about.licenses_desc': 'Açıq mənbə kitabxanalarının lisenziya bildirişləri',
         'about.copyright': 'Müəllif hüququ © 2026 Vellium. Bütün hüquqlar qorunur.',
-        'about.registered': 'Tactile Vellium.dev-in qeydiyyatdan keçmiş məhsuludur.',
+        'about.registered': 'Tactile Vellium-ın proqram məhsuludur.',
         'modal.create_title': 'Yeni səs siyahısı (profil) yarat',
         'modal.profile_name': 'Profil (siyahı) adı',
         'modal.profile_name_placeholder': 'məs. Mənim mexaniki açarlarım',

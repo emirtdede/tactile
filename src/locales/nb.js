@@ -61,7 +61,7 @@
         'about.licenses_title': 'Tredjepartslisenser',
         'about.licenses_desc': 'Lisensmerknader for åpen kildekode-biblioteker',
         'about.copyright': 'Opphavsrett © 2026 Vellium. Alle rettigheter forbeholdt.',
-        'about.registered': 'Tactile er et registrert produkt fra Vellium.dev.',
+        'about.registered': 'Tactile er et programvareprodukt fra Vellium.',
         'modal.create_title': 'Opprett ny lydliste (profil)',
         'modal.profile_name': 'Navn på profil (liste)',
         'modal.profile_name_placeholder': 'f.eks. mine egendefinerte mekaniske brytere',

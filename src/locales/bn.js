@@ -61,7 +61,7 @@
         'about.licenses_title': 'তৃতীয় পক্ষের লাইসেন্স',
         'about.licenses_desc': 'ওপেন সোর্স লাইব্রেরির লাইসেন্স বিজ্ঞপ্তি',
         'about.copyright': 'কপিরাইট © 2026 Vellium। সর্বস্বত্ব সংরক্ষিত।',
-        'about.registered': 'Tactile হলো Vellium.dev-এর একটি নিবন্ধিত পণ্য।',
+        'about.registered': 'Tactile হল Vellium-এর একটি সফটওয়্যার পণ্য।',
         'modal.create_title': 'নতুন সাউন্ড তালিকা (প্রোফাইল) তৈরি করুন',
         'modal.profile_name': 'প্রোফাইল (তালিকা) নাম',
         'modal.profile_name_placeholder': 'যেমন আমার মেকানিক্যাল সুইচ',

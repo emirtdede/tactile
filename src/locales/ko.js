@@ -61,7 +61,7 @@
         'about.licenses_title': '제3자 라이선스',
         'about.licenses_desc': '오픈 소스 라이브러리 라이선스 고지',
         'about.copyright': '저작권 © 2026 Vellium. 모든 권리 보유.',
-        'about.registered': 'Tactile은 Vellium.dev의 등록 제품입니다.',
+        'about.registered': 'Tactile는 Vellium의 소프트웨어 제품입니다.',
         'modal.create_title': '새 사운드 목록(프로필) 만들기',
         'modal.profile_name': '프로필(목록) 이름',
         'modal.profile_name_placeholder': '예: 내 커스텀 기계식 스위치',

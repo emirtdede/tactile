@@ -61,7 +61,7 @@
         'about.licenses_title': 'Uchinchi tomon litsenziyalari',
         'about.licenses_desc': 'Ochiq kodli kutubxonalar litsenziya bildirishnomalari',
         'about.copyright': 'Mualliflik huquqi © 2026 Vellium. Barcha huquqlar himoyalangan.',
-        'about.registered': 'Tactile - Vellium.dev kompaniyasining ro‘yxatdan o‘tgan mahsuloti.',
+        'about.registered': 'Tactile Vellium kompaniyasining dasturiy mahsulotidir.',
         'modal.create_title': 'Yangi tovushlar ro‘yxatini (profil) yaratish',
         'modal.profile_name': 'Profil (ro‘yxat) nomi',
         'modal.profile_name_placeholder': 'masalan, Mening mexanik klavishlarim',

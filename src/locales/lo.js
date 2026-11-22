@@ -61,7 +61,7 @@
         'about.licenses_title': 'ໃບອະນຸຍາດຈາກພາກສ່ວນທີສາມ',
         'about.licenses_desc': 'ແຈ້ງການໃບອະນຸຍາດຂອງຫ້ອງສະໝຸດໂອເພັນຊອດ',
         'about.copyright': 'ລິຂະສິດ © 2026 Vellium. ສະຫງວນສິດທັງໝົດ.',
-        'about.registered': 'Tactile ເປັນຜະລິດຕະພັນຈົດທະບຽນຂອງ Vellium.dev.',
+        'about.registered': 'Tactile ແມ່ນຜະລິດຕະພັນຊອບແວຂອງ Vellium.',
         'modal.create_title': 'ສ້າງລາຍການສຽງໃໝ່ (ໂປຣໄຟລ໌)',
         'modal.profile_name': 'ຊື່ໂປຣໄຟລ໌ (ລາຍການ)',
         'modal.profile_name_placeholder': 'ເຊັ່ນ: ສະວິດກົນຈັກຂອງຂ້ອຍ',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'Trečiųjų šalių licencijos',
         'about.licenses_desc': 'Atvirojo kodo bibliotekų licencijų pranešimai',
         'about.copyright': 'Autorių teisės © 2026 Vellium. Visos teisės saugomos.',
-        'about.registered': 'Tactile yra registruotas Vellium.dev produktas.',
+        'about.registered': 'Tactile yra Vellium programinės įrangos produktas.',
         'modal.create_title': 'Sukurti naują garso sąrašą (profilį)',
         'modal.profile_name': 'Profilio (sąrašo) pavadinimas',
         'modal.profile_name_placeholder': 'pvz., mano mechaniniai jungikliai',

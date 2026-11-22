@@ -61,7 +61,7 @@
         'about.licenses_title': 'Licencat e palëve të treta',
         'about.licenses_desc': 'Njoftime licence për bibliotekat me burim të hapur',
         'about.copyright': 'Të drejtat e autorit © 2026 Vellium. Të gjitha të drejtat e rezervuara.',
-        'about.registered': 'Tactile është një produkt i regjistruar i Vellium.dev.',
+        'about.registered': 'Tactile është një produkt softuerik i Vellium.',
         'modal.create_title': 'Krijo një listë të re tingujsh (profil)',
         'modal.profile_name': 'Emri i profilit (listës)',
         'modal.profile_name_placeholder': 'p.sh. Çelësat e mi mekanikë',

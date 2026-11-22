@@ -61,7 +61,7 @@
         'about.licenses_title': 'Гуравдагч талын лиценз',
         'about.licenses_desc': 'Нээлттэй эхийн сангийн лицензийн мэдэгдэл',
         'about.copyright': 'Зохиогчийн эрх © 2026 Vellium. Бүх эрх хуулиар хамгаалагдсан.',
-        'about.registered': 'Tactile нь Vellium.dev-ийн бүртгэлтэй бүтээгдэхүүн юм.',
+        'about.registered': 'Tactile бол Vellium-ийн програм хангамжийн бүтээгдэхүүн юм.',
         'modal.create_title': 'Шинэ дууны жагсаалт (профайл) үүсгэх',
         'modal.profile_name': 'Профайл (жагсаалт)-ын нэр',
         'modal.profile_name_placeholder': 'жишээ нь: миний механик унтраалга',

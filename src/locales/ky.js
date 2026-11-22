@@ -61,7 +61,7 @@
         'about.licenses_title': 'Үчүнчү тараптын лицензиялары',
         'about.licenses_desc': 'Ачык булак китепканаларынын лицензия эскертүүлөрү',
         'about.copyright': 'Автордык укук © 2026 Vellium. Бардык укуктар корголгон.',
-        'about.registered': 'Tactile - Vellium.dev компаниясынын катталган продуктысы.',
+        'about.registered': 'Tactile - Vellium компаниясынын программалык продуктусу.',
         'modal.create_title': 'Жаңы үн тизмесин (профиль) түзүү',
         'modal.profile_name': 'Профилдин (тизменин) аталышы',
         'modal.profile_name_placeholder': 'мис. Менин механикалык баскычтарым',

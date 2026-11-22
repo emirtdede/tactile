@@ -61,7 +61,7 @@
         'about.licenses_title': 'تراخيص الأطراف الثالثة',
         'about.licenses_desc': 'إشعارات تراخيص المكتبات مفتوحة المصدر',
         'about.copyright': 'حقوق النشر © 2026 Vellium. جميع الحقوق محفوظة.',
-        'about.registered': 'Tactile منتج مسجّل لـ Vellium.dev.',
+        'about.registered': 'Tactile هو منتج برمجي لشركة Vellium.',
         'modal.create_title': 'إنشاء قائمة أصوات جديدة (ملف)',
         'modal.profile_name': 'اسم الملف (القائمة)',
         'modal.profile_name_placeholder': 'مثال: مفاتيحي الميكانيكية',

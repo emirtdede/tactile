@@ -61,7 +61,7 @@
         'about.licenses_title': 'Llicències de tercers',
         'about.licenses_desc': 'Avisos de llicència de biblioteques de codi obert',
         'about.copyright': 'Drets d\'autor © 2026 Vellium. Tots els drets reservats.',
-        'about.registered': 'Tactile és un producte registrat de Vellium.dev.',
+        'about.registered': 'Tactile és un producte de programari de Vellium.',
         'modal.create_title': 'Crea una llista de sons nova (perfil)',
         'modal.profile_name': 'Nom del perfil (llista)',
         'modal.profile_name_placeholder': 'p. ex. Els meus interruptors mecànics',

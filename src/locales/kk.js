@@ -61,7 +61,7 @@
         'about.licenses_title': 'Үшінші тарап лицензиялары',
         'about.licenses_desc': 'Ашық бастапқы кодты кітапханалардың лицензиялық хабарламалары',
         'about.copyright': 'Авторлық құқық © 2026 Vellium. Барлық құқықтар қорғалған.',
-        'about.registered': 'Tactile - Vellium.dev компаниясының тіркелген өнімі.',
+        'about.registered': 'Tactile - Vellium компаниясының бағдарламалық өнімі.',
         'modal.create_title': 'Жаңа дыбыс тізімін (профиль) жасау',
         'modal.profile_name': 'Профиль (тізім) атауы',
         'modal.profile_name_placeholder': 'мыс. Менің теңшелген механикалық ауыстырып-қосқыштарым',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'Ikike Ndị Ọzọ',
         'about.licenses_desc': 'Ọkwa ikike ọba akwụkwọ mepere emepe',
         'about.copyright': 'Ikike Nwebisiinka © 2026 Vellium. Ikike niile echekwara.',
-        'about.registered': 'Tactile bụ ngwaahịa edebanyere aha nke Vellium.dev.',
+        'about.registered': 'Tactile bụ ngwa ngwa nke Vellium.',
         'modal.create_title': 'Mepụta Ndepụta Ụda Ọhụrụ (Profaịlụ)',
         'modal.profile_name': 'Aha Profaịlụ (Ndepụta)',
         'modal.profile_name_placeholder': 'dịka. Switch mechaniki omenala m',

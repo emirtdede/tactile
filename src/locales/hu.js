@@ -61,7 +61,7 @@
         'about.licenses_title': 'Harmadik féltől származó licencek',
         'about.licenses_desc': 'Nyílt forráskódú könyvtárak licencértesítései',
         'about.copyright': 'Szerzői jog © 2026 Vellium. Minden jog fenntartva.',
-        'about.registered': 'A Tactile a Vellium.dev bejegyzett terméke.',
+        'about.registered': 'A Tactile a Vellium szoftverterméke.',
         'modal.create_title': 'Új hanglista (profil) létrehozása',
         'modal.profile_name': 'Profil (lista) neve',
         'modal.profile_name_placeholder': 'pl. Saját mechanikus kapcsolóim',

@@ -61,7 +61,7 @@
         'about.licenses_title': 'Tredjepartslicenser',
         'about.licenses_desc': 'Licensmeddelanden för bibliotek med öppen källkod',
         'about.copyright': 'Upphovsrätt © 2026 Vellium. Alla rättigheter förbehållna.',
-        'about.registered': 'Tactile är en registrerad produkt från Vellium.dev.',
+        'about.registered': 'Tactile är en mjukvaruprodukt från Vellium.',
         'modal.create_title': 'Skapa en ny ljudlista (profil)',
         'modal.profile_name': 'Profilens (listans) namn',
         'modal.profile_name_placeholder': 't.ex. Mina mekaniska switchar',

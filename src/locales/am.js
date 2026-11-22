@@ -61,7 +61,7 @@
         'about.licenses_title': 'የሶስተኛ ወገን ፈቃዶች',
         'about.licenses_desc': 'የክፍት ምንጭ ቤተመጻሕፍት ፈቃድ ማሳወቂያዎች',
         'about.copyright': 'መብት © 2026 Vellium። መብቱ በህግ የተጠበቀ ነው።',
-        'about.registered': 'Tactile የVellium.dev የተመዘገበ ምርት ነው።',
+        'about.registered': 'Tactile የVellium ሶፍትዌር ምርት ነው።',
         'modal.create_title': 'አዲስ የድምጽ ዝርዝር (መገለጫ) ፍጠር',
         'modal.profile_name': 'የመገለጫ (ዝርዝር) ስም',
         'modal.profile_name_placeholder': 'ለምሳሌ የእኔ ሜካኒካል መቀየሪያዎች',

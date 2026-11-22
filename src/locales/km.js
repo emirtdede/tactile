@@ -61,7 +61,7 @@
         'about.licenses_title': 'អាជ្ញាបណ្ណភាគីទីបី',
         'about.licenses_desc': 'សេចក្តីជូនដំណឹងអាជ្ញាបណ្ណបណ្ណាល័យកូដបើកចំហ',
         'about.copyright': 'រក្សាសិទ្ធិ © 2026 Vellium។ រក្សាសិទ្ធិគ្រប់យ៉ាង។',
-        'about.registered': 'Tactile គឺជាផលិតផលចុះបញ្ជីរបស់ Vellium.dev។',
+        'about.registered': 'Tactile គឺជាផលិតផលកម្មវិធីរបស់ Vellium ។',
         'modal.create_title': 'បង្កើតបញ្ជីសំឡេងថ្មី (ប្រវត្តិរូប)',
         'modal.profile_name': 'ឈ្មោះប្រវត្តិរូប (បញ្ជី)',
         'modal.profile_name_placeholder': 'ឧ. ស្វីតមេកានិចផ្ទាល់ខ្លួនរបស់ខ្ញុំ',

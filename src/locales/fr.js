@@ -61,7 +61,7 @@
         'about.licenses_title': 'Licences tierces',
         'about.licenses_desc': 'Mentions de licence des bibliothèques open source',
         'about.copyright': 'Droits d\'auteur © 2026 Vellium. Tous droits réservés.',
-        'about.registered': 'Tactile est un produit enregistré de Vellium.dev.',
+        'about.registered': 'Tactile est un produit logiciel de Vellium.',
         'modal.create_title': 'Créer une nouvelle liste de sons (profil)',
         'modal.profile_name': 'Nom du profil (de la liste)',
         'modal.profile_name_placeholder': 'ex. Mes switches mécaniques',

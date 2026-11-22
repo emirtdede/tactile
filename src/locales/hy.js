@@ -61,7 +61,7 @@
         'about.licenses_title': 'Երրորդ կողմերի լիցենզիաներ',
         'about.licenses_desc': 'Բաց կոդով գրադարանների լիցենզային ծանուցումներ',
         'about.copyright': 'Հեղինակային իրավունք © 2026 Vellium։ Բոլոր իրավունքները պաշտպանված են։',
-        'about.registered': 'Tactile-ը Vellium.dev-ի գրանցված ապրանք է։',
+        'about.registered': 'Tactile-ը Vellium-ի ծրագրային արտադրանք է:',
         'modal.create_title': 'Ստեղծել նոր ձայնային ցանկ (պրոֆիլ)',
         'modal.profile_name': 'Պրոֆիլի (ցանկի) անվանում',
         'modal.profile_name_placeholder': 'օր.՝ Իմ անհատական մեխանիկական անջատիչները',

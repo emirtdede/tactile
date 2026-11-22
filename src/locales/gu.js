@@ -61,7 +61,7 @@
         'about.licenses_title': 'તૃતીય-પક્ષ લાઇસન્સ',
         'about.licenses_desc': 'ઓપન સોર્સ લાઇબ્રેરી લાઇસન્સ સૂચનાઓ',
         'about.copyright': 'કોપીરાઇટ © 2026 Vellium. સર્વ હક્ક સ્વાધીન.',
-        'about.registered': 'Tactile એ Vellium.dev નું નોંધાયેલ ઉત્પાદન છે.',
+        'about.registered': 'Tactile એ Vellium નું સોફ્ટવેર ઉત્પાદન છે.',
         'modal.create_title': 'નવી સાઉન્ડ સૂચિ (પ્રોફાઇલ) બનાવો',
         'modal.profile_name': 'પ્રોફાઇલ (સૂચિ) નામ',
         'modal.profile_name_placeholder': 'દા.ત. મારા મિકેનિકલ સ્વિચ',

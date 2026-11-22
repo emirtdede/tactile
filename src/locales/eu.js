@@ -61,7 +61,7 @@
         'about.licenses_title': 'Hirugarrenen lizentziak',
         'about.licenses_desc': 'Kode irekiko liburutegien lizentzia-oharrak',
         'about.copyright': 'Egile-eskubideak © 2026 Vellium. Eskubide guztiak erreserbatuta.',
-        'about.registered': 'Tactile Vellium.dev-en erregistratutako produktua da.',
+        'about.registered': 'Tactile Vellium-en software produktu bat da.',
         'modal.create_title': 'Sortu soinu-zerrenda berria (profila)',
         'modal.profile_name': 'Profilaren (zerrendaren) izena',
         'modal.profile_name_placeholder': 'adib. Nire etengailu mekanikoak',

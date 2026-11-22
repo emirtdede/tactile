@@ -61,7 +61,7 @@
         'about.licenses_title': 'Licențe terțe',
         'about.licenses_desc': 'Notificări de licență pentru biblioteci open source',
         'about.copyright': 'Drepturi de autor © 2026 Vellium. Toate drepturile rezervate.',
-        'about.registered': 'Tactile este un produs înregistrat al Vellium.dev.',
+        'about.registered': 'Tactile este un produs software al Vellium.',
         'modal.create_title': 'Creează o listă nouă de sunete (profil)',
         'modal.profile_name': 'Numele profilului (listei)',
         'modal.profile_name_placeholder': 'de ex. Switch-urile mele mecanice',

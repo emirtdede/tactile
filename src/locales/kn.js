@@ -61,7 +61,7 @@
         'about.licenses_title': 'ತೃತೀಯ ಪಕ್ಷದ ಪರವಾನಗಿಗಳು',
         'about.licenses_desc': 'ಮುಕ್ತ ಮೂಲ ಗ್ರಂಥಾಲಯಗಳ ಪರವಾನಗಿ ಸೂಚನೆಗಳು',
         'about.copyright': 'ಕೃತಿಸ್ವಾಮ್ಯ © 2026 Vellium. ಎಲ್ಲಾ ಹಕ್ಕುಗಳು ಕಾಯ್ದಿರಿಸಲಾಗಿವೆ.',
-        'about.registered': 'Tactile ಎಂಬುದು Vellium.dev ನ ನೋಂದಾಯಿತ ಉತ್ಪನ್ನವಾಗಿದೆ.',
+        'about.registered': 'Tactile Vellium ನ ಸಾಫ್ಟ್‌ವೇರ್ ಉತ್ಪನ್ನವಾಗಿದೆ.',
         'modal.create_title': 'ಹೊಸ ಶಬ್ದ ಪಟ್ಟಿ (ಪ್ರೊಫೈಲ್) ರಚಿಸಿ',
         'modal.profile_name': 'ಪ್ರೊಫೈಲ್ (ಪಟ್ಟಿ) ಹೆಸರು',
         'modal.profile_name_placeholder': 'ಉದಾ. ನನ್ನ ಕಸ್ಟಮ್ ಯಾಂತ್ರಿಕ ಸ್ವಿಚ್‌ಗಳು',

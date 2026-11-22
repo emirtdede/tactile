@@ -61,7 +61,7 @@
         'about.licenses_title': 'तृतीय-पक्ष परवाने',
         'about.licenses_desc': 'मुक्त स्त्रोत लायब्ररी परवाना सूचना',
         'about.copyright': 'कॉपीराइट © 2026 Vellium. सर्व हक्क राखीव.',
-        'about.registered': 'Tactile हे Vellium.dev चे नोंदणीकृत उत्पादन आहे.',
+        'about.registered': 'Tactile हे Vellium चे सॉफ्टवेअर उत्पादन आहे.',
         'modal.create_title': 'नवीन ध्वनी यादी (प्रोफाइल) तयार करा',
         'modal.profile_name': 'प्रोफाइल (यादी) नाव',
         'modal.profile_name_placeholder': 'उदा. माझे सानुकूल यांत्रिक स्विच',

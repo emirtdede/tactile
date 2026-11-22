@@ -61,7 +61,7 @@
         'about.licenses_title': 'Kolmandate osapoolte litsentsid',
         'about.licenses_desc': 'Avatud lähtekoodiga teekide litsentsiteated',
         'about.copyright': 'Autoriõigus © 2026 Vellium. Kõik õigused kaitstud.',
-        'about.registered': 'Tactile on Vellium.dev registreeritud toode.',
+        'about.registered': 'Tactile on ettevõtte Vellium tarkvaratoode.',
         'modal.create_title': 'Loo uus heliloend (profiil)',
         'modal.profile_name': 'Profiili (loendi) nimi',
         'modal.profile_name_placeholder': 'nt Minu kohandatud mehaanilised lülitid',

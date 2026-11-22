@@ -61,7 +61,7 @@
         'about.licenses_title': 'Amalayisensi ezinhlangano zangaphandle',
         'about.licenses_desc': 'Izaziso zamalayisensi emitapo yomthombo ovulekile',
         'about.copyright': 'Ilungelo lobunikazi © 2026 Vellium. Wonke amalungelo agodliwe.',
-        'about.registered': 'I-Tactile iwumkhiqizo obhalisiwe we-Vellium.dev.',
+        'about.registered': 'I-Tactile iwumkhiqizo wesoftware we-Vellium.',
         'modal.create_title': 'Dala uhlu olusha lwemisindo (iprofayela)',
         'modal.profile_name': 'Igama leprofayela (uhlu)',
         'modal.profile_name_placeholder': 'isb. Amaswishi ami omshini',

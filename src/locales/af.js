@@ -61,7 +61,7 @@
         'about.licenses_title': 'Lisensies van derdes',
         'about.licenses_desc': 'Lisensiekennisgewings vir oopbronsbiblioteke',
         'about.copyright': 'Kopiereg © 2026 Vellium. Alle regte voorbehou.',
-        'about.registered': 'Tactile is \'n geregistreerde produk van Vellium.dev.',
+        'about.registered': 'Tactile is \'n sagtewareproduk van Vellium.',
         'modal.create_title': 'Skep nuwe klanklys (profiel)',
         'modal.profile_name': 'Profiel- (lys)naam',
         'modal.profile_name_placeholder': 'bv. My eie meganiese skakelaars',
