@@ -70,7 +70,7 @@ console errors. Any error fails the release.
 | --- | --- |
 | Onboarding | Language -> theme -> welcome -> tour, Back hidden on step 1, Skip persisted |
 | Language | Switch to Arabic: layout mirrors; restart keeps the choice |
-| Theme | System follows OS live; Custom hex repaints surfaces and icon |
+| Theme | System follows OS live; a palette keeps its colour across light and dark |
 | Icon | Theme/Light/Dark/Custom updates window, taskbar, tray, shortcut |
 | Hotkeys | Mute and quick-task fire while another app is focused |
 | Tray | Menu shows Open/Settings/Docs/Mute/Quit in the active language |

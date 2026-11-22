@@ -26,16 +26,19 @@ and it validates by construction (SQLite header plus schema).
 **Consequence:** snapshots are a few hundred kilobytes; acceptable for a daily
 cadence and much simpler to validate.
 
-## 2026-11-22 - Theme modes `system|light|dark|custom`
+## 2026-11-22 - Palette is separate from light/dark
 
-**Decision:** custom is a real mode, not a modifier on light/dark.
+**Decision:** `settings.theme` stores only `system|light|dark`; the palette lives
+in `settings.theme_palette` (`obsidian` ... `lime`, or `custom`).
 
 **Reason:** users who pick a brand colour expect it to survive an OS scheme
-change; folding it into light/dark made the choice silently revert.
+change, and they also expect switching to dark to keep the same colour family.
+One combined `custom` mode made both impossible.
 
-**Consequence:** the main process resolves custom to the OS scheme for
-`nativeTheme`, and the renderer tints surfaces from the chosen hex so contrast
-holds in both schemes.
+**Consequence:** the main process resolves the mode to the OS scheme for
+`nativeTheme`, the renderer sets `<html data-theme>` plus `html.dark`, and the
+custom palette tints the same token set from its hex so contrast holds in both
+schemes.
 
 ## 2026-11-22 - Installer asks for language first
 

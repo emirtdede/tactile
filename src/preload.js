@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('api', {
     minimize: () => ipcRenderer.send('window-control', 'minimize'),
     maximize: () => ipcRenderer.send('window-control', 'maximize'),
     close: () => ipcRenderer.send('window-control', 'close'),
+    onWindowState: (callback) => ipcRenderer.on('window-state', (_event, maximized) => callback(Boolean(maximized))),
 
     // App API
     openExternal: (url) => ipcRenderer.invoke('open-external', url),

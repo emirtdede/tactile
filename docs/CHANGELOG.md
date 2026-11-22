@@ -3,6 +3,38 @@
 All notable changes to Tactile. Format follows Keep a Changelog; versions follow
 Semantic Versioning.
 
+## [Unreleased]
+
+Interface parity pass: the window now matches the current Vellium desktop design
+language.
+
+### Changed
+
+- Single collapsible sidebar replaces the icon rail plus sub-navigation panel.
+  It holds the brand header with a collapse button, grouped navigation,
+  categories, quick actions and a GitHub/Sponsor footer, and remembers its
+  collapsed state.
+- Window controls float above the content instead of sitting in a title bar, so
+  the surface reaches the top edge of the window.
+- Settings and Documentation are split panes: a grouped topic list scrolls the
+  content pane and highlights the section currently in view.
+- Section headers are compact bars with a Material Symbols icon; settings
+  controls sit in card rows.
+- Theme model split in two: `theme` is `system|light|dark`, `theme_palette` picks
+  one of fifteen palettes. Every palette has a light and a dark variant, and the
+  custom palette keeps the chosen hex.
+- Design tokens renamed to the shared Vellium set (`--canvas`, `--surface`,
+  `--border`, `--text-primary`, `--accent` ...); Public Sans and Material
+  Symbols are vendored locally so the app never fetches a font.
+- About page gains a four-card summary strip, a metadata block and a local-only
+  note; Documentation renders one guide card per topic with instant filtering.
+
+### Fixed
+
+- Maximize/restore state is pushed from the main process, so the window control
+  glyph always matches the real window.
+- Sidebar counters removed from the footer no longer leave dead lookups behind.
+
 ## [1.1.0] - 2026-11-22
 
 Local assistant, integration surfaces and retail parity pass.

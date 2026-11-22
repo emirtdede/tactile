@@ -32,8 +32,8 @@ files or the OS goes through a named IPC channel.
 - Normalizes every setting write through `SETTING_NORMALIZERS`: an unknown key or
   an out-of-range value is rejected before it reaches the database.
 - Registers global shortcuts (`shortcut_toggle_mute`, `shortcut_quick_task`).
-- Resolves the effective theme and applies `nativeTheme.themeSource`, then tints
-  the custom theme in the renderer.
+- Resolves the effective theme and applies `nativeTheme.themeSource`; the
+  renderer maps the palette to CSS tokens.
 - Schedules cloud snapshots (400 ms debounce) and flushes them on `will-quit`.
 - Drives `electron-updater` when the module is available (packaged builds only).
 - Builds the taskbar Jump List and the tray menu from translated strings.

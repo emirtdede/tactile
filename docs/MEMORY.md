@@ -15,13 +15,13 @@ Linux targets; Windows is the release platform.
 - Persistence: `sql.js` (SQLite in memory, persisted to one file).
 - Key capture: `uiohook-napi`. Audio: Howler with Base64 data URIs.
 - Updates: `electron-updater` (GitHub provider, delta packages).
-- Tests: `node:test` in `tools/tests/`, 94 tests.
+- Tests: `node:test` in `tools/tests/`, 101 tests.
 
 ## Current state
 
 - Version 1.1.0 everywhere (`package.json`, installer, About).
 - 73 languages complete, 0 missing keys, 0 placeholder issues.
-- Screenshots for 16 surfaces in `docs/screenshots`, renderer errors 0.
+- Screenshots for 18 surfaces in `docs/screenshots`, renderer errors 0.
 - Local assistant (Ollama, optional models, BM25 retrieval) and four integration
   surfaces: loopback REST API, MCP server, terminal CLI, signed webhooks.
 - Windows NSIS installer builds and installs; AppX target configured.
@@ -29,6 +29,11 @@ Linux targets; Windows is the release platform.
 
 ## Non-obvious rules
 
+- The shell is one collapsible sidebar (`#app-sidebar`) plus floating window
+  controls; settings and docs are split panes whose left nav scrolls a pane.
+- `settings.theme` holds `system|light|dark`; `settings.theme_palette` holds the
+  palette (`obsidian` ... `lime`, `custom`). Colours are CSS variables in
+  `src/assets/themes.css` keyed by `<html data-theme>` plus `html.dark`.
 - `SETTING_NORMALIZERS` in `src/main.js` gates every setting write. No entry,
   no persistence, silently.
 - `applyTranslations()` only overwrites a node when the lookup differs from the

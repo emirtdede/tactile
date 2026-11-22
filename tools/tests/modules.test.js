@@ -534,7 +534,7 @@ test('the stylesheet mirrors for right-to-left locales', () => {
 
     // The toggle knob travels toward the inline-end edge, which is the left in
     // RTL, so the checked offset has to be negated explicitly.
-    assert.ok(/\[dir="rtl"\][^{]*\.slider:before\s*\{[^}]*translateX\(-20px\)/.test(css),
+    assert.ok(/\[dir="rtl"\][^{]*\.slider::before\s*\{[^}]*translateX\(-1\.125rem\)/.test(css),
         'RTL toggle must move its knob the other way');
 });
 
@@ -562,6 +562,38 @@ test('language switch repaints every label built with tf() instead of a hook', (
         !/getElementById\('app-version-display'\)\.innerText = tf\(/.test(source.split('function updateVersionLabel')[1] || ''),
         'boot must delegate to updateVersionLabel() instead of painting inline'
     );
+});
+
+test('theme mode and palette stay separate settings', () => {
+    const renderer = fs.readFileSync(path.join(ROOT, 'src', 'app.js'), 'utf8');
+    const main = fs.readFileSync(path.join(ROOT, 'src', 'main.js'), 'utf8');
+    const database = fs.readFileSync(path.join(ROOT, 'src', 'db', 'database.js'), 'utf8');
+    const boot = fs.readFileSync(path.join(ROOT, 'src', 'assets', 'theme-boot.js'), 'utf8');
+
+    // "custom" is a palette; the mode still has to resolve to light or dark.
+    const modes = /const THEME_MODES = \[([^\]]*)\]/.exec(main);
+    assert.ok(modes, 'THEME_MODES not found');
+    assert.ok(!/custom/.test(modes[1]), 'theme mode must not accept "custom"');
+    const palettes = /const THEME_PALETTES = \[([\s\S]*?)\];/.exec(main);
+    assert.ok(palettes && /'custom'/.test(palettes[1]), 'the palette list must include "custom"');
+
+    const apply = /function applyTheme\(mode\) \{([\s\S]*?)\n\}/.exec(renderer);
+    assert.ok(apply, 'applyTheme not found');
+    assert.ok(
+        /settings\.theme_palette = 'custom'/.test(apply[1]),
+        'applyTheme("custom") must switch the palette, not the mode'
+    );
+
+    // A pre-1.2 database stored "custom" as the mode. It has to be migrated or
+    // the window opens with a mode the normalizer now rejects.
+    assert.ok(
+        /value === 'custom'[\s\S]{0,200}theme_palette/.test(database),
+        'existing "custom" theme rows must migrate to the custom palette'
+    );
+
+    // The pre-paint boot script reads the cached palette, so it must set the
+    // same attribute the stylesheet keys on.
+    assert.ok(/dataset\.theme = palette/.test(boot), 'theme-boot must set data-theme');
 });
 
 test('keycode remap keeps the keyup (-up) variants in sync with keydown', () => {

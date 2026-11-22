@@ -143,44 +143,118 @@ function resolvedTheme(mode = settings.theme || 'system') {
     return prefersDarkScheme() ? 'dark' : 'light';
 }
 
+// Colour palettes shipped with themes.css. "custom" is the user's own accent.
+const THEME_PALETTES = [
+    'obsidian', 'slate', 'navy', 'blue', 'cyan', 'indigo', 'purple',
+    'pink', 'red', 'orange', 'yellow', 'emerald', 'grass', 'lime', 'custom'
+];
+const DEFAULT_PALETTE = 'obsidian';
+
+function currentPalette() {
+    const stored = settings.theme_palette;
+    if (THEME_PALETTES.includes(stored)) return stored;
+    // Settings written before palettes existed only knew "custom".
+    return settings.theme === 'custom' ? 'custom' : DEFAULT_PALETTE;
+}
+
 function accentColor() {
-    if ((settings.theme || 'system') === 'custom' && isValidHexColor(settings.custom_color)) {
+    if (currentPalette() === 'custom' && isValidHexColor(settings.custom_color)) {
         return settings.custom_color.toUpperCase();
     }
     return resolvedTheme() === 'light' ? '#B8860B' : DEFAULT_ACCENT;
 }
 
+function hexToRgba(hex, alpha) {
+    const { r, g, b } = hexToRgb(hex);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+const CUSTOM_THEME_PROPS = [
+    '--accent', '--accent-hover', '--accent-text', '--accent-soft', '--accent-ring',
+    '--accent-fg', '--canvas', '--surface', '--surface-subtle', '--surface-hover'
+];
+
+/**
+ * Applies the interface appearance.
+ *
+ * `mode` is the light/dark preference (system, light, dark) or "custom", which
+ * selects the custom palette without discarding the light/dark preference.
+ */
 function applyTheme(mode) {
-    const nextMode = mode || 'system';
-    settings.theme = nextMode;
-    const resolved = resolvedTheme(nextMode);
+    if (mode === 'custom') {
+        settings.theme_palette = 'custom';
+    } else if (mode === 'system' || mode === 'light' || mode === 'dark') {
+        settings.theme = mode;
+    }
+
+    const resolved = resolvedTheme(settings.theme || 'system');
+    const palette = currentPalette();
+    const root = document.documentElement;
     const body = document.body;
 
+    root.dataset.theme = palette;
+    root.classList.toggle('dark', resolved === 'dark');
+    root.classList.toggle('pp-high-contrast', settings.high_contrast === 'true');
     body.classList.toggle('light-theme', resolved === 'light');
-    body.classList.toggle('custom-theme', nextMode === 'custom');
+    body.classList.toggle('custom-theme', palette === 'custom');
     body.classList.toggle('high-contrast', settings.high_contrast === 'true');
     body.classList.toggle('reduce-motion', settings.reduce_motion === 'true');
 
-    const accent = accentColor();
-    if (nextMode === 'custom') {
-        const baseTarget = resolved === 'light' ? '#FFFFFF' : '#081018';
-        const baseBackground = mixHex(accent, baseTarget, resolved === 'light' ? 0.9 : 0.86);
-        body.style.setProperty('--accent-gold', accent);
-        body.style.setProperty('--accent-gold-hover', mixHex(accent, '#FFFFFF', 0.22));
+    try {
+        localStorage.setItem('tactile.theme-palette', palette);
+        localStorage.setItem('tactile.theme-dark', resolved === 'dark' ? 'true' : 'false');
+    } catch (err) {
+        console.warn('Failed to cache the theme for the next launch:', err);
+    }
+
+    if (palette === 'custom') {
+        const accent = accentColor();
+        const light = resolved === 'light';
+        const baseTarget = light ? '#FFFFFF' : '#08080B';
+        const canvas = mixHex(accent, baseTarget, light ? 0.95 : 0.92);
+        const surface = mixHex(accent, baseTarget, light ? 0.975 : 0.945);
+
+        root.style.setProperty('--accent', accent);
+        root.style.setProperty('--accent-hover', mixHex(accent, '#FFFFFF', light ? 0.18 : 0.26));
         // Text and icons get a version that passes 4.5:1 on the generated
         // surface; the fill colour stays exactly what the user picked.
-        body.style.setProperty('--accent-text', accessibleAccent(accent, baseBackground));
-        body.style.setProperty('--bg-base', baseBackground);
-        body.style.setProperty('--bg-sidebar', mixHex(accent, baseTarget, resolved === 'light' ? 0.86 : 0.9));
+        root.style.setProperty('--accent-text', accessibleAccent(accent, canvas));
+        root.style.setProperty('--accent-soft', hexToRgba(accent, light ? 0.12 : 0.16));
+        root.style.setProperty('--accent-ring', hexToRgba(accent, 0.34));
+        root.style.setProperty('--accent-fg', relativeLuminance(accent) > 0.55 ? '#09090B' : '#FFFFFF');
+        root.style.setProperty('--canvas', canvas);
+        root.style.setProperty('--surface', surface);
+        root.style.setProperty('--surface-subtle', mixHex(accent, baseTarget, light ? 0.94 : 0.9));
+        root.style.setProperty('--surface-hover', mixHex(accent, baseTarget, light ? 0.9 : 0.86));
     } else {
-        ['--accent-gold', '--accent-gold-hover', '--accent-text', '--bg-base', '--bg-sidebar'].forEach((property) => {
-            body.style.removeProperty(property);
-        });
+        CUSTOM_THEME_PROPS.forEach((property) => root.style.removeProperty(property));
     }
+
+    updateThemeControls();
 
     window.api.setZoom(String(settings.zoom || '100')).catch((err) => {
         console.warn('Failed to apply interface zoom:', err);
     });
+}
+
+/** Reflects the active palette and light/dark preference in the settings UI. */
+function updateThemeControls() {
+    const palette = currentPalette();
+    document.querySelectorAll('[data-palette]').forEach((button) => {
+        const selected = button.dataset.palette === palette;
+        button.classList.toggle('is-selected', selected);
+        button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+
+    const mode = settings.theme === 'light' || settings.theme === 'dark' ? settings.theme : 'system';
+    document.querySelectorAll('[data-theme-mode]').forEach((button) => {
+        const selected = button.dataset.themeMode === mode;
+        button.classList.toggle('is-active', selected);
+        button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+
+    const customRow = document.getElementById('custom-color-row');
+    if (customRow) customRow.hidden = palette !== 'custom';
 }
 
 /**
@@ -373,10 +447,8 @@ function categoryLabel(name) {
 }
 
 function refreshSidebarStats() {
-    const profileCount = document.getElementById('stat-profiles');
-    const categoryCount = document.getElementById('stat-categories');
-    if (profileCount) profileCount.textContent = String(profiles.length);
-    if (categoryCount) categoryCount.textContent = String(categories.length);
+    // Counters live on the About KPI strip now; kept as a hook for callers that
+    // still refresh after a profile or category change.
 }
 
 function getActiveMaterialFilter() {
@@ -583,6 +655,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-min').addEventListener('click', () => window.api.minimize());
     document.getElementById('btn-max').addEventListener('click', () => window.api.maximize());
     document.getElementById('btn-close').addEventListener('click', () => window.api.close());
+
+    // Sidebar: collapsible on desktop, slide-over drawer on narrow windows.
+    const collapseBtn = document.getElementById('btn-sidebar-collapse');
+    const navToggle = document.getElementById('btn-nav-toggle');
+    const sidebar = document.getElementById('app-sidebar');
+    const SIDEBAR_KEY = 'tactile.sidebar-collapsed';
+
+    const setSidebarCollapsed = (collapsed) => {
+        document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
+        if (collapseBtn) collapseBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        try {
+            localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
+        } catch (err) {
+            console.warn('Failed to remember sidebar state:', err);
+        }
+    };
+
+    try {
+        if (localStorage.getItem(SIDEBAR_KEY) === '1') setSidebarCollapsed(true);
+    } catch (err) {
+        console.warn('Failed to read sidebar state:', err);
+    }
+
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', () => {
+            setSidebarCollapsed(!document.documentElement.classList.contains('sidebar-collapsed'));
+        });
+    }
+
+    if (navToggle) {
+        navToggle.addEventListener('click', () => {
+            const open = document.documentElement.classList.toggle('sidebar-mobile-open');
+            navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    }
+
+    if (sidebar) {
+        sidebar.addEventListener('click', (event) => {
+            if (event.target.closest('.nav-item') && window.matchMedia('(max-width: 899px)').matches) {
+                document.documentElement.classList.remove('sidebar-mobile-open');
+                if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // Keep the maximize/restore glyph in sync with the real window state.
+    const maxButton = document.getElementById('btn-max');
+    if (window.api.onWindowState) {
+        window.api.onWindowState((maximized) => {
+            if (maxButton) maxButton.setAttribute('data-maximized', maximized ? 'true' : 'false');
+        });
+    }
 
     // Delegated card actions (preview / activate / edit / add sound). The cards
     // are re-created on every render, so a single delegated listener on each
@@ -829,26 +953,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Theme Initial State & Synchronization
     applyTheme(settings.theme || 'system');
 
-    const themeSelect = document.getElementById('setting-theme');
     const customColorRow = document.getElementById('custom-color-row');
     const customColorInput = document.getElementById('setting-custom-color');
 
     const syncCustomColorRow = () => {
-        if (customColorRow) customColorRow.hidden = themeSelect.value !== 'custom';
+        if (customColorRow) customColorRow.hidden = currentPalette() !== 'custom';
         if (customColorInput) customColorInput.value = settings.custom_color || DEFAULT_ACCENT;
     };
     syncCustomColorRow();
+    updateThemeControls();
 
-    if (themeSelect) {
-        themeSelect.value = settings.theme || 'system';
-        themeSelect.addEventListener('change', async (e) => {
-            const nextTheme = e.target.value;
-            applyTheme(nextTheme);
-            syncCustomColorRow();
-            await persistSetting('theme', nextTheme);
+    document.querySelectorAll('[data-palette]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const palette = button.dataset.palette;
+            settings.theme_palette = palette;
+            applyTheme(settings.theme || 'system');
+            await persistSetting('theme_palette', palette);
             await applyAppIcon(settings.app_icon || 'theme');
         });
-    }
+    });
+
+    document.querySelectorAll('[data-theme-mode]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            applyTheme(button.dataset.themeMode);
+            await persistSetting('theme', settings.theme || 'system');
+            await applyAppIcon(settings.app_icon || 'theme');
+        });
+    });
 
     document.getElementById('btn-apply-color').addEventListener('click', async () => {
         const value = normalizeHex(customColorInput ? customColorInput.value : '');
@@ -857,13 +988,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         settings.custom_color = value;
-        settings.theme = 'custom';
-        if (themeSelect) themeSelect.value = 'custom';
+        settings.theme_palette = 'custom';
         if (customColorInput) customColorInput.value = value;
         syncCustomColorRow();
         applyTheme('custom');
         await persistSetting('custom_color', value);
-        await persistSetting('theme', 'custom');
+        await persistSetting('theme_palette', 'custom');
         await applyAppIcon(settings.app_icon || 'theme');
         showToast(t('toast.saved'));
     });
@@ -1238,6 +1368,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // External Links
     document.getElementById('link-website').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.api.openExternal('https://vellium.dev')
+            .catch((err) => console.error('Failed to open website link:', err));
+    });
+    document.getElementById('link-website-meta').addEventListener('click', (e) => {
         e.preventDefault();
         window.api.openExternal('https://vellium.dev')
             .catch((err) => console.error('Failed to open website link:', err));
@@ -1932,10 +2067,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ─── Settings section navigation ────────────────────────────────────────
     const sections = [...document.querySelectorAll('.settings-section')];
-    const sectionLinks = [...document.querySelectorAll('.section-link[data-section]')];
+    const sectionLinks = [...document.querySelectorAll('.pp-split-nav-link[data-section]')];
 
     const activateSettingsSection = (name, scroll = true) => {
-        sectionLinks.forEach((link) => link.classList.toggle('active', link.dataset.section === name));
+        sectionLinks.forEach((link) => {
+            const selected = link.dataset.section === name;
+            link.classList.toggle('is-active', selected);
+            link.classList.toggle('active', selected);
+        });
         if (!scroll) return;
         const target = document.getElementById(`settings-${name}`);
         if (target) target.scrollIntoView({ behavior: settings.reduce_motion === 'true' ? 'auto' : 'smooth', block: 'start' });
@@ -1945,32 +2084,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         link.addEventListener('click', () => activateSettingsSection(link.dataset.section));
     });
 
-    // The scrolling element is the views container, not the settings column, so
-    // binding to `.settings-scroll` left the scroll spy dead: the active link
-    // never followed the content.
-    const settingsScroll = document.querySelector('.views-container');
+    // The scrolling element is the settings content pane, so the active link
+    // follows the section that is crossing the top of that pane.
+    const settingsScroll = document.getElementById('settings-pane');
     if (settingsScroll) {
         let spyFrame = 0;
         settingsScroll.addEventListener('scroll', () => {
             if (spyFrame) return;
             spyFrame = requestAnimationFrame(() => {
                 spyFrame = 0;
-                const top = settingsScroll.getBoundingClientRect().top + 48;
+                const top = settingsScroll.getBoundingClientRect().top + 32;
                 let active = sections.length ? sections[0].dataset.section : 'general';
                 for (const section of sections) {
                     if (section.getBoundingClientRect().top <= top) active = section.dataset.section;
                 }
-                sectionLinks.forEach((link) => link.classList.toggle('active', link.dataset.section === active));
+                sectionLinks.forEach((link) => {
+                    const selected = link.dataset.section === active;
+                    link.classList.toggle('is-active', selected);
+                    link.classList.toggle('active', selected);
+                });
             });
         }, { passive: true });
     }
 
     // ─── Sidebar stats ──────────────────────────────────────────────────────
     const updateSidebarStats = () => {
-        const profileCount = document.getElementById('stat-profiles');
-        const categoryCount = document.getElementById('stat-categories');
-        if (profileCount) profileCount.textContent = String(profiles.length);
-        if (categoryCount) categoryCount.textContent = String(categories.length);
+        // The redesign dropped the sidebar counters.
     };
     updateSidebarStats();
 
@@ -2013,12 +2152,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             cloudHint.textContent = status.connected && status.available === false
                 ? t('cloud.fallback_note')
                 : '';
-        }
-
-        const statCloud = document.getElementById('stat-cloud');
-        if (statCloud) {
-            statCloud.textContent = status.connected ? t('sidebar.cloud_on') : t('sidebar.cloud_off');
-            statCloud.classList.toggle('on', Boolean(status.connected));
         }
 
         const syncBtn = document.getElementById('btn-cloud-sync');
@@ -2151,61 +2284,86 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ─── Documentation ──────────────────────────────────────────────────────
     const DOCS_BASE = 'https://github.com/emirtdede/tactile/tree/main/docs';
     const DOCS_BLOB_BASE = 'https://github.com/emirtdede/tactile/blob/main/docs/';
-    // Each card links to the Markdown file that actually documents the topic.
-    const DOC_SECTIONS = {
-        getting_started: { title: 'docs.getting_started', body: 'docs.getting_started_desc', file: 'FEATURES.md' },
-        profiles: { title: 'docs.profiles', body: 'docs.profiles_desc', file: 'FEATURES.md' },
-        sync: { title: 'docs.sync', body: 'docs.sync_desc', file: 'CLOUD_SYNC.md' },
-        shortcuts: { title: 'docs.shortcuts', body: 'docs.shortcuts_desc', file: 'FEATURES.md' },
-        assistant: { title: 'docs.assistant', body: 'docs.assistant_desc', file: 'AI.md' },
-        integrations: { title: 'docs.integrations', body: 'docs.integrations_desc', file: 'INTEGRATIONS.md' },
-        privacy: { title: 'docs.privacy', body: 'docs.privacy_desc', file: 'SECURITY.md' }
+    // Each guide renders as a card in the right-hand pane; the topic list on the
+    // left scrolls to it. The file is the Markdown page that covers the topic.
+    const DOC_FILES = {
+        getting_started: 'FEATURES.md',
+        profiles: 'FEATURES.md',
+        shortcuts: 'FEATURES.md',
+        sync: 'CLOUD_SYNC.md',
+        assistant: 'AI.md',
+        integrations: 'INTEGRATIONS.md',
+        privacy: 'SECURITY.md'
     };
+    const DOC_ORDER = ['getting_started', 'profiles', 'shortcuts', 'sync', 'assistant', 'integrations', 'privacy'];
 
-    const openDocInBrowser = (file) => {
+    const openDoc = (key) => {
+        const file = DOC_FILES[key] || DOC_FILES.getting_started;
         window.api.openExternal(`${DOCS_BLOB_BASE}${file}`)
             .catch((err) => console.error('Failed to open document:', err));
     };
 
-    let activeDocFile = DOC_SECTIONS.getting_started.file;
-    const showDoc = (key) => {
-        const doc = DOC_SECTIONS[key] || DOC_SECTIONS.getting_started;
-        activeDocFile = doc.file;
-        const title = document.getElementById('doc-body-title');
-        const text = document.getElementById('doc-body-text');
-        if (title) title.textContent = t(doc.title);
-        if (text) text.textContent = t(doc.body);
-        document.querySelectorAll('.section-link[data-docs]').forEach((link) => {
-            link.classList.toggle('active', link.dataset.docs === key);
+    const docsPane = document.getElementById('docs-pane');
+    const docSections = Array.from(document.querySelectorAll('.docs-section'));
+    const highlightDoc = (key) => {
+        document.querySelectorAll('.pp-split-nav-link[data-docs]').forEach((link) => {
+            const selected = link.dataset.docs === key;
+            link.classList.toggle('is-active', selected);
+            link.classList.toggle('active', selected);
         });
-        const body = document.getElementById('doc-body');
-        if (body) body.scrollIntoView({ behavior: settings.reduce_motion === 'true' ? 'auto' : 'smooth', block: 'nearest' });
+    };
+    const showDoc = (key, scroll) => {
+        const active = DOC_FILES[key] ? key : 'getting_started';
+        highlightDoc(active);
+        const section = document.getElementById(`doc-sec-${active}`);
+        if (!scroll || !section || !docsPane) return;
+        const top = section.getBoundingClientRect().top - docsPane.getBoundingClientRect().top + docsPane.scrollTop - 8;
+        docsPane.scrollTo({ top, behavior: settings.reduce_motion === 'true' ? 'auto' : 'smooth' });
     };
 
     document.querySelectorAll('[data-docs]').forEach((element) => {
-        element.addEventListener('click', () => showDoc(element.dataset.docs));
+        element.addEventListener('click', () => showDoc(element.dataset.docs, true));
     });
 
-    const docOpenButton = document.getElementById('btn-doc-open');
-    if (docOpenButton) {
-        docOpenButton.addEventListener('click', () => openDocInBrowser(activeDocFile));
+    // Double-clicking a guide opens the full Markdown page for that topic.
+    docSections.forEach((section) => {
+        section.addEventListener('dblclick', () => openDoc(section.id.replace('doc-sec-', '')));
+    });
+
+    // Keep the topic list in step with whatever the reader has scrolled to.
+    if (docsPane && docSections.length) {
+        docsPane.addEventListener('scroll', () => {
+            const paneTop = docsPane.getBoundingClientRect().top;
+            let current = DOC_ORDER[0];
+            for (const section of docSections) {
+                if (section.getBoundingClientRect().top - paneTop <= 80) {
+                    current = section.id.replace('doc-sec-', '');
+                }
+            }
+            highlightDoc(current);
+        }, { passive: true });
     }
-    showDoc('getting_started');
+
+    showDoc('getting_started', false);
 
     document.getElementById('btn-docs-github').addEventListener('click', () => {
         window.api.openExternal(`${DOCS_BASE}`).catch((err) => console.error('Failed to open docs:', err));
     });
 
-    // Instant filter over the card grid. Matching is case and diacritic
-    // insensitive so "asistan" finds "Yerel asistan" in every locale.
+    // Instant filter: the topic list and the guide cards narrow together, so a
+    // search always leaves the pane showing only what matched.
     const docsSearch = document.getElementById('docs-search');
     if (docsSearch) {
-        const cards = Array.from(document.querySelectorAll('.doc-card'));
+        const links = Array.from(document.querySelectorAll('.pp-split-nav-link[data-docs]'));
         const normalize = (value) => String(value).toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         docsSearch.addEventListener('input', () => {
             const query = normalize(docsSearch.value.trim());
-            for (const card of cards) {
-                card.hidden = query.length > 0 && !normalize(card.textContent).includes(query);
+            for (const link of links) {
+                const section = document.getElementById(`doc-sec-${link.dataset.docs}`);
+                const haystack = normalize(`${link.textContent} ${section ? section.textContent : ''}`);
+                const match = query.length === 0 || haystack.includes(query);
+                link.hidden = !match;
+                if (section) section.hidden = !match;
             }
         });
     }
@@ -2233,9 +2391,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         health(document.getElementById('diag-db'), data.dbOk);
         health(document.getElementById('diag-hook'), data.hookOk);
         health(document.getElementById('diag-tray'), data.trayOk);
-        health(document.getElementById('subnav-diag-db'), data.dbOk);
-        health(document.getElementById('subnav-diag-hook'), data.hookOk);
-        health(document.getElementById('subnav-diag-tray'), data.trayOk);
     };
 
     const diagnosticsText = () => {
@@ -2289,11 +2444,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-gh-repo').addEventListener('click', () => openExternalSafe(GITHUB_URL));
     document.getElementById('btn-sponsor').addEventListener('click', () => openExternalSafe(SPONSOR_URL));
-    document.getElementById('btn-subnav-github').addEventListener('click', () => openExternalSafe(GITHUB_URL));
-    document.getElementById('btn-subnav-sponsor').addEventListener('click', () => openExternalSafe(SPONSOR_URL));
-    document.getElementById('btn-subnav-docs').addEventListener('click', () => switchView('docs'));
     document.getElementById('btn-about-github').addEventListener('click', () => openExternalSafe(GITHUB_URL));
     document.getElementById('btn-about-sponsor').addEventListener('click', () => openExternalSafe(SPONSOR_URL));
+    document.getElementById('btn-about-github-top').addEventListener('click', () => openExternalSafe(GITHUB_URL));
+    document.getElementById('btn-about-sponsor-top').addEventListener('click', () => openExternalSafe(SPONSOR_URL));
     document.getElementById('btn-about-docs').addEventListener('click', () => switchView('docs'));
     document.getElementById('btn-support-issue').addEventListener('click', () => openExternalSafe(`${GITHUB_URL}/issues/new`));
     document.getElementById('btn-support-email').addEventListener('click', () => openExternalSafe('mailto:support@vellium.dev'));
@@ -2460,9 +2614,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (wizardNext) {
         wizardNext.addEventListener('click', async () => {
             if (wizardIndex === 1) {
-                settings.theme = wizardTheme;
+                // "Custom" is a palette, not a light/dark mode: keep the OS
+                // preference and switch the accent instead.
                 applyTheme(wizardTheme);
-                await persistSetting('theme', wizardTheme);
+                await persistSetting(wizardTheme === 'custom' ? 'theme_palette' : 'theme', wizardTheme);
                 await applyAppIcon(settings.app_icon || 'theme');
             }
             if (wizardIndex >= wizardSteps.length - 1) {
@@ -2911,15 +3066,9 @@ function switchView(view) {
         button.classList.toggle('active', button.getAttribute('data-view') === baseView);
     });
 
-    // Dynamic category list in the second sidebar.
+    // Dynamic category list in the sidebar.
     document.querySelectorAll('.category-list .nav-item').forEach((button) => {
         button.classList.toggle('active', button.getAttribute('data-view') === view);
-    });
-
-    // Second sidebar panel follows the primary destination.
-    const panelName = ['settings', 'docs', 'diagnostics', 'about'].includes(baseView) ? baseView : 'profiles';
-    document.querySelectorAll('.subnav-panel').forEach((panel) => {
-        panel.classList.toggle('active', panel.getAttribute('data-panel') === panelName);
     });
 
     const contextKey = {
@@ -3183,8 +3332,10 @@ function updateActiveProfileBadge() {
 function updateVersionLabel() {
     const el = document.getElementById('app-version-display');
     if (el) el.innerText = app_version ? tf('about.version', app_version) : '';
-    const pill = document.getElementById('settings-version');
-    if (pill) pill.textContent = app_version ? `v${app_version}` : '';
+    const rail = document.getElementById('rail-version');
+    if (rail) rail.textContent = app_version ? `v${app_version}` : '';
+    const kpi = document.getElementById('about-kpi-version');
+    if (kpi) kpi.textContent = app_version ? `v${app_version}` : '-';
 }
 
 async function previewProfile(id) {

@@ -152,6 +152,7 @@ async function initDB() {
             tray_icon: 'true',
             muted: 'false',
             theme: 'system',
+            theme_palette: 'obsidian',
             selected_profile: 'default',
             // Empty on purpose: the main process resolves it from the OS locale on
             // first launch (see resolveLanguage in i18n.js), so a new install never
@@ -205,6 +206,7 @@ async function initDB() {
         // Upgrade check: ensure new settings exist for existing databases.
         const newDefaults = {
             app_icon: 'light',
+            theme_palette: 'obsidian',
             tray_click_single: 'open',
             tray_click_double: 'none',
             shortcut_toggle_mute: 'Control+K',
@@ -221,6 +223,17 @@ async function initDB() {
                 changed = true;
             }
         }
+
+        // 1.1 stored "custom" in the theme mode. It is a palette now, so keep
+        // those users on their colour while the mode falls back to the system
+        // scheme.
+        const legacyTheme = rowsFromExec(db.exec("SELECT value FROM app_settings WHERE key = 'theme'"))[0];
+        if (legacyTheme && legacyTheme.value === 'custom') {
+            db.run("UPDATE app_settings SET value = 'system' WHERE key = 'theme'");
+            db.run("UPDATE app_settings SET value = 'custom' WHERE key = 'theme_palette'");
+            changed = true;
+        }
+
         if (changed) saveDB();
     }
 }

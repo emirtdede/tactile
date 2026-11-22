@@ -168,7 +168,7 @@ test('keyboard focus stays visible on controls that drop the native outline', ()
     // :focus-visible replacement the volume slider had no keyboard indicator.
     assert.ok(/:focus-visible\s*\{/.test(css), 'app.css must define a :focus-visible rule');
     assert.ok(
-        /:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--accent-gold\)/.test(css),
+        /:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--accent\)/.test(css),
         'the focus ring must be visible in both themes'
     );
 });

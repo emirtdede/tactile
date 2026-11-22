@@ -6,7 +6,7 @@
   Pandas, EG Crystal/Oreo and travel variants); press and release variants,
   per-key overrides, volume per profile.
 - Profiles grouped into user categories, activatable with one click; the active
-  profile is highlighted in the library and reported in the rail footer.
+  profile is highlighted in the library and reported in the sidebar footer.
 - Import from a folder or a mixed zip, with format detection for both the
   `config.json` pack format and flat per-key audio folders.
 - Global hotkey to mute/unmute (default `Control+Alt+M`) and a quick-task hotkey
@@ -14,19 +14,29 @@
 
 ## Interface
 
-- Two-level navigation: a slim icon rail plus a contextual sub-navigation panel,
-  both theme-aware.
-- Views: Sounds, Import, Settings, Docs, Diagnostics, About and Legal.
-- Settings split into seven sections (General, Appearance, Language, Sound,
-  Shortcuts, Data, Updates) with a scroll-spy section list.
-- Frameless window with a custom title bar, drag region and window controls.
-- Responsive down to 800x500; long labels ellipsize instead of overflowing.
+- One collapsible sidebar: brand header with a collapse button, grouped
+  navigation (views, categories, quick actions, application) and a footer with
+  GitHub and Sponsor. Collapsed, it becomes an icon rail and remembers the
+  choice.
+- Views: Sounds, Import, Documentation, Diagnostics, Settings and About, each in
+  a card surface.
+- Settings and Documentation are split panes: a grouped topic list scrolls the
+  content pane and highlights the section in view.
+- Settings carries a "Changes save automatically" pill; every control persists
+  as soon as it changes.
+- Floating window controls sit above the content, so the surface starts at the
+  top edge.
+- Responsive down to 800x500; the sidebar becomes a drawer under 900 pixels and
+  long labels ellipsize instead of overflowing.
 
 ## Appearance
 
-- Theme modes: System, Light, Dark and Custom.
-- Custom theme: any hex colour; the accent is mixed into surfaces, borders and
-  icons so contrast stays readable in both OS schemes.
+- Theme modes: System, Light, Dark.
+- Fifteen palettes: Obsidian, Slate, Navy, Blue, Cyan, Indigo, Purple, Pink,
+  Red, Orange, Yellow, Emerald, Grass, Lime and Custom. Each palette ships a
+  light and a dark variant, so switching mode never loses the palette.
+- Custom palette: any hex colour; the accent is mixed into surfaces, borders and
+  icons so contrast stays readable in both schemes.
 - App icon modes: Theme (follows the active theme), Light, Dark, Custom colour.
   Changing the icon updates the window, taskbar, tray and desktop shortcut.
 - Accessibility: zoom 80-150 percent, high contrast mode, reduce motion.
@@ -44,7 +54,7 @@
 Four sequential full-screen steps, never combined:
 
 1. Language - pick from the 73 locales, previewed live.
-2. Theme - System, Light, Dark or Custom, previewed live.
+2. Theme - System, Light, Dark or a custom accent colour, previewed live.
 3. Welcome - what Tactile does, with a short value statement.
 4. Tour - three panels covering profiles, settings and the tray/hotkeys.
 

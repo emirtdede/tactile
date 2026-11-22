@@ -1,34 +1,44 @@
-# 1.0.0 Overhaul - Work Summary
+# Interface overhaul - Work Summary
 
-This report records what was built for the 1.0.0 release and points at the
-evidence for each item. Every screenshot lives in `docs/screenshots`.
+This report records what was built for the 1.0.0 overhaul and the 1.2.0 parity
+pass, and points at the evidence for each item. Every screenshot lives in
+`docs/screenshots`.
 
 ## 1. Interface overhaul
 
-Rebuilt the shell around a two-level navigation model: a slim icon rail and a
-contextual sub-navigation panel. Views: Sounds, Import, Settings, Docs,
-Diagnostics, About/Legal.
+Rebuilt the shell around one collapsible sidebar plus a content surface. A
+second pass (1.2.0) restyled it on the shared Vellium design tokens and replaced
+the two-level rail with a single grouped sidebar. Views: Sounds, Import,
+Documentation, Diagnostics, Settings, About/Legal.
 
 Evidence: `screenshots/01-sounds.png`, `screenshots/02-import.png`,
 `screenshots/07-docs.png`, `screenshots/08-diagnostics.png`,
-`screenshots/09-about.png`.
+`screenshots/09-about.png`, `screenshots/18-sidebar-collapsed.png`.
 
-- Left rail: product mark, view icons, active indicator, version footer with the
-  active profile.
-- Sub-navigation: eyebrow, title, description, action buttons, scrollable list.
+- Sidebar: brand header with a collapse button, grouped navigation, category
+  list, quick actions, application group, GitHub/Sponsor footer and the version
+  line with the active profile.
+- Collapsed sidebar: icon rail that keeps the brand mark and footer actions; the
+  choice persists in `localStorage`.
+- Settings and Documentation: split panes whose grouped topic list scrolls the
+  content pane and follows the section in view.
 - Cards: category chip, name, material, preview and activate actions, keyboard
   focusable.
-- Settings: seven sections with a sticky section list and scroll spy.
+- Section headers: compact uppercase label with a Material Symbols icon chip;
+  settings controls live in card rows under a "Changes save automatically" pill.
 
 ## 2. Themes and icons
 
-- Modes: System, Light, Dark, Custom.
-- Custom takes a hex value and mixes surfaces, borders and accents from it.
+- Modes: System, Light, Dark.
+- Fifteen palettes, each with a light and a dark variant: Obsidian, Slate, Navy,
+  Blue, Cyan, Indigo, Purple, Pink, Red, Orange, Yellow, Emerald, Grass, Lime,
+  Custom. The custom palette takes a hex value and mixes surfaces, borders and
+  accents from it.
 - Icon modes: Theme, Light, Dark, Custom; applied to window, taskbar, tray and
   desktop shortcut through `set-dynamic-app-icon`.
 
-Evidence: `screenshots/03-settings-general.png` (appearance controls),
-`screenshots/14-light-theme.png` (full light surface),
+Evidence: `screenshots/17-settings-appearance.png` (palette grid and mode
+segmented control), `screenshots/14-light-theme.png` (full light surface),
 `screenshots/11-onboarding-theme.png` (live theme preview in onboarding).
 
 ## 3. Languages (73)
@@ -46,10 +56,10 @@ Evidence: `screenshots/10-onboarding-language.png` (language step with picker).
 
 Four separate screens in strict order, never combined:
 
-1. Language (`08-onboarding-language.png`)
-2. Theme (`09-onboarding-theme.png`)
-3. Welcome (`10-onboarding-welcome.png`)
-4. Tour (`11-onboarding-tour.png`)
+1. Language (`10-onboarding-language.png`)
+2. Theme (`11-onboarding-theme.png`)
+3. Welcome (`12-onboarding-welcome.png`)
+4. Tour (`13-onboarding-tour.png`)
 
 Back is hidden on step 1, Skip completes onboarding, the choice is stored in
 `onboarding_done`, and the footer shows "Step n of m".
@@ -118,11 +128,11 @@ Evidence: `screenshots/09-about.png`, `screenshots/08-diagnostics.png`.
 
 | Check | Result |
 | --- | --- |
-| `npm test` | 80 pass, 0 fail |
+| `npm test` | 102 pass, 0 fail |
 | `node tools/i18n-status.js` | 73 declared, 73 complete, 0 missing, 0 partial |
 | `node tools/i18n/placeholders.js` | issues: 0 |
-| `node node_modules/electron/cli.js tools/capture.js` | 12 screenshots, renderer errors: 0 |
-| Windows installer build | `dist/Tactile-Setup-1.0.0.exe`, version metadata 1.0.0, brand icon |
+| `node node_modules/electron/cli.js tools/capture.js` | 18 screenshots, renderer errors: 0 |
+| Windows installer build | `dist/Tactile-Setup-1.1.0.exe`, version metadata 1.1.0, brand icon |
 
 ## 12. Repository hygiene
 

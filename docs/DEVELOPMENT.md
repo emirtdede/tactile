@@ -44,7 +44,7 @@ docs/                  this documentation and screenshots
 plans/                 implementation plans
 public/                brand assets served to the renderer
 src/
-  app.html             single-page shell (rail, subnav, views, wizard)
+  app.html             single-page shell (sidebar, views, wizard)
   app.js               renderer logic
   main.js              main process
   preload.js           contextBridge API

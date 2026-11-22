@@ -45,7 +45,7 @@
 
 Built with **Electron 30**, **Node.js** and **vanilla JavaScript**. A sandboxed renderer talks to a hardened main process over a validated IPC bridge; a local **SQLite** database (`sql.js`) holds your profiles and settings, and a native global hook feeds real key events with sub-frame latency.
 
-Tactile ships with **18 bundled sound packs** (Cherry MX Blue, Brown, Red and Black in ABS and PBT, Topre Purple, NovelKeys Cream, Holy Pandas, EG Crystal, EG Oreo and travel variants), **73 complete languages**, a **4-step onboarding**, **system / light / dark / custom themes** with theme-matched app icons, and a **serverless cloud backup** that writes one atomic snapshot into the OneDrive, Google Drive or Dropbox folder you already have - for free, with no server of ours involved.
+Tactile ships with **18 bundled sound packs** (Cherry MX Blue, Brown, Red and Black in ABS and PBT, Topre Purple, NovelKeys Cream, Holy Pandas, EG Crystal, EG Oreo and travel variants), **73 complete languages**, a **4-step onboarding**, **15 palettes with light and dark variants** and theme-matched app icons, and a **serverless cloud backup** that writes one atomic snapshot into the OneDrive, Google Drive or Dropbox folder you already have - for free, with no server of ours involved.
 
 > **Documentation:** architecture, localization, sync, updates, testing and the release runbook are indexed in [`docs/README.md`](docs/README.md).
 
@@ -63,9 +63,13 @@ Tactile ships with **18 bundled sound packs** (Cherry MX Blue, Brown, Red and Bl
 | :---: | :---: | :---: |
 | ![Cloud sync](docs/screenshots/04-settings-backup.png) | ![Local assistant](docs/screenshots/05-settings-ai.png) | ![Integrations](docs/screenshots/06-settings-integrations.png) |
 
-| Documentation | Diagnostics | About and legal |
+| Appearance and palettes | Documentation | Diagnostics |
 | :---: | :---: | :---: |
-| ![Docs](docs/screenshots/07-docs.png) | ![Diagnostics](docs/screenshots/08-diagnostics.png) | ![About](docs/screenshots/09-about.png) |
+| ![Appearance](docs/screenshots/17-settings-appearance.png) | ![Docs](docs/screenshots/07-docs.png) | ![Diagnostics](docs/screenshots/08-diagnostics.png) |
+
+| About and legal | Collapsed sidebar |
+| :---: | :---: |
+| ![About](docs/screenshots/09-about.png) | ![Collapsed sidebar](docs/screenshots/18-sidebar-collapsed.png) |
 
 | Onboarding: language | Onboarding: theme | Onboarding: welcome |
 | :---: | :---: | :---: |
@@ -87,18 +91,21 @@ Tactile ships with **18 bundled sound packs** (Cherry MX Blue, Brown, Red and Bl
 
 ### <img src="docs/media/icons/layers.svg" width="20" height="20" align="absmiddle" alt="" /> Sound engine and library
 - 18 bundled packs with press and release variants, per-key overrides and per-profile volume.
-- Profiles grouped in categories, one click to activate; the active profile is shown in the rail footer.
+- Profiles grouped in categories, one click to activate; the active profile is
+  shown in the sidebar footer.
 - Import from a folder or a mixed zip; format detection for `config.json` packs and flat per-key folders.
 - Audio is resolved inside the pack root only - traversal and absolute paths are rejected - and cached as Base64 data URIs keyed by path and mtime.
 
-### <img src="docs/media/icons/sliders.svg" width="20" height="20" align="absmiddle" alt="" /> Two-level interface
-- Slim icon rail plus a contextual sub-navigation panel, both fully theme-aware.
-- Views: Sounds, Import, Settings, Docs, Diagnostics, About and Legal.
-- Settings split into seven sections (General, Appearance, Language, Sound, Shortcuts, Data, Updates) with a sticky section list and scroll spy.
-- Frameless window, custom title bar, responsive down to 800x500.
+### <img src="docs/media/icons/sliders.svg" width="20" height="20" align="absmiddle" alt="" /> Single collapsible sidebar
+- One grouped sidebar: brand header with a collapse button, views, categories, quick actions and application.
+- Collapsed, it becomes an icon rail; the choice is remembered between launches.
+- Settings and Documentation are split panes whose grouped topic list scrolls the content and follows the section in view.
+- Views: Sounds, Import, Documentation, Diagnostics, Settings, About and Legal. Responsive down to 800x500.
 
 ### <img src="docs/media/icons/palette.svg" width="20" height="20" align="absmiddle" alt="" /> Themes, icons and accessibility
-- **System / Light / Dark / Custom** themes. Custom accepts any hex colour and mixes surfaces, borders and accents from it.
+- **Fifteen palettes**, each with a light and a dark variant: Obsidian, Slate, Navy, Blue, Cyan, Indigo, Purple, Pink, Red, Orange, Yellow, Emerald, Grass, Lime and Custom.
+- **System / Light / Dark** mode is independent of the palette, so changing mode never loses the colour.
+- Custom accepts any hex colour and mixes surfaces, borders and accents from it.
 - **Theme / Light / Dark / Custom** app icons applied to the window, taskbar, tray and desktop shortcut.
 - Zoom 80-150 percent, high contrast and reduce motion.
 - Focus rings on every control, translated `aria-label` on icon-only buttons, dialogs announced as dialogs and closed with Escape.
@@ -254,7 +261,7 @@ npm run build:linux                 # run on Linux
 node node_modules/electron/cli.js tools/capture.js
 ```
 
-Writes 16 PNGs to `docs/screenshots/` and must report `renderer errors: 0`.
+Writes 18 PNGs to `docs/screenshots/` and must report `renderer errors: 0`.
 
 ---
 

@@ -39,7 +39,11 @@ const SYSTRAY_ICON = path.join(__dirname, 'assets/system-tray-icon.png');
 
 const TRAY_ACTIONS = ['open', 'mute', 'vol_up', 'vol_down', 'none'];
 const CLOSE_BEHAVIORS = ['ask', 'tray', 'quit'];
-const THEME_MODES = ['system', 'light', 'dark', 'custom'];
+const THEME_MODES = ['system', 'light', 'dark'];
+const THEME_PALETTES = [
+    'obsidian', 'slate', 'navy', 'blue', 'cyan', 'indigo', 'purple',
+    'pink', 'red', 'orange', 'yellow', 'emerald', 'grass', 'lime', 'custom'
+];
 const ICON_MODES = ['theme', 'custom', 'light', 'dark'];
 // mailto: is needed by the "Contact support" button; everything else (file:,
 // javascript:, ms-msdt: ...) stays blocked so a malicious link cannot launch a
@@ -56,6 +60,7 @@ const SETTING_NORMALIZERS = {
     tray_icon: (value) => (value === 'true' || value === true ? 'true' : 'false'),
     muted: (value) => (value === 'true' || value === true ? 'true' : 'false'),
     theme: (value) => (THEME_MODES.includes(value) ? value : null),
+    theme_palette: (value) => (THEME_PALETTES.includes(value) ? value : null),
     app_icon: (value) => (ICON_MODES.includes(value) ? value : null),
     language: (value) => (isSupportedLang(value) ? value : null),
     tray_click_single: (value) => (TRAY_ACTIONS.includes(value) ? value : null),
@@ -128,7 +133,6 @@ function effectiveTheme() {
     const mode = db.getSetting('theme') || 'system';
     if (mode === 'light') return 'light';
     if (mode === 'dark') return 'dark';
-    if (mode === 'custom') return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
     return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
 }
 
@@ -837,6 +841,15 @@ function createWindow(show) {
         console.error('Failed to load the application window:', err);
     });
 
+    // Keep the custom titlebar's maximize/restore glyph in sync with reality.
+    const sendWindowState = () => {
+        if (win && !win.isDestroyed()) {
+            win.webContents.send('window-state', win.isMaximized());
+        }
+    };
+    win.on('maximize', sendWindowState);
+    win.on('unmaximize', sendWindowState);
+
     // The renderer never needs to open new windows or navigate away.
     win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
     win.webContents.on('will-navigate', (event, url) => {
@@ -1294,6 +1307,7 @@ ipcMain.handle('db-get-settings', () => {
         start_minimized: db.getSetting('start_minimized') || 'false',
         tray_icon: db.getSetting('tray_icon') || 'true',
         theme: db.getSetting('theme') || 'system',
+        theme_palette: db.getSetting('theme_palette') || 'obsidian',
         app_icon: db.getSetting('app_icon') || 'theme',
         selected_profile: db.getSetting('selected_profile') || 'default',
         muted: db.getSetting('muted') || 'false',

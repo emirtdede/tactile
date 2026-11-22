@@ -24,6 +24,7 @@ const SETTINGS = {
     tray_icon: 'true',
     muted: 'false',
     theme: 'dark',
+    theme_palette: 'obsidian',
     selected_profile: 'p1',
     language: 'en',
     app_icon: 'theme',
@@ -323,6 +324,14 @@ app.whenReady().then(async () => {
 
     await shoot(win, '01-sounds');
 
+    // Collapsed rail: the sidebar keeps icons, the brand mark and the footer
+    // actions, and persists the choice through localStorage.
+    await win.webContents.executeJavaScript("document.getElementById('btn-sidebar-collapse').click(); true");
+    await wait(350);
+    await shoot(win, '18-sidebar-collapsed');
+    await win.webContents.executeJavaScript("document.getElementById('btn-sidebar-collapse').click(); true");
+    await wait(350);
+
     await selectView(win, 'custom');
     await shoot(win, '02-import');
 
@@ -333,6 +342,7 @@ app.whenReady().then(async () => {
     await shootSection(win, 'settings-data', '04-settings-backup');
     await shootSection(win, 'settings-ai', '05-settings-ai');
     await shootSection(win, 'settings-integrations', '06-settings-integrations');
+    await shootSection(win, 'settings-appearance', '17-settings-appearance');
 
     await selectView(win, 'docs');
     await shoot(win, '07-docs');

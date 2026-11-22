@@ -47,7 +47,26 @@ const IDENTICAL_TO_ENGLISH_ALLOWED = new Set([
     // Cloud product names are brands and never translated.
     'cloud.provider_onedrive',
     'cloud.provider_googledrive',
-    'cloud.provider_dropbox'
+    'cloud.provider_dropbox',
+    // Palette names are colour tokens; several languages spell them as in
+    // English (Indigo, Cyan, Pink...). The palette swatch carries the meaning.
+    'theme.obsidian',
+    'theme.slate',
+    'theme.navy',
+    'theme.blue',
+    'theme.cyan',
+    'theme.indigo',
+    'theme.purple',
+    'theme.pink',
+    'theme.red',
+    'theme.orange',
+    'theme.yellow',
+    'theme.emerald',
+    'theme.grass',
+    'theme.lime',
+    'theme.custom',
+    // Product names and version strings that stay as written everywhere.
+    'about.meta_core_value'
 ]);
 
 // Per-language cognates: the correct translation really is spelled like English.
@@ -161,6 +180,44 @@ const IDENTICAL_PAIRS_ALLOWED = new Set([
     'sv:int.webhook',
     'uz:int.api_port',
     'yo:int.webhook',
+    // Native spellings that happen to match English for the new labels.
+    'da:settings.group_system',
+    'de:settings.group_system',
+    'de:about.kpi_version',
+    'fr:about.kpi_version',
+    'it:about.kpi_privacy',
+    'nb:settings.group_system',
+    'nl:about.kpi_privacy',
+    'sv:settings.group_system',
+    'sv:about.kpi_version',
+    // "Sponsor" is the native loanword in these locales.
+    'az:sidebar.sponsor',
+    'da:sidebar.sponsor',
+    'de:sidebar.sponsor',
+    'et:sidebar.sponsor',
+    'fil:sidebar.sponsor',
+    'id:sidebar.sponsor',
+    'it:sidebar.sponsor',
+    'nb:sidebar.sponsor',
+    'nl:sidebar.sponsor',
+    'pl:sidebar.sponsor',
+    'ro:sidebar.sponsor',
+    'sq:sidebar.sponsor',
+    'sv:sidebar.sponsor',
+    'tr:sidebar.sponsor',
+    // "Core" and "Distribution" are native words in these locales.
+    'bs:about.meta_developer',
+    'bs:about.meta_core',
+    'da:about.meta_channel',
+    'fi:about.meta_core',
+    'fil:about.meta_developer',
+    'fil:about.meta_core',
+    'fr:about.meta_channel',
+    'ha:about.meta_core',
+    'hr:about.meta_developer',
+    'hu:about.meta_core',
+    'ky:about.meta_core',
+    'sv:about.meta_channel',
 ]);
 
 test(`the app declares exactly ${TARGET_LANGUAGES} languages`, () => {
@@ -313,7 +370,7 @@ test('RTL languages switch the document direction', () => {
 
 test('app.html has no hardcoded interface text', () => {
     const NON_TRANSLATABLE = new Set([
-        'Tactile', 'Vellium.dev', 'vellium.dev', 'vellium.dev/terms',
+        'Tactile', 'Vellium.dev', 'vellium.dev', 'vellium.dev/terms', 'GitHub',
         'PBT', 'ABS', 'Mixed', 'MIT', '❯'
     ]);
     const stripped = APP_HTML
@@ -328,6 +385,8 @@ test('app.html has no hardcoded interface text', () => {
             const before = line.slice(0, match.index + 1);
             const tag = before.slice(before.lastIndexOf('<'));
             if (/data-i18n(-html|-placeholder|-title|-aria-label)?=/.test(tag)) continue;
+            // Material Symbols ligature names are glyph identifiers, not text.
+            if (/material-symbols-outlined/.test(tag)) continue;
             leaks.push(`line ${index + 1}: ${text}`);
         }
     });

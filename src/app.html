@@ -13,200 +13,122 @@
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'self' file:; script-src 'self' file:; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: file:; media-src 'self' data: file:; font-src 'self' data: file:; connect-src 'self' file:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
     <title>Tactile</title>
+    <link rel="stylesheet" href="./assets/fonts/public-sans.css">
+    <link rel="stylesheet" href="./assets/fonts/material-symbols.css">
+    <link rel="stylesheet" href="./assets/themes.css">
+    <script src="./assets/theme-boot.js"></script>
     <link rel="stylesheet" href="./assets/app.css">
 </head>
 <body>
     <div class="window-container">
-        <header class="titlebar">
-            <div class="drag-region">
-                <div class="brand">
-                    <img src="../public/Tactile.svg" alt="Tactile" class="titlebar-mark" title="" data-i18n-title="app.subtitle">
-                    <span>Tactile</span>
-                    <span class="titlebar-divider" aria-hidden="true"></span>
-                    <span class="titlebar-context" id="titlebar-context" data-i18n="nav.sounds"></span>
-                </div>
-            </div>
-            <div class="window-controls">
-                <button id="btn-gh-repo" class="win-btn win-btn-link" data-i18n-title="about.github" title="" data-i18n-aria-label="about.github" aria-label="">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.55v-2.1c-3.2.7-3.88-1.36-3.88-1.36-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .3.21.66.8.55A11.5 11.5 0 0 0 23.5 12A11.5 11.5 0 0 0 12 .5Z"/></svg>
-                </button>
-                <button id="btn-min" class="win-btn" aria-label="Minimize" data-i18n-aria-label="window.minimize">
-                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2" y1="6" x2="10" y2="6" stroke="currentColor" stroke-width="1.4"/></svg>
-                </button>
-                <button id="btn-max" class="win-btn" aria-label="Maximize" data-i18n-aria-label="window.maximize">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="7" height="7" stroke="currentColor" stroke-width="1.2"/></svg>
-                </button>
-                <button id="btn-close" class="win-btn close-btn" aria-label="Close" data-i18n-aria-label="window.close">
-                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
-                </button>
-            </div>
+        <header class="pp-window-controls" role="group">
+            <button type="button" id="btn-min" class="pp-win-btn" aria-label="Minimize" data-i18n-aria-label="window.minimize">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6.5H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </button>
+            <button type="button" id="btn-max" class="pp-win-btn" data-maximized="false" aria-label="Maximize" data-i18n-aria-label="window.maximize">
+                <svg class="pp-icon-max" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><rect x="2" y="2" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.15"/></svg>
+                <svg class="pp-icon-restore" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3.75 3.75V2.5C3.75 2.08579 4.08579 1.75 4.5 1.75H9.5C9.91421 1.75 10.25 2.08579 10.25 2.5V7.5C10.25 7.91421 9.91421 8.25 9.5 8.25H8.25" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/><rect x="1.75" y="3.75" width="6.5" height="6.5" rx="1" stroke="currentColor" stroke-width="1.15"/></svg>
+            </button>
+            <button type="button" id="btn-close" class="pp-win-btn pp-win-close" aria-label="Close" data-i18n-aria-label="window.close">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 2.5L9.5 9.5M9.5 2.5L2.5 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </button>
         </header>
 
-        <div class="layout">
-            <!-- Primary rail (first sidebar) -->
-            <nav class="rail" data-i18n-aria-label="nav.workspace" aria-label="Workspace">
-                <div class="rail-logo">
-                    <img src="../public/Tactile.svg" alt="Tactile" class="app-brand-logo">
-                </div>
+        <button type="button" id="btn-nav-toggle" aria-label="" data-i18n-aria-label="nav.workspace" aria-controls="app-sidebar" aria-expanded="false">
+            <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+        </button>
 
-                <div class="rail-group">
-                    <button class="nav-item rail-item active" data-view="profiles" data-i18n-title="nav.sounds" title="" data-i18n-aria-label="nav.sounds" aria-label="">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                        <span data-i18n="nav.sounds"></span>
-                    </button>
-                    <button class="nav-item rail-item" data-view="custom" data-i18n-title="nav.import" title="" data-i18n-aria-label="nav.import" aria-label="">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        <span data-i18n="nav.import"></span>
-                    </button>
-                    <button class="nav-item rail-item" data-view="docs" data-i18n-title="nav.documents" title="" data-i18n-aria-label="nav.documents" aria-label="">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                        <span data-i18n="nav.documents"></span>
-                    </button>
-                </div>
-
-                <div class="rail-spacer"></div>
-
-                <div class="rail-group">
-                    <button class="nav-item rail-item" data-view="diagnostics" data-i18n-title="nav.diagnostics" title="" data-i18n-aria-label="nav.diagnostics" aria-label="">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                        <span data-i18n="nav.diagnostics"></span>
-                    </button>
-                    <button class="nav-item rail-item" data-view="settings" data-i18n-title="nav.settings" title="" data-i18n-aria-label="nav.settings" aria-label="">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                        <span data-i18n="nav.settings"></span>
-                    </button>
-                    <button class="nav-item rail-item" data-view="about" data-i18n-title="nav.about" title="" data-i18n-aria-label="nav.about" aria-label="">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                        <span data-i18n="nav.about"></span>
-                    </button>
-                </div>
-
-                <div class="rail-footer">
-                    <button id="btn-sponsor" class="rail-icon-btn" data-i18n-title="about.sponsor" title="" data-i18n-aria-label="about.sponsor" aria-label="">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
-                    </button>
-                    <span class="rail-version" id="rail-version"></span>
-                </div>
-            </nav>
-
-            <!-- Contextual sidebar (second sidebar) -->
-            <aside class="subnav" id="subnav">
-                <section class="subnav-panel active" data-panel="profiles">
-                    <div class="subnav-head">
-                        <span class="subnav-eyebrow" data-i18n="nav.workspace"></span>
-                        <h2 data-i18n="sidebar.library"></h2>
-                        <p data-i18n="sidebar.library_desc"></p>
-                    </div>
-                    <div class="subnav-block">
-                        <div class="subnav-block-head">
-                            <span data-i18n="sidebar.categories"></span>
-                            <span class="subnav-actions">
-                                <button class="icon-action" id="btn-edit-categories" data-i18n-title="modal.manage_title" title="" data-i18n-aria-label="modal.manage_title" aria-label="">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/></svg>
-                                </button>
-                                <button class="icon-action" id="btn-add-category" data-i18n-title="modal.create_category_title" title="" data-i18n-aria-label="modal.create_category_title" aria-label="">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                </button>
-                            </span>
+        <div class="app-shell">
+            <aside id="app-sidebar" class="app-sidebar">
+                <div class="sidebar-brand window-drag">
+                    <div class="sidebar-brand-identity">
+                        <img src="../public/Tactile.svg" alt="" class="sidebar-mark">
+                        <div class="brand-text">
+                            <h1>Tactile</h1>
+                            <p class="brand-sub" data-i18n="brand.product_line"></p>
                         </div>
-                        <div id="dynamic-categories-list" class="category-list"></div>
                     </div>
-                    <div class="subnav-block">
-                        <div class="subnav-block-head"><span data-i18n="sidebar.status"></span></div>
-                        <dl class="stat-list">
-                            <div><dt data-i18n="sidebar.profiles_count"></dt><dd id="stat-profiles">0</dd></div>
-                            <div><dt data-i18n="sidebar.categories_count"></dt><dd id="stat-categories">0</dd></div>
-                            <div><dt data-i18n="sidebar.cloud"></dt><dd id="stat-cloud" data-i18n="sidebar.cloud_off"></dd></div>
-                            <div><dt data-i18n="sidebar.local_user"></dt><dd>Tactile</dd></div>
-                        </dl>
-                    </div>
-                    <div class="subnav-block">
-                        <div class="subnav-block-head"><span data-i18n="sidebar.quick_actions"></span></div>
-                        <button class="subnav-action" id="btn-quick-import" data-i18n="nav.import"></button>
-                        <button class="subnav-action" id="btn-quick-backup" data-i18n="cloud.sync_now"></button>
-                    </div>
-                </section>
-
-                <section class="subnav-panel" data-panel="settings">
-                    <div class="subnav-head">
-                        <span class="subnav-eyebrow" data-i18n="nav.application"></span>
-                        <h2 data-i18n="nav.settings"></h2>
-                        <p data-i18n="settings.subtitle"></p>
-                    </div>
-                    <div class="section-nav">
-                        <button class="section-link active" data-section="general" data-i18n="settings.section_general"></button>
-                        <button class="section-link" data-section="appearance" data-i18n="settings.section_appearance"></button>
-                        <button class="section-link" data-section="language" data-i18n="settings.section_language"></button>
-                        <button class="section-link" data-section="sound" data-i18n="settings.section_sound"></button>
-                        <button class="section-link" data-section="shortcuts" data-i18n="settings.section_shortcuts"></button>
-                        <button class="section-link" data-section="data" data-i18n="settings.section_data"></button>
-                        <button class="section-link" data-section="updates" data-i18n="settings.section_updates"></button>
-                        <button class="section-link" data-section="ai" data-i18n="settings.section_ai"></button>
-                        <button class="section-link" data-section="integrations" data-i18n="settings.section_integrations"></button>
-                    </div>
-                </section>
-
-                <section class="subnav-panel" data-panel="docs">
-                    <div class="subnav-head">
-                        <span class="subnav-eyebrow" data-i18n="nav.support"></span>
-                        <h2 data-i18n="docs.title"></h2>
-                        <p data-i18n="docs.desc"></p>
-                    </div>
-                    <div class="section-nav">
-                        <button class="section-link" data-docs="getting_started" data-i18n="docs.getting_started"></button>
-                        <button class="section-link" data-docs="profiles" data-i18n="docs.profiles"></button>
-                        <button class="section-link" data-docs="sync" data-i18n="docs.sync"></button>
-                        <button class="section-link" data-docs="shortcuts" data-i18n="docs.shortcuts"></button>
-                        <button class="section-link" data-docs="assistant" data-i18n="docs.assistant"></button>
-                        <button class="section-link" data-docs="integrations" data-i18n="docs.integrations"></button>
-                        <button class="section-link" data-docs="privacy" data-i18n="docs.privacy"></button>
-                    </div>
-                </section>
-
-                <section class="subnav-panel" data-panel="diagnostics">
-                    <div class="subnav-head">
-                        <span class="subnav-eyebrow" data-i18n="nav.support"></span>
-                        <h2 data-i18n="diag.title"></h2>
-                        <p data-i18n="diag.desc"></p>
-                    </div>
-                    <dl class="stat-list">
-                        <div><dt data-i18n="diag.db"></dt><dd id="subnav-diag-db" data-i18n="diag.ok"></dd></div>
-                        <div><dt data-i18n="diag.hook"></dt><dd id="subnav-diag-hook" data-i18n="diag.ok"></dd></div>
-                        <div><dt data-i18n="diag.tray"></dt><dd id="subnav-diag-tray" data-i18n="diag.ok"></dd></div>
-                    </dl>
-                </section>
-
-                <section class="subnav-panel" data-panel="about">
-                    <div class="subnav-head">
-                        <span class="subnav-eyebrow" data-i18n="about.developer"></span>
-                        <h2 data-i18n="nav.about"></h2>
-                        <p data-i18n="about.registered"></p>
-                    </div>
-                    <button class="subnav-action" id="btn-subnav-github" data-i18n="about.github"></button>
-                    <button class="subnav-action" id="btn-subnav-sponsor" data-i18n="about.sponsor"></button>
-                    <button class="subnav-action" id="btn-subnav-docs" data-i18n="about.docs"></button>
-                </section>
-            </aside>
-
-            <main class="content-area">
-                <div class="toolbar" id="main-toolbar">
-                    <div class="search-box">
-                        <input type="text" id="search-input" data-i18n-placeholder="toolbar.search" placeholder="" aria-label="" data-i18n-aria-label="toolbar.search">
-                        <button id="btn-clear-search" class="btn-clear-search" data-i18n-title="toolbar.clear_search" title="" data-i18n-aria-label="toolbar.clear_search" aria-label="">
-                            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                    <div class="sidebar-brand-actions">
+                        <button type="button" id="btn-sidebar-collapse" class="pp-sidebar-icon-btn" aria-expanded="true" aria-label="Collapse sidebar" data-i18n-aria-label="sidebar.collapse" data-i18n-title="sidebar.collapse" title="">
+                            <svg class="pp-icon-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
+                            <svg class="pp-icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
                         </button>
                     </div>
-                    <div class="global-controls">
-                        <span class="active-profile-badge" id="active-profile-name" data-i18n="toolbar.no_profile"></span>
-                        <div class="volume-control">
-                            <button id="btn-toggle-mute" class="btn-mute" data-i18n-title="toolbar.mute_title" title="" aria-label="" data-i18n-aria-label="toolbar.mute_title">
-                                <svg class="volume-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-                            </button>
-                            <input type="range" id="global-volume" min="0" max="100" value="50" aria-label="" data-i18n-aria-label="toolbar.volume">
-                        </div>
-                    </div>
                 </div>
 
+                <nav class="sidebar-nav" aria-label="" data-i18n-aria-label="nav.workspace">
+                    <span class="sidebar-nav-group-title" data-i18n="nav.workspace"></span>
+                    <button class="nav-item rail-item is-active" data-view="profiles" data-i18n-title="nav.sounds" title="" data-i18n-aria-label="nav.sounds" aria-label="">
+                        <span class="material-symbols-outlined" aria-hidden="true">library_music</span>
+                        <span class="nav-label" data-i18n="nav.sounds"></span>
+                    </button>
+                    <button class="nav-item rail-item" data-view="custom" data-i18n-title="nav.import" title="" data-i18n-aria-label="nav.import" aria-label="">
+                        <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+                        <span class="nav-label" data-i18n="nav.import"></span>
+                    </button>
+                    <button class="nav-item rail-item" data-view="docs" data-i18n-title="nav.documents" title="" data-i18n-aria-label="nav.documents" aria-label="">
+                        <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
+                        <span class="nav-label" data-i18n="nav.documents"></span>
+                    </button>
+
+                    <div class="category-head">
+                        <span data-i18n="sidebar.categories"></span>
+                        <span class="subnav-actions">
+                            <button class="icon-action" id="btn-edit-categories" data-i18n-title="modal.manage_title" title="" data-i18n-aria-label="modal.manage_title" aria-label="">
+                                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                            </button>
+                            <button class="icon-action" id="btn-add-category" data-i18n-title="modal.create_category_title" title="" data-i18n-aria-label="modal.create_category_title" aria-label="">
+                                <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                            </button>
+                        </span>
+                    </div>
+                    <div id="dynamic-categories-list" class="category-list"></div>
+
+                    <span class="sidebar-nav-group-title" data-i18n="sidebar.quick_actions"></span>
+                    <button id="btn-quick-import" class="nav-item">
+                        <span class="material-symbols-outlined" aria-hidden="true">playlist_add</span>
+                        <span class="nav-label" data-i18n="nav.import"></span>
+                    </button>
+                    <button id="btn-quick-backup" class="nav-item">
+                        <span class="material-symbols-outlined" aria-hidden="true">cloud_sync</span>
+                        <span class="nav-label" data-i18n="cloud.sync_now"></span>
+                    </button>
+
+                    <span class="sidebar-nav-group-title" data-i18n="nav.application"></span>
+                    <button class="nav-item rail-item" data-view="diagnostics" data-i18n-title="nav.diagnostics" title="" data-i18n-aria-label="nav.diagnostics" aria-label="">
+                        <span class="material-symbols-outlined" aria-hidden="true">monitor_heart</span>
+                        <span class="nav-label" data-i18n="nav.diagnostics"></span>
+                    </button>
+                    <button class="nav-item rail-item" data-view="settings" data-i18n-title="nav.settings" title="" data-i18n-aria-label="nav.settings" aria-label="">
+                        <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+                        <span class="nav-label" data-i18n="nav.settings"></span>
+                    </button>
+                    <button class="nav-item rail-item" data-view="about" data-i18n-title="nav.about" title="" data-i18n-aria-label="nav.about" aria-label="">
+                        <span class="material-symbols-outlined" aria-hidden="true">info</span>
+                        <span class="nav-label" data-i18n="nav.about"></span>
+                    </button>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="sidebar-links">
+                        <button id="btn-gh-repo" class="sidebar-link-btn" data-i18n-title="about.github" title="" data-i18n-aria-label="about.github" aria-label="">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.55v-2.1c-3.2.7-3.88-1.36-3.88-1.36-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .3.21.66.8.55A11.5 11.5 0 0 0 23.5 12A11.5 11.5 0 0 0 12 .5Z"/></svg>
+                            <span>GitHub</span>
+                        </button>
+                        <button id="btn-sponsor" class="sidebar-link-btn" data-i18n-title="about.sponsor" title="" data-i18n-aria-label="about.sponsor" aria-label="">
+                            <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+                            <span data-i18n="sidebar.sponsor"></span>
+                        </button>
+                    </div>
+                    <div class="sidebar-version">
+                        <span data-i18n="brand.product_line"></span>
+                        <span id="rail-version"></span>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="app-main" id="main-content">
+                <span id="titlebar-context" hidden></span>
                 <div class="views-container">
                     <!-- Sound library -->
                     <div id="view-profiles" class="view active">
@@ -217,6 +139,23 @@
                             </div>
                             <div class="action-buttons">
                                 <button class="btn primary" id="btn-create-profile-modal" data-i18n="btn.new_profile"></button>
+                            </div>
+                        </div>
+                        <div id="main-toolbar" class="toolbar">
+                            <div class="search-box">
+                                <input type="text" id="search-input" data-i18n-placeholder="toolbar.search" placeholder="" aria-label="" data-i18n-aria-label="toolbar.search">
+                                <button id="btn-clear-search" class="btn-clear-search" data-i18n-title="toolbar.clear_search" title="" data-i18n-aria-label="toolbar.clear_search" aria-label="">
+                                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><line x1="2.5" y1="2.5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="2.5" x2="2.5" y2="9.5" stroke="currentColor" stroke-width="1.3"/></svg>
+                                </button>
+                            </div>
+                            <div class="global-controls">
+                                <span class="active-profile-badge" id="active-profile-name" data-i18n="toolbar.no_profile"></span>
+                                <div class="volume-control">
+                                    <button id="btn-toggle-mute" class="btn-mute" data-i18n-title="toolbar.mute_title" title="" aria-label="" data-i18n-aria-label="toolbar.mute_title">
+                                        <svg class="volume-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                                    </button>
+                                    <input type="range" id="global-volume" min="0" max="100" value="50" aria-label="" data-i18n-aria-label="toolbar.volume">
+                                </div>
                             </div>
                         </div>
                         <div class="profiles-header-actions">
@@ -254,17 +193,72 @@
 
                     <!-- Settings -->
                     <div id="view-settings" class="view">
-                        <div class="view-header">
-                            <div>
-                                <h1 data-i18n="settings.title"></h1>
-                                <p data-i18n="settings.subtitle"></p>
+                        <div class="pp-split-layout">
+                            <aside class="pp-split-sidebar" aria-label="Settings" data-i18n-aria-label="nav.settings">
+                                <div class="pp-split-sidebar-header window-drag">
+                                    <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+                                    <span data-i18n="nav.settings"></span>
+                                </div>
+                                <div class="pp-split-sidebar-nav">
+                            <div class="pp-split-nav-group">
+                                <span class="pp-split-nav-group-title" data-i18n="settings.group_preferences"></span>
+                                <button type="button" class="pp-split-nav-link is-active" data-section="general">
+                                    <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                                    <span data-i18n="settings.section_general"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-section="appearance">
+                                    <span class="material-symbols-outlined" aria-hidden="true">palette</span>
+                                    <span data-i18n="settings.section_appearance"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-section="language">
+                                    <span class="material-symbols-outlined" aria-hidden="true">translate</span>
+                                    <span data-i18n="settings.section_language"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-section="sound">
+                                    <span class="material-symbols-outlined" aria-hidden="true">volume_up</span>
+                                    <span data-i18n="settings.section_sound"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-section="shortcuts">
+                                    <span class="material-symbols-outlined" aria-hidden="true">keyboard</span>
+                                    <span data-i18n="settings.section_shortcuts"></span>
+                                </button>
                             </div>
-                            <span class="version-pill" id="settings-version"></span>
-                        </div>
+                            <div class="pp-split-nav-group">
+                                <span class="pp-split-nav-group-title" data-i18n="settings.group_automation"></span>
+                                <button type="button" class="pp-split-nav-link" data-section="ai">
+                                    <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
+                                    <span data-i18n="settings.section_ai"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-section="integrations">
+                                    <span class="material-symbols-outlined" aria-hidden="true">hub</span>
+                                    <span data-i18n="settings.section_integrations"></span>
+                                </button>
+                            </div>
+                            <div class="pp-split-nav-group">
+                                <span class="pp-split-nav-group-title" data-i18n="settings.group_system"></span>
+                                <button type="button" class="pp-split-nav-link" data-section="data">
+                                    <span class="material-symbols-outlined" aria-hidden="true">cloud_sync</span>
+                                    <span data-i18n="settings.section_data"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-section="updates">
+                                    <span class="material-symbols-outlined" aria-hidden="true">system_update</span>
+                                    <span data-i18n="settings.section_updates"></span>
+                                </button>
+                            </div>
+                                </div>
+                            </aside>
 
-                        <div class="settings-scroll">
+                            <div id="settings-pane" class="pp-split-content-pane">
+                                <div class="pp-split-content-inner">
+                                    <div class="view-header">
+                                        <div>
+                                            <h1 data-i18n="settings.title"></h1>
+                                            <p data-i18n="settings.subtitle"></p>
+                                        </div>
+                                        <span class="status-badge on" data-i18n="settings.auto_save"></span>
+                                    </div>
                             <section class="settings-section" id="settings-general" data-section="general">
-                                <h2 data-i18n="settings.section_general"></h2>
+                                <h2><span class="material-symbols-outlined" aria-hidden="true">tune</span><span data-i18n="settings.section_general"></span></h2>
 
                                 <div class="setting-item">
                                     <div class="setting-info">
@@ -341,19 +335,141 @@
                             </section>
 
                             <section class="settings-section" id="settings-appearance" data-section="appearance">
-                                <h2 data-i18n="settings.section_appearance"></h2>
+                                <h2><span class="material-symbols-outlined" aria-hidden="true">palette</span><span data-i18n="settings.section_appearance"></span></h2>
 
-                                <div class="setting-item">
+                                <div class="setting-item setting-item-block">
                                     <div class="setting-info">
-                                        <h3 id="setting-theme-label" data-i18n="settings.theme_title"></h3>
+                                        <h3 data-i18n="settings.theme_title"></h3>
                                         <p data-i18n="settings.theme_desc"></p>
                                     </div>
-                                    <select id="setting-theme" class="form-select" aria-labelledby="setting-theme-label">
-                                        <option value="system" data-i18n="settings.theme_system"></option>
-                                        <option value="dark" data-i18n="settings.theme_dark"></option>
-                                        <option value="light" data-i18n="settings.theme_light"></option>
-                                        <option value="custom" data-i18n="settings.theme_custom"></option>
-                                    </select>
+                                    <div class="pp-segmented" role="group" aria-label="" data-i18n-aria-label="settings.theme_title">
+                                        <button type="button" data-theme-mode="system" aria-pressed="true" class="is-active">
+                                            <span class="material-symbols-outlined" aria-hidden="true">brightness_auto</span>
+                                            <span data-i18n="settings.theme_system"></span>
+                                        </button>
+                                        <button type="button" data-theme-mode="light" aria-pressed="false" class="">
+                                            <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
+                                            <span data-i18n="settings.theme_light"></span>
+                                        </button>
+                                        <button type="button" data-theme-mode="dark" aria-pressed="false" class="">
+                                            <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
+                                            <span data-i18n="settings.theme_dark"></span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="setting-item setting-item-block">
+                                    <div class="setting-info">
+                                        <h3 data-i18n="settings.palette_title"></h3>
+                                        <p data-i18n="settings.palette_desc"></p>
+                                    </div>
+                                    <div class="pp-theme-grid" role="group" aria-label="" data-i18n-aria-label="settings.palette_title">
+                                        <button type="button" class="pp-theme-card is-selected" data-palette="obsidian" aria-pressed="true">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="obsidian" aria-hidden="true"></span>
+                                                <span data-i18n="theme.obsidian"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="slate" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="slate" aria-hidden="true"></span>
+                                                <span data-i18n="theme.slate"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="navy" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="navy" aria-hidden="true"></span>
+                                                <span data-i18n="theme.navy"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="blue" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="blue" aria-hidden="true"></span>
+                                                <span data-i18n="theme.blue"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="cyan" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="cyan" aria-hidden="true"></span>
+                                                <span data-i18n="theme.cyan"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="indigo" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="indigo" aria-hidden="true"></span>
+                                                <span data-i18n="theme.indigo"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="purple" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="purple" aria-hidden="true"></span>
+                                                <span data-i18n="theme.purple"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="pink" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="pink" aria-hidden="true"></span>
+                                                <span data-i18n="theme.pink"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="red" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="red" aria-hidden="true"></span>
+                                                <span data-i18n="theme.red"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="orange" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="orange" aria-hidden="true"></span>
+                                                <span data-i18n="theme.orange"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="yellow" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="yellow" aria-hidden="true"></span>
+                                                <span data-i18n="theme.yellow"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="emerald" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="emerald" aria-hidden="true"></span>
+                                                <span data-i18n="theme.emerald"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="grass" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="grass" aria-hidden="true"></span>
+                                                <span data-i18n="theme.grass"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="lime" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="lime" aria-hidden="true"></span>
+                                                <span data-i18n="theme.lime"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                        <button type="button" class="pp-theme-card" data-palette="custom" aria-pressed="false">
+                                            <span class="pp-theme-card-left">
+                                                <span class="pp-theme-swatch" data-swatch="custom" aria-hidden="true"></span>
+                                                <span data-i18n="theme.custom"></span>
+                                            </span>
+                                            <svg class="pp-theme-check" viewBox="0 0 14 14" fill="none" aria-hidden="true"><polyline points="2 7.5 5.5 11 12 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div class="setting-item" id="custom-color-row" hidden>
@@ -416,7 +532,7 @@
                             </section>
 
                             <section class="settings-section" id="settings-language" data-section="language">
-                                <h2 data-i18n="settings.section_language"></h2>
+                                <h2><span class="material-symbols-outlined" aria-hidden="true">translate</span><span data-i18n="settings.section_language"></span></h2>
                                 <div class="setting-item">
                                     <div class="setting-info">
                                         <h3 id="setting-lang-label" data-i18n="settings.lang_title"></h3>
@@ -427,7 +543,7 @@
                             </section>
 
                             <section class="settings-section" id="settings-sound" data-section="sound">
-                                <h2 data-i18n="settings.section_sound"></h2>
+                                <h2><span class="material-symbols-outlined" aria-hidden="true">volume_up</span><span data-i18n="settings.section_sound"></span></h2>
                                 <div class="setting-item">
                                     <div class="setting-info">
                                         <h3 id="setting-notify-label" data-i18n="settings.notify_title"></h3>
@@ -466,7 +582,7 @@
                             </section>
 
                             <section class="settings-section" id="settings-shortcuts" data-section="shortcuts">
-                                <h2 data-i18n="settings.section_shortcuts"></h2>
+                                <h2><span class="material-symbols-outlined" aria-hidden="true">keyboard</span><span data-i18n="settings.section_shortcuts"></span></h2>
                                 <div class="setting-item">
                                     <div class="setting-info">
                                         <h3 data-i18n="settings.shortcut_title"></h3>
@@ -494,7 +610,7 @@
                             </section>
 
                             <section class="settings-section" id="settings-data" data-section="data">
-                                <h2 data-i18n="settings.section_data"></h2>
+                                <h2><span class="material-symbols-outlined" aria-hidden="true">cloud_sync</span><span data-i18n="settings.section_data"></span></h2>
                                 <div class="info-card">
                                     <div class="info-card-head">
                                         <div>
@@ -546,7 +662,7 @@
                             </section>
 
                             <section class="settings-section" id="settings-updates" data-section="updates">
-                                <h2 data-i18n="settings.section_updates"></h2>
+                                <h2><span class="material-symbols-outlined" aria-hidden="true">system_update</span><span data-i18n="settings.section_updates"></span></h2>
                                 <div class="info-card">
                                     <div class="info-card-head">
                                         <div>
@@ -577,7 +693,7 @@
                                 </div>
                             </section>
                             <section class="settings-section" id="settings-ai" data-section="ai">
-                                <h2 data-i18n="settings.section_ai"></h2>
+                                <h2><span class="material-symbols-outlined" aria-hidden="true">smart_toy</span><span data-i18n="settings.section_ai"></span></h2>
                                 <div class="info-card">
                                     <div class="info-card-head">
                                         <div>
@@ -656,7 +772,7 @@
                             </section>
 
                             <section class="settings-section" id="settings-integrations" data-section="integrations">
-                                <h2 data-i18n="settings.section_integrations"></h2>
+                                <h2><span class="material-symbols-outlined" aria-hidden="true">hub</span><span data-i18n="settings.section_integrations"></span></h2>
                                 <div class="info-card">
                                     <div class="info-card-head">
                                         <div>
@@ -751,70 +867,138 @@
                                     </div>
                                 </div>
                             </section>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div id="view-docs" class="view">
-                        <div class="view-header">
-                            <div>
-                                <h1 data-i18n="docs.title"></h1>
-                                <p data-i18n="docs.desc"></p>
+                        <div class="pp-split-layout">
+                            <aside class="pp-split-sidebar" aria-label="Documentation" data-i18n-aria-label="docs.title">
+                                <div class="pp-split-sidebar-header window-drag">
+                                    <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
+                                    <span data-i18n="docs.title"></span>
+                                </div>
+                                <div class="pp-split-search">
+                                    <input type="search" id="docs-search" class="form-input" placeholder="" aria-label="" data-i18n-placeholder="docs.search" data-i18n-aria-label="docs.search">
+                                </div>
+                                <div class="pp-split-sidebar-nav">
+                            <div class="pp-split-nav-group">
+                                <span class="pp-split-nav-group-title" data-i18n="docs.group_basics"></span>
+                                <button type="button" class="pp-split-nav-link is-active" data-docs="getting_started">
+                                    <span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
+                                    <span data-i18n="docs.getting_started"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-docs="profiles">
+                                    <span class="material-symbols-outlined" aria-hidden="true">graphic_eq</span>
+                                    <span data-i18n="docs.profiles"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-docs="shortcuts">
+                                    <span class="material-symbols-outlined" aria-hidden="true">keyboard</span>
+                                    <span data-i18n="docs.shortcuts"></span>
+                                </button>
                             </div>
-                            <div class="docs-actions">
-                                <input type="search" id="docs-search" class="form-input docs-search" aria-label="" data-i18n-aria-label="docs.search" data-i18n-placeholder="docs.search">
-                                <button class="btn secondary" id="btn-docs-github" data-i18n="docs.open_github"></button>
+                            <div class="pp-split-nav-group">
+                                <span class="pp-split-nav-group-title" data-i18n="docs.group_features"></span>
+                                <button type="button" class="pp-split-nav-link" data-docs="sync">
+                                    <span class="material-symbols-outlined" aria-hidden="true">cloud_sync</span>
+                                    <span data-i18n="docs.sync"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-docs="assistant">
+                                    <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
+                                    <span data-i18n="docs.assistant"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-docs="integrations">
+                                    <span class="material-symbols-outlined" aria-hidden="true">hub</span>
+                                    <span data-i18n="docs.integrations"></span>
+                                </button>
+                                <button type="button" class="pp-split-nav-link" data-docs="privacy">
+                                    <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+                                    <span data-i18n="docs.privacy"></span>
+                                </button>
                             </div>
-                        </div>
-                        <div class="doc-grid" id="doc-grid">
-                            <article class="doc-card" data-doc-card="getting_started">
-                                <span class="doc-index">01</span>
-                                <h3 data-i18n="docs.getting_started"></h3>
-                                <p data-i18n="docs.getting_started_desc"></p>
-                                <button class="doc-link" data-docs="getting_started" data-i18n="docs.getting_started"></button>
-                            </article>
-                            <article class="doc-card" data-doc-card="profiles">
-                                <span class="doc-index">02</span>
-                                <h3 data-i18n="docs.profiles"></h3>
-                                <p data-i18n="docs.profiles_desc"></p>
-                                <button class="doc-link" data-docs="profiles" data-i18n="docs.profiles"></button>
-                            </article>
-                            <article class="doc-card" data-doc-card="sync">
-                                <span class="doc-index">03</span>
-                                <h3 data-i18n="docs.sync"></h3>
-                                <p data-i18n="docs.sync_desc"></p>
-                                <button class="doc-link" data-docs="sync" data-i18n="docs.sync"></button>
-                            </article>
-                            <article class="doc-card" data-doc-card="shortcuts">
-                                <span class="doc-index">04</span>
-                                <h3 data-i18n="docs.shortcuts"></h3>
-                                <p data-i18n="docs.shortcuts_desc"></p>
-                                <button class="doc-link" data-docs="shortcuts" data-i18n="docs.shortcuts"></button>
-                            </article>
-                            <article class="doc-card" data-doc-card="assistant">
-                                <span class="doc-index">05</span>
-                                <h3 data-i18n="docs.assistant"></h3>
-                                <p data-i18n="docs.assistant_desc"></p>
-                                <button class="doc-link" data-docs="assistant" data-i18n="docs.assistant"></button>
-                            </article>
-                            <article class="doc-card" data-doc-card="integrations">
-                                <span class="doc-index">06</span>
-                                <h3 data-i18n="docs.integrations"></h3>
-                                <p data-i18n="docs.integrations_desc"></p>
-                                <button class="doc-link" data-docs="integrations" data-i18n="docs.integrations"></button>
-                            </article>
-                            <article class="doc-card" data-doc-card="privacy">
-                                <span class="doc-index">07</span>
-                                <h3 data-i18n="docs.privacy"></h3>
-                                <p data-i18n="docs.privacy_desc"></p>
-                                <button class="doc-link" data-docs="privacy" data-i18n="docs.privacy"></button>
-                            </article>
-                        </div>
-                        <div class="doc-body" id="doc-body">
-                            <h2 id="doc-body-title"></h2>
-                            <p id="doc-body-text"></p>
-                            <button class="btn secondary" id="btn-doc-open" data-i18n="docs.open_github"></button>
+                                </div>
+                            </aside>
+
+                            <div id="docs-pane" class="pp-split-content-pane">
+                                <div class="pp-split-content-inner">
+                                    <div class="view-header">
+                                        <div>
+                                            <h1 data-i18n="docs.title"></h1>
+                                            <p data-i18n="docs.desc"></p>
+                                        </div>
+                                        <div class="docs-actions">
+                                            <button class="btn secondary" id="btn-docs-github" data-i18n="docs.open_github"></button>
+                                        </div>
+                                    </div>
+                                    <div class="settings-scroll" id="docs-sections">
+                                        <section class="settings-section docs-section" id="doc-sec-getting_started">
+                                            <h2><span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span><span data-i18n="docs.getting_started"></span></h2>
+                                            <div class="setting-item setting-item-block">
+                                                <div class="setting-info">
+                                                    <p data-i18n="docs.getting_started_desc"></p>
+                                                    <p class="docs-body" data-i18n="docs.getting_started_body"></p>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="settings-section docs-section" id="doc-sec-profiles">
+                                            <h2><span class="material-symbols-outlined" aria-hidden="true">graphic_eq</span><span data-i18n="docs.profiles"></span></h2>
+                                            <div class="setting-item setting-item-block">
+                                                <div class="setting-info">
+                                                    <p data-i18n="docs.profiles_desc"></p>
+                                                    <p class="docs-body" data-i18n="docs.profiles_body"></p>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="settings-section docs-section" id="doc-sec-shortcuts">
+                                            <h2><span class="material-symbols-outlined" aria-hidden="true">keyboard</span><span data-i18n="docs.shortcuts"></span></h2>
+                                            <div class="setting-item setting-item-block">
+                                                <div class="setting-info">
+                                                    <p data-i18n="docs.shortcuts_desc"></p>
+                                                    <p class="docs-body" data-i18n="docs.shortcuts_body"></p>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="settings-section docs-section" id="doc-sec-sync">
+                                            <h2><span class="material-symbols-outlined" aria-hidden="true">cloud_sync</span><span data-i18n="docs.sync"></span></h2>
+                                            <div class="setting-item setting-item-block">
+                                                <div class="setting-info">
+                                                    <p data-i18n="docs.sync_desc"></p>
+                                                    <p class="docs-body" data-i18n="docs.sync_body"></p>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="settings-section docs-section" id="doc-sec-assistant">
+                                            <h2><span class="material-symbols-outlined" aria-hidden="true">smart_toy</span><span data-i18n="docs.assistant"></span></h2>
+                                            <div class="setting-item setting-item-block">
+                                                <div class="setting-info">
+                                                    <p data-i18n="docs.assistant_desc"></p>
+                                                    <p class="docs-body" data-i18n="docs.assistant_body"></p>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="settings-section docs-section" id="doc-sec-integrations">
+                                            <h2><span class="material-symbols-outlined" aria-hidden="true">hub</span><span data-i18n="docs.integrations"></span></h2>
+                                            <div class="setting-item setting-item-block">
+                                                <div class="setting-info">
+                                                    <p data-i18n="docs.integrations_desc"></p>
+                                                    <p class="docs-body" data-i18n="docs.integrations_body"></p>
+                                                </div>
+                                            </div>
+                                        </section>
+                                        <section class="settings-section docs-section" id="doc-sec-privacy">
+                                            <h2><span class="material-symbols-outlined" aria-hidden="true">shield</span><span data-i18n="docs.privacy"></span></h2>
+                                            <div class="setting-item setting-item-block">
+                                                <div class="setting-info">
+                                                    <p data-i18n="docs.privacy_desc"></p>
+                                                    <p class="docs-body" data-i18n="docs.privacy_body"></p>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
                     <!-- Diagnostics -->
                     <div id="view-diagnostics" class="view">
                         <div class="view-header">
@@ -857,6 +1041,58 @@
                     <!-- About / Legal -->
                     <div id="view-about" class="view">
                         <div class="about-container">
+                            <div class="view-header">
+                                <div>
+                                    <h1 data-i18n="nav.about"></h1>
+                                    <p data-i18n="about.subtitle"></p>
+                                </div>
+                                <div class="button-row">
+                                    <button class="btn secondary" id="btn-about-github-top" data-i18n="about.github"></button>
+                                    <button class="btn secondary" id="btn-about-sponsor-top" data-i18n="about.sponsor"></button>
+                                </div>
+                            </div>
+                            <div class="pp-bento-strip">
+                                <div class="pp-kpi-card">
+                                    <div class="pp-kpi-head">
+                                        <span class="pp-kpi-label" data-i18n="about.kpi_version"></span>
+                                        <span class="pp-kpi-icon"><span class="material-symbols-outlined" aria-hidden="true">verified</span></span>
+                                    </div>
+                                    <div>
+                                        <p class="pp-kpi-value" id="about-kpi-version">-</p>
+                                        <p class="pp-kpi-sub" data-i18n="about.kpi_platform"></p>
+                                    </div>
+                                </div>
+                                <div class="pp-kpi-card">
+                                    <div class="pp-kpi-head">
+                                        <span class="pp-kpi-label" data-i18n="about.kpi_local"></span>
+                                        <span class="pp-kpi-icon"><span class="material-symbols-outlined" aria-hidden="true">memory</span></span>
+                                    </div>
+                                    <div>
+                                        <p class="pp-kpi-value" data-i18n="about.kpi_local_value"></p>
+                                        <p class="pp-kpi-sub" data-i18n="about.kpi_local_sub"></p>
+                                    </div>
+                                </div>
+                                <div class="pp-kpi-card">
+                                    <div class="pp-kpi-head">
+                                        <span class="pp-kpi-label" data-i18n="about.kpi_languages"></span>
+                                        <span class="pp-kpi-icon"><span class="material-symbols-outlined" aria-hidden="true">translate</span></span>
+                                    </div>
+                                    <div>
+                                        <p class="pp-kpi-value">73</p>
+                                        <p class="pp-kpi-sub" data-i18n="about.kpi_languages_sub"></p>
+                                    </div>
+                                </div>
+                                <div class="pp-kpi-card">
+                                    <div class="pp-kpi-head">
+                                        <span class="pp-kpi-label" data-i18n="about.kpi_privacy"></span>
+                                        <span class="pp-kpi-icon pp-kpi-icon--success"><span class="material-symbols-outlined" aria-hidden="true">shield</span></span>
+                                    </div>
+                                    <div>
+                                        <p class="pp-kpi-value" data-i18n="about.kpi_privacy_value"></p>
+                                        <p class="pp-kpi-sub" data-i18n="about.kpi_privacy_sub"></p>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="about-hero">
                                 <img src="../public/Tactile.svg" alt="Tactile" class="about-app-logo">
                                 <div>
@@ -879,6 +1115,24 @@
                                         <button class="btn dev-btn" id="btn-web-site" data-i18n="about.website"></button>
                                     </div>
                                     <p class="dev-muted" data-i18n="about.publisher_desc"></p>
+                                    <div class="about-meta">
+                                        <div class="about-meta-row">
+                                            <span class="about-meta-label" data-i18n="about.meta_developer"></span>
+                                            <a href="#" id="link-website-meta" class="about-meta-value">vellium.dev</a>
+                                        </div>
+                                        <div class="about-meta-row">
+                                            <span class="about-meta-label" data-i18n="about.meta_channel"></span>
+                                            <span class="about-meta-value" data-i18n="about.kpi_platform"></span>
+                                        </div>
+                                        <div class="about-meta-row">
+                                            <span class="about-meta-label" data-i18n="about.meta_core"></span>
+                                            <span class="about-meta-value" data-i18n="about.meta_core_value"></span>
+                                        </div>
+                                    </div>
+                                    <p class="about-trust">
+                                        <span class="material-symbols-outlined" aria-hidden="true">verified_user</span>
+                                        <span data-i18n="about.trust_note"></span>
+                                    </p>
                                 </div>
 
                                 <div class="about-links-card">
