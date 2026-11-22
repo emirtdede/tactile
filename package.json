@@ -1,7 +1,7 @@
 {
   "name": "tactile",
   "productName": "Tactile",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Transform your keyboard into a premium mechanical experience with satisfying sound profiles that boost your focus and typing rhythm.",
   "main": "src/main.js",
   "scripts": {
@@ -50,6 +50,7 @@
     "files": [
       "src/**/*",
       "public/**/*",
+      "docs/**/*.md",
       "package.json"
     ],
     "publish": [

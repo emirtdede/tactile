@@ -1,6 +1,6 @@
 # Project memory
 
-Last updated: 2026-11-22 (release 1.0.0)
+Last updated: 2026-11-22 (release 1.1.0)
 
 ## What Tactile is
 
@@ -15,15 +15,17 @@ Linux targets; Windows is the release platform.
 - Persistence: `sql.js` (SQLite in memory, persisted to one file).
 - Key capture: `uiohook-napi`. Audio: Howler with Base64 data URIs.
 - Updates: `electron-updater` (GitHub provider, delta packages).
-- Tests: `node:test` in `tools/tests/`, 72 tests.
+- Tests: `node:test` in `tools/tests/`, 94 tests.
 
 ## Current state
 
-- Version 1.0.0 everywhere (`package.json`, installer, About).
+- Version 1.1.0 everywhere (`package.json`, installer, About).
 - 73 languages complete, 0 missing keys, 0 placeholder issues.
-- Screenshots for 12 surfaces in `docs/screenshots`, renderer errors 0.
+- Screenshots for 16 surfaces in `docs/screenshots`, renderer errors 0.
+- Local assistant (Ollama, optional models, BM25 retrieval) and four integration
+  surfaces: loopback REST API, MCP server, terminal CLI, signed webhooks.
 - Windows NSIS installer builds and installs; AppX target configured.
-- Uncommitted work sits on branch `development`; `main` is the release branch.
+- Work lands on branch `development`; `main` carries the tagged release.
 
 ## Non-obvious rules
 
@@ -51,6 +53,9 @@ Linux targets; Windows is the release platform.
 
 ## Where to look
 
+- Local assistant: `docs/AI.md`
+- Integrations: `docs/INTEGRATIONS.md`
+- Brand identity: `docs/BRANDING.md`
 - Architecture: `docs/ARCHITECTURE.md`
 - Languages: `docs/LOCALIZATION.md`
 - Sync: `docs/CLOUD_SYNC.md`

@@ -25,7 +25,7 @@
 <div align="center">
 
 [![CI](https://img.shields.io/github/actions/workflow/status/emirtdede/tactile/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI&color=000000)](https://github.com/emirtdede/tactile/actions/workflows/ci.yml)
-![Release](https://img.shields.io/badge/Release-v1.0.0-000000?style=flat-square)
+![Release](https://img.shields.io/badge/Release-v1.1.0-000000?style=flat-square)
 ![Electron](https://img.shields.io/badge/Electron-30.5.1-000000?style=flat-square&logo=electron&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-000000?style=flat-square&logo=node.js&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-000000?style=flat-square&logo=javascript&logoColor=white)
@@ -41,7 +41,7 @@
 
 ## <img src="docs/media/icons/overview.svg" width="20" height="20" align="absmiddle" alt="" /> Overview
 
-**Tactile (`v1.0.0`)** turns your keyboard into a premium mechanical experience. It plays high-fidelity switch sounds while you type - press and release, per key, per profile - and gets out of the way otherwise. It is **local-first**: no account, no telemetry, no backend service.
+**Tactile (`v1.1.0`)** turns your keyboard into a premium mechanical experience. It plays high-fidelity switch sounds while you type - press and release, per key, per profile - and gets out of the way otherwise. It is **local-first**: no account, no telemetry, no backend service.
 
 Built with **Electron 30**, **Node.js** and **vanilla JavaScript**. A sandboxed renderer talks to a hardened main process over a validated IPC bridge; a local **SQLite** database (`sql.js`) holds your profiles and settings, and a native global hook feeds real key events with sub-frame latency.
 
@@ -59,17 +59,25 @@ Tactile ships with **18 bundled sound packs** (Cherry MX Blue, Brown, Red and Bl
 | :---: | :---: | :---: |
 | ![Sound library](docs/screenshots/01-sounds.png) | ![Import pack](docs/screenshots/02-import.png) | ![Settings](docs/screenshots/03-settings-general.png) |
 
-| Cloud backup | Documentation | Diagnostics |
+| Cloud backup | Local assistant | Integrations |
 | :---: | :---: | :---: |
-| ![Cloud sync](docs/screenshots/04-settings-backup.png) | ![Docs](docs/screenshots/05-docs.png) | ![Diagnostics](docs/screenshots/06-diagnostics.png) |
+| ![Cloud sync](docs/screenshots/04-settings-backup.png) | ![Local assistant](docs/screenshots/05-settings-ai.png) | ![Integrations](docs/screenshots/06-settings-integrations.png) |
 
-| About and legal | Onboarding: language | Onboarding: theme |
+| Documentation | Diagnostics | About and legal |
 | :---: | :---: | :---: |
-| ![About](docs/screenshots/07-about.png) | ![Language](docs/screenshots/08-onboarding-language.png) | ![Theme](docs/screenshots/09-onboarding-theme.png) |
+| ![Docs](docs/screenshots/07-docs.png) | ![Diagnostics](docs/screenshots/08-diagnostics.png) | ![About](docs/screenshots/09-about.png) |
 
-| Onboarding: welcome | Onboarding: tour | Light theme |
+| Onboarding: language | Onboarding: theme | Onboarding: welcome |
 | :---: | :---: | :---: |
-| ![Welcome](docs/screenshots/10-onboarding-welcome.png) | ![Tour](docs/screenshots/11-onboarding-tour.png) | ![Light](docs/screenshots/12-light-theme.png) |
+| ![Language](docs/screenshots/10-onboarding-language.png) | ![Theme](docs/screenshots/11-onboarding-theme.png) | ![Welcome](docs/screenshots/12-onboarding-welcome.png) |
+
+| Onboarding: tour | Light theme | Category menu |
+| :---: | :---: | :---: |
+| ![Tour](docs/screenshots/13-onboarding-tour.png) | ![Light](docs/screenshots/14-light-theme.png) | ![Categories](docs/screenshots/15-category-menu.png) |
+
+| Manage categories | | |
+| :---: | :---: | :---: |
+| ![Manage categories](docs/screenshots/16-manage-categories.png) | | |
 
 </div>
 
@@ -114,6 +122,11 @@ Tactile ships with **18 bundled sound packs** (Cherry MX Blue, Brown, Red and Bl
 - Global mute hotkey (`Control+K`) and quick-task hotkey (`Control+Alt+N`), both user-editable with a live recorder.
 - Taskbar Jump List: Sounds, Import, Settings, Docs.
 - Tray menu (Open, Settings, Docs, Mute, Quit) in the active language, and notifications with sound feedback.
+
+### <img src="docs/media/icons/spark.svg" width="20" height="20" align="absmiddle" alt="" /> Local assistant and integrations
+- Optional on-device assistant powered by [Ollama](https://ollama.com/download): pick a model that fits the detected hardware, download it, activate it, delete it again. No model ships in the installer.
+- Retrieval over the bundled documentation (BM25 plus optional embeddings) with numbered sources and a rebuild button.
+- Loopback REST API with a per-install bearer token, an MCP server for AI coding agents, a dependency-free terminal CLI, and signed outbound webhooks for n8n, Zapier or Make.
 
 ### <img src="docs/media/icons/shield.svg" width="20" height="20" align="absmiddle" alt="" /> Updates and diagnostics
 - **electron-updater** with delta packages and SHA-512 verification; Store builds report "managed by the Store".
@@ -186,7 +199,7 @@ flowchart LR
 
 ### Installing as an end user
 
-1. Download `Tactile-Setup-1.0.0.exe` from [GitHub Releases](https://github.com/emirtdede/tactile/releases).
+1. Download `Tactile-Setup-1.1.0.exe` from [GitHub Releases](https://github.com/emirtdede/tactile/releases).
 2. Run it. **No administrator prompt** - it installs per-user (`perMachine: false`).
 3. The first wizard page asks for your language: **73 options**, with your Windows display language preselected.
 4. Choose the install directory (optional), finish, and launch **Tactile** from the Start menu.
@@ -219,7 +232,7 @@ npm start
 ### Tests and release gates
 
 ```bash
-npm test            # 80 tests: a11y, security, i18n, modules, dashes, ICO
+npm test            # 94 tests: a11y, security, i18n, modules, dashes, ICO
 node tools/i18n-status.js           # 73 declared, 73 complete, 0 missing, 0 partial
 node tools/i18n/placeholders.js     # issues: 0
 node tools/gen-installer-languages.js
@@ -229,7 +242,7 @@ node tools/gen-installer-languages.js
 
 ```bash
 npm run build:icons                 # regenerate app, tray and installer icons
-npm run build:win                   # dist/Tactile-Setup-1.0.0.exe + blockmap + latest.yml
+npm run build:win                   # dist/Tactile-Setup-1.1.0.exe + blockmap + latest.yml
 npm run build:appx                  # Microsoft Store package
 npm run build:mac                   # run on macOS
 npm run build:linux                 # run on Linux
@@ -241,7 +254,7 @@ npm run build:linux                 # run on Linux
 node node_modules/electron/cli.js tools/capture.js
 ```
 
-Writes 12 PNGs to `docs/screenshots/` and must report `renderer errors: 0`.
+Writes 16 PNGs to `docs/screenshots/` and must report `renderer errors: 0`.
 
 ---
 
@@ -249,8 +262,8 @@ Writes 12 PNGs to `docs/screenshots/` and must report `renderer errors: 0`.
 
 Build artifacts land in `dist/`:
 
-- **NSIS installer** - `Tactile-Setup-1.0.0.exe` (per-user, no UAC)
-- **Delta block map** - `Tactile-Setup-1.0.0.exe.blockmap`
+- **NSIS installer** - `Tactile-Setup-1.1.0.exe` (per-user, no UAC)
+- **Delta block map** - `Tactile-Setup-1.1.0.exe.blockmap`
 - **Update manifest** - `latest.yml`
 - **AppX package** - via `--win appx` (Store identity `TactileApp`)
 - **Unpacked build** - `dist/win-unpacked/`
@@ -291,7 +304,7 @@ Published builds and release notes: [GitHub Releases](https://github.com/emirtde
 
 ## <img src="docs/media/icons/overview.svg" width="20" height="20" align="absmiddle" alt="" /> Proje Genel Bakış
 
-**Tactile (`v1.0.0`)**, yazarken yüksek kaliteli mekanik switch sesleri çalan, yerel öncelikli bir Windows masaüstü uygulamasıdır. **Electron 30**, **Node.js** ve **vanilla JavaScript** ile geliştirilmiştir. Sandbox içindeki arayüz, doğrulanmış bir IPC köprüsü üzerinden ana süreçle konuşur; profiller ve ayarlar yerel bir **SQLite** (`sql.js`) veritabanında tutulur. Hesap, bulut servisi veya internet bağlantısı gerektirmez.
+**Tactile (`v1.1.0`)**, yazarken yüksek kaliteli mekanik switch sesleri çalan, yerel öncelikli bir Windows masaüstü uygulamasıdır. **Electron 30**, **Node.js** ve **vanilla JavaScript** ile geliştirilmiştir. Sandbox içindeki arayüz, doğrulanmış bir IPC köprüsü üzerinden ana süreçle konuşur; profiller ve ayarlar yerel bir **SQLite** (`sql.js`) veritabanında tutulur. Hesap, bulut servisi veya internet bağlantısı gerektirmez.
 
 Uygulama **18 ses paketi** (Cherry MX Blue, Brown, Red, Black - ABS ve PBT; Topre Purple, NovelKeys Cream, Holy Pandas, EG Crystal, EG Oreo ve travel varyantları), **73 tam dil**, **4 adımlı ilk kurulum**, **sistem / açık / koyu / özel tema**, temaya uygun uygulama ikonları ve **sunucusuz bulut yedeği** ile gelir. Yedek, zaten sahip olduğunuz OneDrive, Google Drive veya Dropbox klasörüne tek bir atomik dosya olarak yazılır - bizim sunucumuz yok, ücret yok.
 
@@ -339,6 +352,11 @@ Uygulama **18 ses paketi** (Cherry MX Blue, Brown, Red, Black - ABS ve PBT; Topr
 - Görev çubuğu Atla Listesi: Sesler, İçe Aktar, Ayarlar, Dokümantasyon.
 - Sistem tepsisi menüsü (Aç, Ayarlar, Dokümantasyon, Sessiz, Çıkış) etkin dilde; sesli bildirim geri bildirimi.
 
+### <img src="docs/media/icons/spark.svg" width="20" height="20" align="absmiddle" alt="" /> Yerel asistan ve entegrasyonlar
+- [Ollama](https://ollama.com/download) tabanlı isteğe bağlı yerel asistan: donanıma uygun modeli indir, etkinleştir, sil. Kurulum paketinde model gelmez.
+- Paketlenmiş dokümantasyon üzerinde arama (BM25 ve isteğe bağlı vektörler), numaralı kaynaklar ve indeksi yenileme.
+- Her kuruluma özel taşıyıcı token ile yalnızca yerel arabirime bağlanan REST API, yapay zeka kod ajanları için MCP sunucusu, bağımlılıksız terminal CLI ve n8n, Zapier veya Make için imzalı webhook'lar.
+
 ### <img src="docs/media/icons/shield.svg" width="20" height="20" align="absmiddle" alt="" /> Güncelleme ve tanılama
 - **electron-updater** ile delta paketler ve SHA-512 doğrulaması; Store sürümleri "Store tarafından yönetiliyor" olarak görünür.
 - Tanılama sayfası: sürümler, dil, tema, veritabanı boyutu, bulut durumu, günlük yolu; kopyala, dışa aktar, günlük klasörünü aç ve tek tıkla GitHub bildirimi.
@@ -349,7 +367,7 @@ Uygulama **18 ses paketi** (Cherry MX Blue, Brown, Red, Black - ABS ve PBT; Topr
 ## <img src="docs/media/icons/sliders.svg" width="20" height="20" align="absmiddle" alt="" /> Kurulum ve Kullanım
 
 ### Son kullanıcı için
-1. `Tactile-Setup-1.0.0.exe` dosyasını [GitHub Releases](https://github.com/emirtdede/tactile/releases) sayfasından indirin.
+1. `Tactile-Setup-1.1.0.exe` dosyasını [GitHub Releases](https://github.com/emirtdede/tactile/releases) sayfasından indirin.
 2. Çalıştırın. **Yönetici (UAC) izni istenmez** - kurulum kullanıcı hesabına yapılır.
 3. İlk sihirbaz sayfası dil sorar: **73 seçenek**, Windows görüntüleme diliniz seçili.
 4. Kurulum klasörünü seçin (isteğe bağlı), bitirin ve Başlat menüsünden **Tactile**'ı açın.

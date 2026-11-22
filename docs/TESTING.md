@@ -3,7 +3,7 @@
 ## Commands
 
 ```bash
-npm test          # full suite, 80 tests
+npm test          # full suite, 94 tests
 node tools/i18n-status.js         # 73 declared, 73 complete, 0 missing, 0 partial
 node tools/i18n/placeholders.js   # issues: 0
 node node_modules/electron/cli.js tools/capture.js   # screenshots, 0 renderer errors
@@ -23,6 +23,8 @@ import the real modules; nothing is mocked except the Electron shell itself.
 | `i18n.test.js` | 18 | 73 languages, key parity, leak detection, placeholders, RTL, picker generation |
 | `ico.test.js` | 2 | ICO wrapper layout and malformed payload rejection |
 | `modules.test.js` | 29 | Remapper, database transactions and indexes, renderer promise paths, UI state races |
+| `ai.test.js` | 8 | Hardware tiers, model catalog, chunking, BM25 ranking, loopback client |
+| `integrations.test.js` | 6 | API token, auth, rate limit, webhook signing, MCP/CLI install |
 
 ## Quality gates
 

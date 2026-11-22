@@ -2236,3 +2236,157 @@ body.custom-theme {
     .subnav { display: none; }
     .cloud-grid { grid-template-columns: 1fr; }
 }
+
+/* Local assistant, integrations and publisher identity */
+.brand-strip {
+    margin: 6px 0 0;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+}
+
+.ai-model-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ai-model-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: var(--bg-surface);
+}
+
+.ai-model-row strong {
+    display: block;
+    font-size: 13px;
+}
+
+.ai-model-meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.ai-tag {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: rgba(212, 175, 55, 0.14);
+    color: var(--accent-text);
+}
+
+.ai-model-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.ai-answer,
+.ai-sources {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.ai-sources {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.webhook-events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin: 12px 0;
+}
+
+.check-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Assistant card spacing: the runtime block sits under the toggle row. */
+.info-card .diag-list {
+    margin-top: 14px;
+}
+
+.info-card .diag-list > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.info-card .diag-list > div:last-child {
+    border-bottom: none;
+}
+
+.info-card .diag-list dt {
+    color: var(--text-secondary);
+}
+
+.info-card .diag-list dd {
+    margin: 0;
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The ask row: the field grows, the button keeps its natural width. */
+#ai-question {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    padding: 6px 4px;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+#ai-question:focus {
+    outline: none;
+}
+
+#btn-ai-ask {
+    flex: 0 0 auto;
+    min-width: 84px;
+}
+
+/* Documentation view: the filter field sits next to the repository button. */
+.docs-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.docs-search {
+    width: 240px;
+    max-width: 100%;
+}
+
+.doc-card[hidden] {
+    display: none;
+}

@@ -2157,6 +2157,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         profiles: { title: 'docs.profiles', body: 'docs.profiles_desc', file: 'FEATURES.md' },
         sync: { title: 'docs.sync', body: 'docs.sync_desc', file: 'CLOUD_SYNC.md' },
         shortcuts: { title: 'docs.shortcuts', body: 'docs.shortcuts_desc', file: 'FEATURES.md' },
+        assistant: { title: 'docs.assistant', body: 'docs.assistant_desc', file: 'AI.md' },
+        integrations: { title: 'docs.integrations', body: 'docs.integrations_desc', file: 'INTEGRATIONS.md' },
         privacy: { title: 'docs.privacy', body: 'docs.privacy_desc', file: 'SECURITY.md' }
     };
 
@@ -2193,6 +2195,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-docs-github').addEventListener('click', () => {
         window.api.openExternal(`${DOCS_BASE}`).catch((err) => console.error('Failed to open docs:', err));
     });
+
+    // Instant filter over the card grid. Matching is case and diacritic
+    // insensitive so "asistan" finds "Yerel asistan" in every locale.
+    const docsSearch = document.getElementById('docs-search');
+    if (docsSearch) {
+        const cards = Array.from(document.querySelectorAll('.doc-card'));
+        const normalize = (value) => String(value).toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        docsSearch.addEventListener('input', () => {
+            const query = normalize(docsSearch.value.trim());
+            for (const card of cards) {
+                card.hidden = query.length > 0 && !normalize(card.textContent).includes(query);
+            }
+        });
+    }
 
     // ─── Diagnostics ────────────────────────────────────────────────────────
     let diagnosticsState = null;
@@ -2466,6 +2482,337 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.getElementById('wizard-skip').addEventListener('click', finishWizard);
+
+    // ─── Local assistant and integrations ───────────────────────────────────
+    const aiEnabled = document.getElementById('setting-ai-enabled');
+    const aiRag = document.getElementById('setting-ai-rag');
+    const aiRuntimeState = document.getElementById('ai-runtime-state');
+    const aiHardware = document.getElementById('ai-hardware');
+    const aiBadge = document.getElementById('ai-badge');
+    const aiModelList = document.getElementById('ai-model-list');
+    const aiRagState = document.getElementById('ai-rag-state');
+    const aiProgress = document.getElementById('ai-progress');
+    const aiAnswer = document.getElementById('ai-answer');
+    const aiSources = document.getElementById('ai-sources');
+    let aiState = null;
+
+    const renderAi = (state) => {
+        if (!state) return;
+        aiState = state;
+        if (aiEnabled) aiEnabled.checked = state.enabled;
+        if (aiRag) aiRag.checked = Boolean(state.rag && state.rag.enabled);
+        if (aiBadge) {
+            aiBadge.textContent = state.enabled ? t('ai.on') : t('ai.off');
+            aiBadge.classList.toggle('on', state.enabled);
+        }
+        if (aiRuntimeState) {
+            aiRuntimeState.textContent = state.runtime && state.runtime.running
+                ? t('ai.runtime_running')
+                : t('ai.runtime_missing');
+        }
+        if (aiHardware) {
+            const hardware = state.hardware || {};
+            aiHardware.textContent = `${hardware.cpu || '-'} / ${hardware.cores || 0} / ${hardware.memoryGB || 0} GB`;
+        }
+        if (aiRagState && state.rag) {
+            aiRagState.textContent = state.rag.enabled
+                ? tf('ai.rag_state', String(state.rag.documents), String(state.rag.chunks))
+                : t('ai.rag_off');
+        }
+        if (aiModelList) {
+            aiModelList.innerHTML = '';
+            (state.catalog || []).forEach((model) => {
+                const row = document.createElement('div');
+                row.className = 'ai-model-row';
+
+                const info = document.createElement('div');
+                const name = document.createElement('strong');
+                name.textContent = model.label;
+                const meta = document.createElement('span');
+                meta.className = 'ai-model-meta';
+                meta.textContent = `${model.sizeGB} GB / ${model.minMemoryGB} GB RAM`;
+                info.append(name, meta);
+                if (model.id === state.recommended) {
+                    const tag = document.createElement('span');
+                    tag.className = 'ai-tag';
+                    tag.textContent = t('ai.recommended');
+                    info.appendChild(tag);
+                }
+
+                const actions = document.createElement('div');
+                actions.className = 'ai-model-actions';
+                if (model.installed) {
+                    if (!model.embedding) {
+                        const use = document.createElement('button');
+                        use.className = model.id === state.model ? 'btn secondary' : 'btn primary';
+                        use.textContent = model.id === state.model ? t('ai.model_active') : t('ai.model_use');
+                        use.addEventListener('click', async () => {
+                            await persistSetting('ai_model', model.id);
+                            settings.ai_model = model.id;
+                            renderAi(await window.api.refreshAi());
+                        });
+                        actions.appendChild(use);
+                    }
+                    const remove = document.createElement('button');
+                    remove.className = 'btn secondary';
+                    remove.textContent = t('ai.model_delete');
+                    remove.addEventListener('click', async () => {
+                        const confirmed = await showCustomConfirm(t('ai.model_delete_desc'), t('ai.model_delete'));
+                        if (!confirmed) return;
+                        await window.api.deleteAiModel(model.id);
+                        renderAi(await window.api.refreshAi());
+                        showToast(t('ai.model_deleted'));
+                    });
+                    actions.appendChild(remove);
+                } else {
+                    const download = document.createElement('button');
+                    download.className = 'btn primary';
+                    download.textContent = model.runnable ? t('ai.model_download') : t('ai.model_too_big');
+                    download.disabled = !model.runnable;
+                    download.addEventListener('click', async () => {
+                        download.disabled = true;
+                        download.textContent = t('ai.model_downloading');
+                        if (aiProgress) {
+                            aiProgress.hidden = false;
+                            aiProgress.textContent = `${model.label} 0%`;
+                        }
+                        const result = await window.api.pullAiModel(model.id);
+                        if (aiProgress) aiProgress.hidden = true;
+                        if (!result.success) {
+                            await showCustomAlert(t('ai.model_failed'));
+                        } else {
+                            showToast(t('ai.model_installed'));
+                        }
+                        renderAi(await window.api.refreshAi());
+                    });
+                    actions.appendChild(download);
+                }
+
+                row.append(info, actions);
+                aiModelList.appendChild(row);
+            });
+        }
+    };
+
+    const refreshAi = async () => {
+        try {
+            renderAi(await window.api.refreshAi());
+        } catch (err) {
+            console.error('Failed to read assistant status:', err);
+        }
+    };
+
+    if (aiEnabled) {
+        aiEnabled.addEventListener('change', async () => {
+            await persistSetting('ai_enabled', aiEnabled.checked ? 'true' : 'false');
+            settings.ai_enabled = aiEnabled.checked ? 'true' : 'false';
+            renderAi(await window.api.refreshAi());
+        });
+    }
+    if (aiRag) {
+        aiRag.addEventListener('change', async () => {
+            await persistSetting('ai_rag', aiRag.checked ? 'true' : 'false');
+            settings.ai_rag = aiRag.checked ? 'true' : 'false';
+            renderAi(await window.api.refreshAi());
+        });
+    }
+    const btnAiRuntime = document.getElementById('btn-ai-runtime');
+    if (btnAiRuntime) btnAiRuntime.addEventListener('click', () => window.api.openAiRuntime());
+    const btnAiRefresh = document.getElementById('btn-ai-refresh');
+    if (btnAiRefresh) btnAiRefresh.addEventListener('click', () => refreshAi());
+    const btnAiReindex = document.getElementById('btn-ai-reindex');
+    if (btnAiReindex) {
+        btnAiReindex.addEventListener('click', async () => {
+            renderAi(await window.api.reindexAi());
+            showToast(t('ai.reindexed'));
+        });
+    }
+    const btnAiAsk = document.getElementById('btn-ai-ask');
+    const aiQuestion = document.getElementById('ai-question');
+    if (btnAiAsk && aiQuestion) {
+        const ask = async () => {
+            const question = aiQuestion.value.trim();
+            if (!question) return;
+            btnAiAsk.disabled = true;
+            if (aiAnswer) {
+                aiAnswer.hidden = false;
+                aiAnswer.textContent = t('ai.thinking');
+            }
+            if (aiSources) aiSources.hidden = true;
+            try {
+                const result = await window.api.askAi(question);
+                if (aiAnswer) aiAnswer.textContent = result.answer || t('ai.no_answer');
+                if (aiSources && Array.isArray(result.sources) && result.sources.length) {
+                    aiSources.hidden = false;
+                    aiSources.innerHTML = '';
+                    const title = document.createElement('strong');
+                    title.textContent = t('ai.sources');
+                    aiSources.appendChild(title);
+                    result.sources.forEach((source) => {
+                        const link = document.createElement('button');
+                        link.className = 'doc-link';
+                        link.textContent = source.heading ? `${source.title} / ${source.heading}` : source.title;
+                        link.addEventListener('click', () => window.api.openExternal(source.url));
+                        aiSources.appendChild(link);
+                    });
+                }
+            } catch (err) {
+                if (aiAnswer) aiAnswer.textContent = t('ai.no_answer');
+            } finally {
+                btnAiAsk.disabled = false;
+            }
+        };
+        btnAiAsk.addEventListener('click', ask);
+        aiQuestion.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') ask();
+        });
+    }
+    window.api.onAiPullProgress((progress) => {
+        if (!aiProgress || !progress) return;
+        aiProgress.hidden = false;
+        const percent = progress.total ? Math.round((progress.completed / progress.total) * 100) : 0;
+        aiProgress.textContent = `${progress.model} ${percent}%`;
+    });
+    await refreshAi();
+
+    const apiEnabled = document.getElementById('setting-api-enabled');
+    const apiPort = document.getElementById('setting-api-port');
+    const apiToken = document.getElementById('api-token');
+    const apiBadge = document.getElementById('api-badge');
+    const apiState = document.getElementById('api-state');
+    const mcpBadge = document.getElementById('mcp-badge');
+    const mcpState = document.getElementById('mcp-state');
+    const cliBadge = document.getElementById('cli-badge');
+    const cliState = document.getElementById('cli-state');
+    const webhookUrl = document.getElementById('webhook-url');
+    const webhookSecret = document.getElementById('webhook-secret');
+    const webhookState = document.getElementById('webhook-state');
+
+    const webhookEvents = () => [...document.querySelectorAll('[data-webhook-event]')]
+        .filter((input) => input.checked)
+        .map((input) => input.dataset.webhookEvent)
+        .join(',');
+
+    const renderIntegrations = (status) => {
+        if (!status) return;
+        const api = status.api || {};
+        if (apiEnabled) apiEnabled.checked = Boolean(api.enabled);
+        if (apiPort) apiPort.value = String(api.port || 18457);
+        if (apiToken) apiToken.value = api.token || '';
+        if (apiBadge) {
+            apiBadge.textContent = api.running ? t('int.running') : t('int.stopped');
+            apiBadge.classList.toggle('on', Boolean(api.running));
+        }
+        if (apiState) apiState.textContent = api.url || t('int.api_off');
+
+        const mcp = status.mcp || {};
+        if (mcpBadge) {
+            mcpBadge.textContent = mcp.installed ? t('int.installed') : t('int.not_installed');
+            mcpBadge.classList.toggle('on', Boolean(mcp.installed));
+        }
+        if (mcpState) mcpState.textContent = mcp.configPath || '';
+
+        const cli = status.cli || {};
+        if (cliBadge) {
+            cliBadge.textContent = cli.installed ? t('int.installed') : t('int.not_installed');
+            cliBadge.classList.toggle('on', Boolean(cli.installed));
+        }
+        if (cliState) cliState.textContent = cli.path || '';
+
+        const webhook = status.webhook || {};
+        if (webhookUrl) webhookUrl.value = webhook.url || '';
+        if (webhookState) webhookState.textContent = webhook.configured ? t('int.webhook_ready') : t('int.webhook_off');
+        const selected = new Set(webhook.events || []);
+        document.querySelectorAll('[data-webhook-event]').forEach((input) => {
+            input.checked = selected.has(input.dataset.webhookEvent);
+        });
+    };
+
+    const refreshIntegrations = async () => {
+        try {
+            renderIntegrations(await window.api.getIntegrationStatus());
+        } catch (err) {
+            console.error('Failed to read integration status:', err);
+        }
+    };
+
+    if (apiEnabled) {
+        apiEnabled.addEventListener('change', async () => {
+            const result = await window.api.setLocalApi(apiEnabled.checked, apiPort ? apiPort.value : '18457');
+            if (result && result.status) renderIntegrations(result.status);
+            showToast(t('toast.saved'));
+        });
+    }
+    if (apiPort) {
+        apiPort.addEventListener('change', async () => {
+            if (!apiEnabled || !apiEnabled.checked) return;
+            const result = await window.api.setLocalApi(true, apiPort.value);
+            if (result && result.status) renderIntegrations(result.status);
+        });
+    }
+    const btnApiCopy = document.getElementById('btn-api-copy');
+    if (btnApiCopy) {
+        btnApiCopy.addEventListener('click', async () => {
+            if (!apiToken) return;
+            await window.api.copyText(apiToken.value);
+            showToast(t('int.copied'));
+        });
+    }
+    const btnMcpInstall = document.getElementById('btn-mcp-install');
+    if (btnMcpInstall) {
+        btnMcpInstall.addEventListener('click', async () => {
+            await window.api.installMcp();
+            await refreshIntegrations();
+            showToast(t('int.install_done'));
+        });
+    }
+    const btnMcpOpen = document.getElementById('btn-mcp-open');
+    if (btnMcpOpen) btnMcpOpen.addEventListener('click', () => window.api.openIntegrationConfig('mcp'));
+    const btnCliInstall = document.getElementById('btn-cli-install');
+    if (btnCliInstall) {
+        btnCliInstall.addEventListener('click', async () => {
+            await window.api.installCli();
+            await refreshIntegrations();
+            showToast(t('int.install_done'));
+        });
+    }
+    const btnCliOpen = document.getElementById('btn-cli-open');
+    if (btnCliOpen) btnCliOpen.addEventListener('click', () => window.api.openIntegrationConfig('cli'));
+    const btnWebhookSave = document.getElementById('btn-webhook-save');
+    if (btnWebhookSave) {
+        btnWebhookSave.addEventListener('click', async () => {
+            const inputSecret = webhookSecret ? webhookSecret.value : '';
+            const result = await window.api.saveWebhook(
+                webhookUrl ? webhookUrl.value : '',
+                inputSecret || settings.webhook_secret || '',
+                webhookEvents()
+            );
+            if (result && result.success) {
+                if (inputSecret) settings.webhook_secret = inputSecret;
+                showToast(t('int.saved'));
+                await refreshIntegrations();
+            } else {
+                await showCustomAlert(t('int.failed'));
+            }
+        });
+    }
+    const btnWebhookTest = document.getElementById('btn-webhook-test');
+    if (btnWebhookTest) {
+        btnWebhookTest.addEventListener('click', async () => {
+            const result = await window.api.testWebhook();
+            if (webhookState) {
+                webhookState.textContent = result && result.success
+                    ? t('int.test_ok')
+                    : t('int.test_failed');
+            }
+        });
+    }
+    await refreshIntegrations();
+
+    const btnAboutSecurity = document.getElementById('btn-about-security');
+    if (btnAboutSecurity) btnAboutSecurity.addEventListener('click', () => window.api.openExternal('https://vellium.dev/en/legal/security-disclosure'));
+    const btnAboutKvkk = document.getElementById('btn-about-kvkk');
+    if (btnAboutKvkk) btnAboutKvkk.addEventListener('click', () => window.api.openExternal('https://vellium.dev/en/legal/kvkk-notice'));
 
     if (settings.onboarding_done !== 'true' && wizardOverlay) {
         wizardIndex = 0;

@@ -173,6 +173,15 @@ async function initDB() {
             cloud_folder: '',
             cloud_auto: 'true',
             cloud_last_sync: '',
+            ai_enabled: 'false',
+            ai_model: '',
+            ai_runtime: 'auto',
+            ai_rag: 'true',
+            api_enabled: 'false',
+            api_port: '18457',
+            webhook_url: '',
+            webhook_events: 'profile,mute,sync',
+            webhook_secret: '',
             onboarding_done: 'false'
         };
 

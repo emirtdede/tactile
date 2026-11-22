@@ -141,6 +141,8 @@
                         <button class="section-link" data-section="shortcuts" data-i18n="settings.section_shortcuts"></button>
                         <button class="section-link" data-section="data" data-i18n="settings.section_data"></button>
                         <button class="section-link" data-section="updates" data-i18n="settings.section_updates"></button>
+                        <button class="section-link" data-section="ai" data-i18n="settings.section_ai"></button>
+                        <button class="section-link" data-section="integrations" data-i18n="settings.section_integrations"></button>
                     </div>
                 </section>
 
@@ -155,6 +157,8 @@
                         <button class="section-link" data-docs="profiles" data-i18n="docs.profiles"></button>
                         <button class="section-link" data-docs="sync" data-i18n="docs.sync"></button>
                         <button class="section-link" data-docs="shortcuts" data-i18n="docs.shortcuts"></button>
+                        <button class="section-link" data-docs="assistant" data-i18n="docs.assistant"></button>
+                        <button class="section-link" data-docs="integrations" data-i18n="docs.integrations"></button>
                         <button class="section-link" data-docs="privacy" data-i18n="docs.privacy"></button>
                     </div>
                 </section>
@@ -572,17 +576,193 @@
                                     </div>
                                 </div>
                             </section>
+                            <section class="settings-section" id="settings-ai" data-section="ai">
+                                <h2 data-i18n="settings.section_ai"></h2>
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="ai.title"></h3>
+                                            <p data-i18n="ai.desc"></p>
+                                        </div>
+                                        <span class="status-badge" id="ai-badge"></span>
+                                    </div>
+                                    <div class="setting-item compact">
+                                        <div class="setting-info">
+                                            <h3 data-i18n="ai.enable"></h3>
+                                            <p data-i18n="ai.enable_desc"></p>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="setting-ai-enabled">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <dl class="diag-list">
+                                        <div><dt data-i18n="ai.runtime"></dt><dd id="ai-runtime-state"></dd></div>
+                                        <div><dt data-i18n="ai.hardware"></dt><dd id="ai-hardware"></dd></div>
+                                    </dl>
+                                    <div class="button-row">
+                                        <button class="btn secondary" id="btn-ai-runtime" data-i18n="ai.install_runtime"></button>
+                                        <button class="btn secondary" id="btn-ai-refresh" data-i18n="diag.refresh"></button>
+                                    </div>
+                                </div>
+
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="ai.models"></h3>
+                                            <p data-i18n="ai.models_desc"></p>
+                                        </div>
+                                    </div>
+                                    <div class="ai-model-list" id="ai-model-list"></div>
+                                    <p class="hint" id="ai-progress" hidden></p>
+                                </div>
+
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="ai.rag"></h3>
+                                            <p data-i18n="ai.rag_desc"></p>
+                                        </div>
+                                    </div>
+                                    <div class="setting-item compact">
+                                        <div class="setting-info">
+                                            <h3 data-i18n="ai.rag_enable"></h3>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="setting-ai-rag">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <p class="cloud-meta" id="ai-rag-state"></p>
+                                    <div class="button-row">
+                                        <button class="btn secondary" id="btn-ai-reindex" data-i18n="ai.reindex"></button>
+                                    </div>
+                                </div>
+
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="ai.ask"></h3>
+                                            <p data-i18n="ai.ask_desc"></p>
+                                        </div>
+                                    </div>
+                                    <div class="path-row">
+                                        <input type="text" id="ai-question" class="form-input" maxlength="2000" placeholder="" data-i18n-placeholder="ai.ask_placeholder" aria-label="" data-i18n-aria-label="ai.ask_placeholder">
+                                        <button class="btn primary" id="btn-ai-ask" data-i18n="ai.ask_button"></button>
+                                    </div>
+                                    <div class="ai-answer" id="ai-answer" hidden></div>
+                                    <div class="ai-sources" id="ai-sources" hidden></div>
+                                </div>
+                            </section>
+
+                            <section class="settings-section" id="settings-integrations" data-section="integrations">
+                                <h2 data-i18n="settings.section_integrations"></h2>
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="int.api"></h3>
+                                            <p data-i18n="int.api_desc"></p>
+                                        </div>
+                                        <span class="status-badge" id="api-badge"></span>
+                                    </div>
+                                    <div class="setting-item compact">
+                                        <div class="setting-info">
+                                            <h3 data-i18n="int.api_enable"></h3>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="setting-api-enabled">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <label class="field">
+                                        <span data-i18n="int.api_port"></span>
+                                        <input type="number" id="setting-api-port" class="form-input" min="1024" max="65535" step="1">
+                                    </label>
+                                    <label class="field field-wide">
+                                        <span data-i18n="int.api_token"></span>
+                                        <div class="path-row">
+                                            <input type="text" id="api-token" class="form-input" readonly aria-label="" data-i18n-aria-label="int.api_token">
+                                            <button class="btn secondary icon-btn" id="btn-api-copy" data-i18n-title="int.copy" title="" data-i18n-aria-label="int.copy" aria-label="">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                                            </button>
+                                        </div>
+                                    </label>
+                                    <p class="cloud-meta" id="api-state"></p>
+                                </div>
+
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="int.mcp"></h3>
+                                            <p data-i18n="int.mcp_desc"></p>
+                                        </div>
+                                        <span class="status-badge" id="mcp-badge"></span>
+                                    </div>
+                                    <p class="cloud-meta" id="mcp-state"></p>
+                                    <div class="button-row">
+                                        <button class="btn primary" id="btn-mcp-install" data-i18n="int.install"></button>
+                                        <button class="btn secondary" id="btn-mcp-open" data-i18n="int.open_folder"></button>
+                                    </div>
+                                </div>
+
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="int.cli"></h3>
+                                            <p data-i18n="int.cli_desc"></p>
+                                        </div>
+                                        <span class="status-badge" id="cli-badge"></span>
+                                    </div>
+                                    <p class="cloud-meta" id="cli-state"></p>
+                                    <div class="button-row">
+                                        <button class="btn primary" id="btn-cli-install" data-i18n="int.install"></button>
+                                        <button class="btn secondary" id="btn-cli-open" data-i18n="int.open_folder"></button>
+                                    </div>
+                                </div>
+
+                                <div class="info-card">
+                                    <div class="info-card-head">
+                                        <div>
+                                            <h3 data-i18n="int.webhook"></h3>
+                                            <p data-i18n="int.webhook_desc"></p>
+                                        </div>
+                                    </div>
+                                    <div class="cloud-grid">
+                                        <label class="field field-wide">
+                                            <span data-i18n="int.url"></span>
+                                            <input type="url" id="webhook-url" class="form-input" maxlength="1024">
+                                        </label>
+                                        <label class="field field-wide">
+                                            <span data-i18n="int.secret"></span>
+                                            <input type="password" id="webhook-secret" class="form-input" maxlength="200">
+                                        </label>
+                                    </div>
+                                    <div class="webhook-events">
+                                        <label class="check-row"><input type="checkbox" data-webhook-event="profile" aria-label="" data-i18n-aria-label="int.event_profile"><span data-i18n="int.event_profile"></span></label>
+                                        <label class="check-row"><input type="checkbox" data-webhook-event="mute" aria-label="" data-i18n-aria-label="int.event_mute"><span data-i18n="int.event_mute"></span></label>
+                                        <label class="check-row"><input type="checkbox" data-webhook-event="volume" aria-label="" data-i18n-aria-label="int.event_volume"><span data-i18n="int.event_volume"></span></label>
+                                        <label class="check-row"><input type="checkbox" data-webhook-event="sync" aria-label="" data-i18n-aria-label="int.event_sync"><span data-i18n="int.event_sync"></span></label>
+                                        <label class="check-row"><input type="checkbox" data-webhook-event="restore" aria-label="" data-i18n-aria-label="int.event_restore"><span data-i18n="int.event_restore"></span></label>
+                                    </div>
+                                    <p class="cloud-meta" id="webhook-state"></p>
+                                    <div class="button-row">
+                                        <button class="btn primary" id="btn-webhook-save" data-i18n="int.save"></button>
+                                        <button class="btn secondary" id="btn-webhook-test" data-i18n="int.test"></button>
+                                    </div>
+                                </div>
+                            </section>
                         </div>
                     </div>
-
-                    <!-- Documentation -->
                     <div id="view-docs" class="view">
                         <div class="view-header">
                             <div>
                                 <h1 data-i18n="docs.title"></h1>
                                 <p data-i18n="docs.desc"></p>
                             </div>
-                            <button class="btn secondary" id="btn-docs-github" data-i18n="docs.open_github"></button>
+                            <div class="docs-actions">
+                                <input type="search" id="docs-search" class="form-input docs-search" aria-label="" data-i18n-aria-label="docs.search" data-i18n-placeholder="docs.search">
+                                <button class="btn secondary" id="btn-docs-github" data-i18n="docs.open_github"></button>
+                            </div>
                         </div>
                         <div class="doc-grid" id="doc-grid">
                             <article class="doc-card" data-doc-card="getting_started">
@@ -609,8 +789,20 @@
                                 <p data-i18n="docs.shortcuts_desc"></p>
                                 <button class="doc-link" data-docs="shortcuts" data-i18n="docs.shortcuts"></button>
                             </article>
-                            <article class="doc-card" data-doc-card="privacy">
+                            <article class="doc-card" data-doc-card="assistant">
                                 <span class="doc-index">05</span>
+                                <h3 data-i18n="docs.assistant"></h3>
+                                <p data-i18n="docs.assistant_desc"></p>
+                                <button class="doc-link" data-docs="assistant" data-i18n="docs.assistant"></button>
+                            </article>
+                            <article class="doc-card" data-doc-card="integrations">
+                                <span class="doc-index">06</span>
+                                <h3 data-i18n="docs.integrations"></h3>
+                                <p data-i18n="docs.integrations_desc"></p>
+                                <button class="doc-link" data-docs="integrations" data-i18n="docs.integrations"></button>
+                            </article>
+                            <article class="doc-card" data-doc-card="privacy">
+                                <span class="doc-index">07</span>
                                 <h3 data-i18n="docs.privacy"></h3>
                                 <p data-i18n="docs.privacy_desc"></p>
                                 <button class="doc-link" data-docs="privacy" data-i18n="docs.privacy"></button>
@@ -671,6 +863,7 @@
                                     <h2>Tactile</h2>
                                     <p class="version" id="app-version-display"></p>
                                     <p class="about-subtitle" data-i18n="about.subtitle"></p>
+                                    <p class="brand-strip"><span data-i18n="brand.product_line"></span></p>
                                 </div>
                             </div>
 
@@ -705,6 +898,14 @@
                                         <span data-i18n="about.license"></span>
                                         <span class="about-value">MIT</span>
                                     </div>
+                                    <button class="about-link-row" id="btn-about-security">
+                                        <span data-i18n="about.security"></span>
+                                        <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><polyline points="4 2 8 6 4 10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+                                    </button>
+                                    <button class="about-link-row" id="btn-about-kvkk">
+                                        <span data-i18n="about.kvkk"></span>
+                                        <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><polyline points="4 2 8 6 4 10" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+                                    </button>
                                 </div>
                             </div>
 

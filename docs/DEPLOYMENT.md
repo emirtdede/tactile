@@ -61,11 +61,11 @@ Publish a manifest after the first public release:
 PackageIdentifier: Vellium.Tactile
 PackageName: Tactile
 Publisher: Vellium
-PackageVersion: 1.0.0
+PackageVersion: 1.1.0
 InstallerType: nullsoft
 Installers:
   - Architecture: x64
-    InstallerUrl: https://github.com/emirtdede/tactile/releases/download/v1.0.0/Tactile-Setup-1.0.0.exe
+    InstallerUrl: https://github.com/emirtdede/tactile/releases/download/v1.0.0/Tactile-Setup-1.1.0.exe
     InstallerSha256: <sha256 of the exe>
 ManifestType: singleton
 ManifestVersion: 1.6.0
@@ -92,7 +92,7 @@ All steps must be green before tagging.
 2. Tests, language audit, screenshot capture all clean.
 3. Installer built and installed on a clean profile: onboarding on first run,
    language from the installer, tray start works.
-4. Tag `v1.0.0`, push, attach the installer, block map and `latest.yml`.
+4. Tag `v1.1.0`, push, attach the installer, block map and `latest.yml`.
 5. Make the release public; verify the update card finds it from 0.9.x.
 6. Submit the winget manifest.
 

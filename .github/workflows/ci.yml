@@ -32,7 +32,7 @@ jobs:
 
       - name: Static syntax check
         run: |
-          for f in src/main.js src/preload.js src/app.js src/i18n.js src/cloud-sync.js src/db/database.js src/libs/audio.js src/libs/ico.js src/libs/keycodes.js src/utils/remapper.js; do
+          for f in src/main.js src/preload.js src/app.js src/i18n.js src/cloud-sync.js src/db/database.js src/libs/audio.js src/libs/ico.js src/libs/keycodes.js src/utils/remapper.js src/branding.js src/ai/hardware.js src/ai/catalog.js src/ai/ollama.js src/ai/rag.js src/ai/corpus.js src/ai/assistant.js src/ai/service.js src/integrations/local-api.js src/integrations/webhooks.js src/integrations/service.js src/mcp/server.js src/cli/tactile.js; do
             node --check "$f"
           done
 
@@ -78,7 +78,7 @@ jobs:
           $exe = Get-ChildItem dist -Filter 'Tactile-Setup-*.exe' | Select-Object -First 1
           if (-not $exe) { throw 'Installer was not produced' }
           $info = (Get-Item $exe.FullName).VersionInfo
-          if ($info.FileVersion -ne '1.0.0') { throw "Unexpected version: $($info.FileVersion)" }
+          if ($info.FileVersion -ne '1.1.0') { throw "Unexpected version: $($info.FileVersion)" }
           Write-Host "Built $($exe.Name) $($exe.Length) bytes"
 
       - name: Upload installer

@@ -94,7 +94,73 @@ const IDENTICAL_PAIRS_ALLOWED = new Set([
     'sv:diag.system',
     'sv:diag.version',
     'uz:sidebar.status',
-    'uz:settings.section_general'
+    'uz:settings.section_general',
+    // Integration and assistant terms that are international loanwords in the
+    // locale (webhook, CLI, MCP, port, URL) or are spelled identically by rule.
+    'af:int.api_port',
+    'af:int.webhook',
+    'az:int.mcp',
+    'az:int.cli',
+    'bs:int.api_port',
+    'bs:int.mcp',
+    'bs:int.cli',
+    'bs:int.webhook',
+    'ca:int.api_port',
+    'ca:int.cli',
+    'ca:int.webhook',
+    'cs:int.api_port',
+    'cs:int.mcp',
+    'da:ai.model_download',
+    'da:int.mcp',
+    'da:int.cli',
+    'da:int.webhook',
+    'de:int.webhook',
+    'el:int.webhook',
+    'es:int.cli',
+    'et:int.api_port',
+    'et:int.mcp',
+    'eu:int.cli',
+    'fi:int.webhook',
+    'fil:int.api_port',
+    'fil:int.mcp',
+    'fil:int.cli',
+    'fr:ai.sources',
+    'fr:int.api_port',
+    'fr:int.webhook',
+    'ha:int.api_port',
+    'ha:int.webhook',
+    'he:int.webhook',
+    'hu:int.api_port',
+    'id:int.cli',
+    'ig:int.api_port',
+    'ig:int.webhook',
+    'lo:int.cli',
+    'lo:int.webhook',
+    'lt:int.webhook',
+    'mn:int.webhook',
+    'ms:int.cli',
+    'ms:int.webhook',
+    'my:int.cli',
+    'my:int.webhook',
+    'nb:int.api_port',
+    'nb:int.cli',
+    'nb:int.webhook',
+    'nb:int.url',
+    'nb:int.test',
+    'pt:int.cli',
+    'pt:int.webhook',
+    'ro:int.api_port',
+    'ro:int.cli',
+    'si:int.webhook',
+    'sk:int.api_port',
+    'sl:int.cli',
+    'sl:int.webhook',
+    'sq:int.api_port',
+    'sv:int.api_port',
+    'sv:int.cli',
+    'sv:int.webhook',
+    'uz:int.api_port',
+    'yo:int.webhook',
 ]);
 
 test(`the app declares exactly ${TARGET_LANGUAGES} languages`, () => {
@@ -373,6 +439,11 @@ test('no locale leaves an untranslated English phrase inside a translated value'
         'space', 'howler', 'js', 'mit', 'apache', 'electron', 'sql', 'uiohook', 'napi',
         'sharp', 'fs', 'extra', 'builder', 'apple', 'microsoft', 'corporation', 'eula',
         'copyright', 'premium', 'pbt', 'abs', 'mixed', 'pom', 'windows', 'macos', 'linux',
+        // Integration and assistant vocabulary that stays in Latin script inside
+        // otherwise translated sentences (product names, protocol names, units).
+        'loopback', 'rest', 'api', 'model', 'context', 'protocol', 'zapier', 'make',
+        'n8n', 'n', 'webhook', 'webhooks', 'cli', 'mcp', 'ollama', 'index', 'gb', 'ram',
+        'server', 'terminal', 'local',
         // Cognates: the correct French wording really is spelled like English.
         'contact', 'questions'
     ]);
@@ -384,6 +455,9 @@ test('no locale leaves an untranslated English phrase inside a translated value'
         // into "support vellium dev" and look like an English phrase.
         .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+/g, ' ')
         .replace(/https?:\/\/\S+/g, ' ')
+        // Placeholders are tokens of the format string, not source words: "%s
+        // documents" used to tokenize as "s documents" and look like a leak.
+        .replace(/%s/g, ' ')
         .match(/[A-Za-z][A-Za-z'-]*/g) || []).map((word) => word.toLowerCase());
 
     const leaks = [];

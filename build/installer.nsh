@@ -26,6 +26,51 @@
     !macroend
 !endif
 
+; Uninstaller state. Declared only for the uninstaller build: the installer
+; build compiles neither the page nor the removal step, and NSIS treats an
+; unused global as an error here.
+!ifdef BUILD_UNINSTALLER
+    Var /GLOBAL TactileUnDataDialog
+    Var /GLOBAL TactileUnDataCheckbox
+    Var /GLOBAL TactileUnDataHint
+    Var /GLOBAL TactileDeleteUserData
+
+    !include LogicLib.nsh
+    !include nsDialogs.nsh
+
+    ; One page between the welcome screen and the progress bar. Keeping the data
+    ; is the default, so an uninstall followed by a reinstall keeps profiles and
+    ; the sound library. Imported sound files are never inside these folders.
+    !macro customUnWelcomePage
+        !insertmacro MUI_UNPAGE_WELCOME
+        UninstPage custom un.TactileUserDataPageCreate un.TactileUserDataPageLeave
+
+        Function un.TactileUserDataPageCreate
+            !insertmacro MUI_HEADER_TEXT "Remove Tactile" "Choose what happens to the data on this computer."
+            nsDialogs::Create 1018
+            Pop $TactileUnDataDialog
+            ${If} $TactileUnDataDialog == error
+                Abort
+            ${EndIf}
+
+            ${NSD_CreateLabel} 0 8u 100% 34u "Tactile will be removed from this computer. Your profiles and settings can stay, so a later install starts where you left off."
+            Pop $0
+
+            ${NSD_CreateCheckbox} 0 50u 100% 18u "Also delete my Tactile settings, profiles and backup history"
+            Pop $TactileUnDataCheckbox
+
+            ${NSD_CreateLabel} 14u 72u 92% 34u "Leave this unchecked to keep the data. Imported sound files and cloud copies are never deleted."
+            Pop $TactileUnDataHint
+
+            nsDialogs::Show
+        FunctionEnd
+
+        Function un.TactileUserDataPageLeave
+            ${NSD_GetState} $TactileUnDataCheckbox $TactileDeleteUserData
+        FunctionEnd
+    !macroend
+!endif
+
 !ifndef BUILD_UNINSTALLER
     ; Adds a language to the setup combobox. Declared at the top level because
     ; NSIS does not allow a macro definition inside another macro.
@@ -180,6 +225,27 @@
             FileWrite $0 "$TactileSelectedLanguage"
             FileClose $0
         ${EndIf}
+
+        ; A standalone copy of the product mark lets Windows Settings, the
+        ; taskbar and the Start menu render the icon without loading the whole
+        ; executable first. The file is small and lives next to the app.
+        ClearErrors
+        File /oname=$INSTDIR\tactile-icon.ico "${BUILD_RESOURCES_DIR}\installerIcon.ico"
+
+        ; Publisher and support metadata shown by Windows Settings and the
+        ; classic Control Panel. The product stays Tactile, the publisher is
+        ; Vellium, and no Microsoft Store certificate is involved.
+        WriteRegStr SHCTX "${UNINSTALL_REGISTRY_KEY}" "Publisher" "Vellium Teknoloji Anonim Şirketi"
+        WriteRegStr SHCTX "${UNINSTALL_REGISTRY_KEY}" "URLInfoAbout" "https://vellium.dev"
+        WriteRegStr SHCTX "${UNINSTALL_REGISTRY_KEY}" "URLUpdateInfo" "https://vellium.dev/en/products/tactile"
+        WriteRegStr SHCTX "${UNINSTALL_REGISTRY_KEY}" "HelpLink" "https://vellium.dev/en/legal/support"
+        WriteRegStr SHCTX "${UNINSTALL_REGISTRY_KEY}" "Contact" "support@vellium.dev"
+        WriteRegStr SHCTX "${UNINSTALL_REGISTRY_KEY}" "Comments" "Tactile - A Vellium product (https://vellium.dev)"
+        WriteRegDWORD SHCTX "${UNINSTALL_REGISTRY_KEY}" "NoModify" 1
+        WriteRegDWORD SHCTX "${UNINSTALL_REGISTRY_KEY}" "NoRepair" 1
+        ${If} ${FileExists} "$INSTDIR\tactile-icon.ico"
+            WriteRegStr SHCTX "${UNINSTALL_REGISTRY_KEY}" "DisplayIcon" "$INSTDIR\tactile-icon.ico,0"
+        ${EndIf}
     !endif
 !macroend
 
@@ -191,4 +257,25 @@
 !macro customUnInit
     # Kill running instances before uninstall
     nsExec::Exec `taskkill /F /IM Tactile.exe`
+!macroend
+
+!macro customUnInstall
+    ; The optional page collected the answer in $TactileDeleteUserData.
+    ; Silent uninstalls leave the flag empty, which keeps the data.
+    ${If} $TactileDeleteUserData == ${BST_CHECKED}
+        ${If} $installMode == "all"
+            SetShellVarContext current
+        ${EndIf}
+
+        RMDir /r "$APPDATA\Tactile"
+        RMDir /r "$APPDATA\tactile"
+        RMDir /r "$LOCALAPPDATA\Tactile"
+        RMDir /r "$LOCALAPPDATA\tactile"
+        DeleteRegKey HKCU "Software\Vellium\Tactile"
+        DeleteRegKey SHCTX "Software\Vellium\Tactile"
+
+        ${If} $installMode == "all"
+            SetShellVarContext all
+        ${EndIf}
+    ${EndIf}
 !macroend

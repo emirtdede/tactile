@@ -10,8 +10,8 @@ contextual sub-navigation panel. Views: Sounds, Import, Settings, Docs,
 Diagnostics, About/Legal.
 
 Evidence: `screenshots/01-sounds.png`, `screenshots/02-import.png`,
-`screenshots/05-docs.png`, `screenshots/06-diagnostics.png`,
-`screenshots/07-about.png`.
+`screenshots/07-docs.png`, `screenshots/08-diagnostics.png`,
+`screenshots/09-about.png`.
 
 - Left rail: product mark, view icons, active indicator, version footer with the
   active profile.
@@ -28,8 +28,8 @@ Evidence: `screenshots/01-sounds.png`, `screenshots/02-import.png`,
   desktop shortcut through `set-dynamic-app-icon`.
 
 Evidence: `screenshots/03-settings-general.png` (appearance controls),
-`screenshots/12-light-theme.png` (full light surface),
-`screenshots/09-onboarding-theme.png` (live theme preview in onboarding).
+`screenshots/14-light-theme.png` (full light surface),
+`screenshots/11-onboarding-theme.png` (live theme preview in onboarding).
 
 ## 3. Languages (73)
 
@@ -40,7 +40,7 @@ Evidence: `screenshots/03-settings-general.png` (appearance controls),
   non-English locale and attribute fallbacks that differ from English.
 - RTL for `ar`, `he`, `fa`, `ur`.
 
-Evidence: `screenshots/08-onboarding-language.png` (language step with picker).
+Evidence: `screenshots/10-onboarding-language.png` (language step with picker).
 
 ## 4. Onboarding
 
@@ -112,7 +112,7 @@ Evidence: `screenshots/03-settings-general.png`.
   sponsor links, legal and third-party notices.
 - Diagnostics: system info copy, report export, log folder, GitHub issue form.
 
-Evidence: `screenshots/07-about.png`, `screenshots/06-diagnostics.png`.
+Evidence: `screenshots/09-about.png`, `screenshots/08-diagnostics.png`.
 
 ## 11. Verification
 

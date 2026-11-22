@@ -3,6 +3,43 @@
 All notable changes to Tactile. Format follows Keep a Changelog; versions follow
 Semantic Versioning.
 
+## [1.1.0] - 2026-11-22
+
+Local assistant, integration surfaces and retail parity pass.
+
+### Added
+
+- Optional local assistant: hardware profiling, a five-model catalog sized to
+  the detected machine, download, activation and deletion, and an off switch.
+  No model ships in the installer; inference talks to a user-installed Ollama on
+  loopback only.
+- Retrieval over the bundled documentation: heading-aware chunking, BM25
+  ranking, numbered citations and an optional embedding re-rank when the
+  embedding model is installed. Search works with no download.
+- Loopback REST API with a per-install token, request cap and rate limit.
+- MCP server (JSON-RPC 2.0 over stdio) with eight tools and an installer that
+  writes a client config.
+- Terminal CLI with status, profiles, mute, volume, sync, docs and ask commands.
+- Signed outbound webhooks for n8n, Zapier, Make or a custom endpoint, with
+  per-event selection, HMAC signature, retries and a test button.
+- Settings > Local assistant and Settings > Integrations, plus Documentation
+  cards for both, with instant filtering.
+- Uninstaller page that asks whether to delete local data and keeps it by
+  default; publisher, support and icon metadata in Windows Settings.
+- Brand surface: "A Vellium product" line, publisher card, GitHub and sponsor
+  actions, security and KVKK rows, and `src/branding.js` as the single source.
+
+### Changed
+
+- About and legal copy now names Vellium as developer and publisher while the
+  product stays Tactile.
+- Documentation set extended with `AI.md`, `INTEGRATIONS.md` and `BRANDING.md`.
+
+### Fixed
+
+- Webhook secrets are write-only: a blank field keeps the stored secret instead
+  of erasing it.
+
 ## [1.0.0] - 2026-11-22
 
 First public release. Complete interface overhaul and platform integration.

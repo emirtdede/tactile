@@ -17,9 +17,14 @@ const {
     fileToDataUri
 } = require('./libs/audio');
 const { buildIcoFromPng } = require('./libs/ico');
+const { createAiService } = require('./ai/service');
+const { createIntegrationService } = require('./integrations/service');
+const BRAND = require('./branding');
 
 let win = null;
 let tray = null;
+let aiService = null;
+let integrationService = null;
 let current_pack_data = null;
 let is_muted = false;
 let hook_started = false;
@@ -72,6 +77,19 @@ const SETTING_NORMALIZERS = {
     cloud_folder: (value) => (typeof value === 'string' ? value.trim().slice(0, 1024) : null),
     cloud_auto: (value) => (value === 'true' || value === true ? 'true' : 'false'),
     cloud_last_sync: (value) => (typeof value === 'string' ? value.slice(0, 40) : null),
+    ai_enabled: (value) => (value === 'true' || value === true ? 'true' : 'false'),
+    ai_model: (value) => (typeof value === 'string' && /^[A-Za-z0-9._:/-]{0,120}$/.test(value) ? value : null),
+    ai_runtime: (value) => (value === 'auto' || value === 'ollama' ? value : null),
+    ai_rag: (value) => (value === 'true' || value === true ? 'true' : 'false'),
+    api_enabled: (value) => (value === 'true' || value === true ? 'true' : 'false'),
+    api_port: (value) => {
+        const parsed = Number.parseInt(value, 10);
+        if (!Number.isFinite(parsed)) return null;
+        return String(Math.max(1024, Math.min(65535, parsed)));
+    },
+    webhook_url: (value) => (typeof value === 'string' ? value.trim().slice(0, 1024) : null),
+    webhook_events: (value) => (typeof value === 'string' ? value.trim().slice(0, 200) : null),
+    webhook_secret: (value) => (typeof value === 'string' ? value.trim().slice(0, 200) : null),
     onboarding_done: (value) => (value === 'true' || value === true ? 'true' : 'false')
 };
 
@@ -267,6 +285,9 @@ function performCloudSync(reason = 'manual') {
         });
         const result = cloudSync.writeSnapshot(dir, snapshot);
         db.setSetting('cloud_last_sync', snapshot.exportedAt);
+        if (integrationService) {
+            integrationService.notify('sync', { exportedAt: snapshot.exportedAt, file: result.file });
+        }
         return {
             success: true,
             reason,
@@ -461,6 +482,7 @@ function setMuted(muted, { persist = true } = {}) {
 
     setupTray();
     sendToRenderer('mute-status-changed', is_muted);
+    if (integrationService) integrationService.notify('mute', { muted: is_muted });
     // Mute is part of the backup; a hotkey toggle must reach it too.
     scheduleCloudSync();
 }
@@ -486,6 +508,63 @@ function openWindow() {
     if (win.isMinimized()) win.restore();
     win.show();
     win.focus();
+}
+
+function setupServices() {
+    const userDataPath = app.getPath('userData');
+
+    aiService = createAiService({
+        userDataPath,
+        docsDir: path.join(__dirname, '..', 'docs'),
+        getSetting: (key) => db.getSetting(key),
+        setSetting: (key, value) => db.setSetting(key, value),
+        onProgress: (payload) => sendToRenderer('ai-pull-progress', payload)
+    });
+
+    integrationService = createIntegrationService({
+        userDataPath,
+        appVersion: app.getVersion(),
+        getSetting: (key) => db.getSetting(key),
+        actions: {
+            status: () => {
+                const id = db.getSetting('selected_profile');
+                const profile = id && id !== 'default' ? db.getProfileRow(id) : null;
+                return {
+                    version: app.getVersion(),
+                    profile: profile ? { id: profile.id, name: profile.name, type: profile.type } : null,
+                    muted: is_muted,
+                    volume: Number.parseInt(db.getSetting('volume') || '50', 10) || 0,
+                    cloud: cloudStatusPayload()
+                };
+            },
+            profiles: () => db.getProfiles(),
+            activateProfile: (id) => {
+                if (typeof id !== 'string' || !db.getProfileRow(id)) return { success: false };
+                db.setSetting('selected_profile', id);
+                const success = loadProfileIntoMemory(id);
+                if (success && integrationService) integrationService.notify('profile', { id });
+                return { success };
+            },
+            setMuted: (muted) => {
+                setMuted(Boolean(muted));
+                return { success: true, muted: is_muted };
+            },
+            setVolume: (level) => {
+                const next = Math.max(0, Math.min(100, Math.round(Number(level) || 0)));
+                db.setSetting('volume', String(next));
+                sendToRenderer('volume-changed', next);
+                if (integrationService) integrationService.notify('volume', { level: next });
+                return { success: true, level: next };
+            },
+            sync: () => performCloudSync('api'),
+            ask: (question) => (aiService ? aiService.ask(question) : { answer: '', sources: [] }),
+            search: (query) => (aiService ? aiService.search(query, 6) : [])
+        }
+    });
+
+    integrationService.applyApiSetting().catch((err) => {
+        console.warn('Local API could not start:', err.message);
+    });
 }
 
 async function initializeApp() {
@@ -515,6 +594,7 @@ async function initializeApp() {
     }
     setLang(activeLanguage);
     db.loadDefaultPacks();
+    setupServices();
 
     is_muted = db.getSetting('muted') === 'true';
     const profiles = db.getProfiles();
@@ -1233,6 +1313,13 @@ ipcMain.handle('db-get-settings', () => {
         cloud_folder: db.getSetting('cloud_folder') || '',
         cloud_auto: db.getSetting('cloud_auto') || 'true',
         cloud_last_sync: db.getSetting('cloud_last_sync') || '',
+        ai_enabled: db.getSetting('ai_enabled') || 'false',
+        ai_model: db.getSetting('ai_model') || '',
+        ai_rag: db.getSetting('ai_rag') || 'true',
+        api_enabled: db.getSetting('api_enabled') || 'false',
+        api_port: db.getSetting('api_port') || '18457',
+        webhook_url: db.getSetting('webhook_url') || '',
+        webhook_events: db.getSetting('webhook_events') || 'profile,mute,sync',
         onboarding_done: db.getSetting('onboarding_done') || 'false'
     };
 });
@@ -1284,6 +1371,14 @@ ipcMain.handle('db-update-setting', (event, key, rawValue) => {
         case 'cloud_folder':
         case 'cloud_auto':
             scheduleCloudSync();
+            break;
+        case 'api_enabled':
+        case 'api_port':
+            if (integrationService) {
+                integrationService.applyApiSetting().catch((err) => {
+                    console.warn('Local API could not start:', err.message);
+                });
+            }
             break;
         case 'shortcut_toggle_mute':
         case 'shortcut_quick_task':
@@ -1679,10 +1774,95 @@ ipcMain.handle('db-rename-category', (event, id, name) => db.renameCategory(id, 
 ipcMain.handle('set-active-profile', (event, id) => {
     if (!db.getProfileRow(id)) return { success: false };
     db.setSetting('selected_profile', id);
-    return { success: loadProfileIntoMemory(id) };
+    const success = loadProfileIntoMemory(id);
+    if (success && integrationService) integrationService.notify('profile', { id });
+    return { success };
 });
 
 ipcMain.handle('get-app-version', () => app.getVersion());
+
+// ---------------------------------------------------------------------------
+// Local assistant, integrations and publisher identity
+// ---------------------------------------------------------------------------
+function requireAiService() {
+    if (!aiService) throw new Error('The assistant is not ready yet');
+    return aiService;
+}
+
+function requireIntegrationService() {
+    if (!integrationService) throw new Error('Integrations are not ready yet');
+    return integrationService;
+}
+
+ipcMain.handle('ai-get-status', () => requireAiService().status());
+ipcMain.handle('ai-toggle', (event, enabled) => requireAiService().toggle(enabled));
+ipcMain.handle('ai-refresh', () => requireAiService().status());
+ipcMain.handle('ai-list-models', async () => (await requireAiService().status()).catalog);
+ipcMain.handle('ai-pull-model', (event, id) => requireAiService().pull(id));
+ipcMain.handle('ai-delete-model', (event, id) => requireAiService().remove(id));
+ipcMain.handle('ai-reindex', () => requireAiService().reindex());
+ipcMain.handle('ai-ask', (event, question) => requireAiService().ask(question));
+ipcMain.handle('ai-search-docs', (event, query, limit) => requireAiService().search(query, limit));
+ipcMain.handle('ai-open-runtime', () => shell.openExternal('https://ollama.com/download'));
+
+ipcMain.handle('integration-status', () => requireIntegrationService().status());
+ipcMain.handle('integration-set-api', async (event, enabled, port) => {
+    const normalizedEnabled = normalizeSetting('api_enabled', enabled);
+    const normalizedPort = normalizeSetting('api_port', port);
+    if (normalizedEnabled === null || normalizedPort === null) return { success: false };
+    db.setSetting('api_enabled', normalizedEnabled);
+    db.setSetting('api_port', normalizedPort);
+    await requireIntegrationService().applyApiSetting();
+    return { success: true, status: requireIntegrationService().status() };
+});
+ipcMain.handle('integration-install-mcp', () => requireIntegrationService().installMcp());
+ipcMain.handle('integration-install-cli', () => requireIntegrationService().installCli());
+ipcMain.handle('integration-open-config', (event, target) => {
+    const status = requireIntegrationService().status();
+    const file = target === 'cli' ? status.cli.path : status.mcp.configPath;
+    try {
+        shell.showItemInFolder(file);
+        return { success: true, path: file };
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+});
+ipcMain.handle('webhook-save', (event, url, secret, events) => {
+    const normalizedUrl = normalizeSetting('webhook_url', url);
+    const normalizedSecret = normalizeSetting('webhook_secret', secret);
+    const normalizedEvents = normalizeSetting('webhook_events', events);
+    if (normalizedUrl === null || normalizedSecret === null || normalizedEvents === null) {
+        return { success: false };
+    }
+    // The secret is write only: it is never sent back to the renderer, so a
+    // blank field means "keep the stored one" instead of "erase it". Removing
+    // the endpoint clears the secret together with the URL.
+    const storedSecret = db.getSetting('webhook_secret') || '';
+    const nextSecret = normalizedUrl === '' ? '' : (normalizedSecret || storedSecret);
+    db.setSetting('webhook_url', normalizedUrl);
+    db.setSetting('webhook_secret', nextSecret);
+    db.setSetting('webhook_events', normalizedEvents);
+    return { success: true, status: requireIntegrationService().status().webhook };
+});
+ipcMain.handle('webhook-test', () => requireIntegrationService().testWebhook());
+
+ipcMain.handle('brand-get-info', () => ({
+    product: BRAND.product,
+    company: BRAND.company,
+    companyLegal: BRAND.companyLegal,
+    copyright: BRAND.copyright,
+    version: app.getVersion(),
+    website: BRAND.website,
+    productPage: BRAND.productPage,
+    github: BRAND.github,
+    sponsor: BRAND.sponsor,
+    docs: BRAND.docs,
+    storeUrl: BRAND.storeUrl,
+    storeSigningIncluded: BRAND.storeSigningIncluded,
+    emails: BRAND.emails,
+    legal: BRAND.legal,
+    social: BRAND.social
+}));
 
 // Select Folder/File Dialog API
 ipcMain.handle('select-directory', async () => {
@@ -1963,6 +2143,7 @@ if (!gotTheLock) {
     app.on('will-quit', () => {
         stopHook();
         flushCloudSync();
+        if (integrationService) integrationService.stopApi().catch(() => {});
         db.forceSaveDB();
         globalShortcut.unregisterAll();
     });

@@ -83,6 +83,32 @@ contextBridge.exposeInMainWorld('api', {
         ipcRenderer.removeAllListeners('settings-restored');
         ipcRenderer.on('settings-restored', () => callback());
     },
+    onAiPullProgress: (callback) => {
+        ipcRenderer.removeAllListeners('ai-pull-progress');
+        ipcRenderer.on('ai-pull-progress', (event, data) => callback(data));
+    },
+
+    // Local assistant
+    getAiStatus: () => ipcRenderer.invoke('ai-get-status'),
+    toggleAi: (enabled) => ipcRenderer.invoke('ai-toggle', enabled),
+    refreshAi: () => ipcRenderer.invoke('ai-refresh'),
+    listAiModels: () => ipcRenderer.invoke('ai-list-models'),
+    pullAiModel: (id) => ipcRenderer.invoke('ai-pull-model', id),
+    deleteAiModel: (id) => ipcRenderer.invoke('ai-delete-model', id),
+    reindexAi: () => ipcRenderer.invoke('ai-reindex'),
+    askAi: (question) => ipcRenderer.invoke('ai-ask', question),
+    searchAiDocs: (query, limit) => ipcRenderer.invoke('ai-search-docs', query, limit),
+    openAiRuntime: () => ipcRenderer.invoke('ai-open-runtime'),
+
+    // Integrations and publisher identity
+    getIntegrationStatus: () => ipcRenderer.invoke('integration-status'),
+    setLocalApi: (enabled, port) => ipcRenderer.invoke('integration-set-api', enabled, port),
+    installMcp: () => ipcRenderer.invoke('integration-install-mcp'),
+    installCli: () => ipcRenderer.invoke('integration-install-cli'),
+    openIntegrationConfig: (target) => ipcRenderer.invoke('integration-open-config', target),
+    saveWebhook: (url, secret, events) => ipcRenderer.invoke('webhook-save', url, secret, events),
+    testWebhook: () => ipcRenderer.invoke('webhook-test'),
+    getBrandInfo: () => ipcRenderer.invoke('brand-get-info'),
 
     // System Integration
     platform: process.platform,
