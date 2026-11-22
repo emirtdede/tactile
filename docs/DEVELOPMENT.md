@@ -32,7 +32,7 @@ from the local cache.
 | `npm run build:mac` | macOS target (run on macOS) |
 | `npm run build:linux` | Linux targets (run on Linux) |
 | `npm run build:clean` | Remove build output |
-| `node --test tools/tests/` | Full test suite |
+| `npm test` | Full test suite |
 
 ## File structure
 

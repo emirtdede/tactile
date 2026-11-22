@@ -22,7 +22,7 @@ npm start
 
 A change is ready when all of these hold:
 
-1. `node --test tools/tests/` passes.
+1. `npm test` passes.
 2. `node tools/i18n-status.js` prints `73 declared, 73 complete, 0 missing, 0 partial`.
 3. `node tools/i18n/placeholders.js` prints `issues: 0`.
 4. Any new interface string exists in all 73 locales, in the same position as

@@ -79,7 +79,7 @@ matches the NSIS installer and lets winget pass `/S` for a silent install.
 `.github/workflows/ci.yml`:
 
 1. `npm ci` with the Electron download cached.
-2. `node --test tools/tests/`.
+2. `npm test`.
 3. `node tools/i18n-status.js` and `node tools/i18n/placeholders.js`.
 4. `node tools/build-icons.js`.
 5. On tags `v*`: build the Windows installer and upload it to a draft release.

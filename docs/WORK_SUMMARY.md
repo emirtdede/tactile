@@ -118,7 +118,7 @@ Evidence: `screenshots/07-about.png`, `screenshots/06-diagnostics.png`.
 
 | Check | Result |
 | --- | --- |
-| `node --test tools/tests/` | 72 pass, 0 fail |
+| `npm test` | 80 pass, 0 fail |
 | `node tools/i18n-status.js` | 73 declared, 73 complete, 0 missing, 0 partial |
 | `node tools/i18n/placeholders.js` | issues: 0 |
 | `node node_modules/electron/cli.js tools/capture.js` | 12 screenshots, renderer errors: 0 |

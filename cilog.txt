@@ -1,0 +1,214 @@
+﻿2026-11-22T07:19:04.7982932Z Current runner version: '2.338.2'
+2026-11-22T07:19:04.8002907Z ##[group]Runner Image Provisioner
+2026-11-22T07:19:04.8003612Z Hosted Compute Agent
+2026-11-22T07:19:04.8004085Z Version: 20261111.635
+2026-11-22T07:19:04.8004674Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+2026-11-22T07:19:04.8005285Z Build Date: 2026-11-11T01:49:01Z
+2026-11-22T07:19:04.8005900Z Worker ID: {86550684-3289-408f-89b3-8b580a01a377}
+2026-11-22T07:19:04.8006483Z Region: westus
+2026-11-22T07:19:04.8006937Z Cloud: Azure
+2026-11-22T07:19:04.8007414Z ##[endgroup]
+2026-11-22T07:19:04.8008479Z ##[group]Operating System
+2026-11-22T07:19:04.8009086Z Ubuntu
+2026-11-22T07:19:04.8009528Z 26.04.1
+2026-11-22T07:19:04.8009950Z LTS
+2026-11-22T07:19:04.8010556Z ##[endgroup]
+2026-11-22T07:19:04.8011022Z ##[group]Runner Image
+2026-11-22T07:19:04.8011538Z Image: ubuntu-26.04
+2026-11-22T07:19:04.8012067Z Version: 20261116.202.1
+2026-11-22T07:19:04.8013082Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-22T07:19:04.8014392Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+2026-11-22T07:19:04.8015163Z ##[endgroup]
+2026-11-22T07:19:04.8016128Z ##[group]GITHUB_TOKEN Permissions
+2026-11-22T07:19:04.8018078Z Contents: read
+2026-11-22T07:19:04.8018636Z Metadata: read
+2026-11-22T07:19:04.8019137Z ##[endgroup]
+2026-11-22T07:19:04.8021056Z Secret source: Actions
+2026-11-22T07:19:04.8021805Z Cache mode: write
+2026-11-22T07:19:04.8022389Z Prepare workflow directory
+2026-11-22T07:19:04.8276053Z Prepare all required actions
+2026-11-22T07:19:04.8314403Z Getting action download info
+2026-11-22T07:19:05.1897249Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+2026-11-22T07:19:05.4329136Z Download action repository 'actions/setup-node@v5' (SHA:a0853c24544627f65ddf259abe73b1d18a591444)
+2026-11-22T07:19:05.6547210Z Complete job name: Quality gates
+2026-11-22T07:19:05.7285388Z ##[group]Run actions/checkout@v5
+2026-11-22T07:19:05.7286094Z with:
+2026-11-22T07:19:05.7286462Z   repository: emirtdede/tactile
+2026-11-22T07:19:05.7289388Z   token: ***
+2026-11-22T07:19:05.7289750Z   ssh-strict: true
+2026-11-22T07:19:05.7290112Z   ssh-user: git
+2026-11-22T07:19:05.7290618Z   persist-credentials: true
+2026-11-22T07:19:05.7291015Z   clean: true
+2026-11-22T07:19:05.7291376Z   sparse-checkout-cone-mode: true
+2026-11-22T07:19:05.7291796Z   fetch-depth: 1
+2026-11-22T07:19:05.7292154Z   fetch-tags: false
+2026-11-22T07:19:05.7292517Z   show-progress: true
+2026-11-22T07:19:05.7292879Z   lfs: false
+2026-11-22T07:19:05.7293210Z   submodules: false
+2026-11-22T07:19:05.7293570Z   set-safe-directory: true
+2026-11-22T07:19:05.7293977Z   allow-unsafe-pr-checkout: false
+2026-11-22T07:19:05.7294547Z ##[endgroup]
+2026-11-22T07:19:05.9668625Z Syncing repository: emirtdede/tactile
+2026-11-22T07:19:05.9670013Z ##[group]Getting Git version info
+2026-11-22T07:19:05.9670891Z Working directory is '/home/runner/work/tactile/tactile'
+2026-11-22T07:19:05.9671708Z [command]/usr/bin/git version
+2026-11-22T07:19:05.9680040Z git version 2.56.1
+2026-11-22T07:19:05.9696360Z ##[endgroup]
+2026-11-22T07:19:05.9707234Z Temporarily overriding HOME='/home/runner/work/_temp/f858bffe-43fa-4b67-acba-2eb59d8b02fe' before making global git config changes
+2026-11-22T07:19:05.9708390Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-22T07:19:05.9711710Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tactile/tactile
+2026-11-22T07:19:05.9770237Z Deleting the contents of '/home/runner/work/tactile/tactile'
+2026-11-22T07:19:05.9773234Z ##[group]Initializing the repository
+2026-11-22T07:19:05.9776669Z [command]/usr/bin/git init /home/runner/work/tactile/tactile
+2026-11-22T07:19:05.9938788Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-22T07:19:05.9940370Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-22T07:19:05.9942114Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-22T07:19:05.9943131Z hint: call:
+2026-11-22T07:19:05.9943676Z hint:
+2026-11-22T07:19:05.9944361Z hint: 	git config --global init.defaultBranch <name>
+2026-11-22T07:19:05.9945188Z hint:
+2026-11-22T07:19:05.9945992Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-22T07:19:05.9947275Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-22T07:19:05.9948335Z hint:
+2026-11-22T07:19:05.9948890Z hint: 	git branch -m <name>
+2026-11-22T07:19:05.9949588Z hint:
+2026-11-22T07:19:05.9950364Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-22T07:19:05.9951716Z Initialized empty Git repository in /home/runner/work/tactile/tactile/.git/
+2026-11-22T07:19:05.9959868Z [command]/usr/bin/git remote add origin https://github.com/emirtdede/tactile
+2026-11-22T07:19:06.0004989Z ##[endgroup]
+2026-11-22T07:19:06.0005949Z ##[group]Disabling automatic garbage collection
+2026-11-22T07:19:06.0009224Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-22T07:19:06.0038704Z ##[endgroup]
+2026-11-22T07:19:06.0039567Z ##[group]Setting up auth
+2026-11-22T07:19:06.0044658Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-22T07:19:06.0074245Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-22T07:19:06.0568549Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-22T07:19:06.0599048Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-22T07:19:06.0832420Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-22T07:19:06.0861233Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-22T07:19:06.1099485Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-22T07:19:06.1133931Z ##[endgroup]
+2026-11-22T07:19:06.1134959Z ##[group]Fetching the repository
+2026-11-22T07:19:06.1142436Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +fcc4306facb731a6e6d0d5d4ef75bd3341c99803:refs/remotes/origin/development
+2026-11-22T07:19:07.1137384Z From https://github.com/emirtdede/tactile
+2026-11-22T07:19:07.1138494Z  * [new ref]         fcc4306facb731a6e6d0d5d4ef75bd3341c99803 -> origin/development
+2026-11-22T07:19:07.1141491Z ##[endgroup]
+2026-11-22T07:19:07.1142186Z ##[group]Determining the checkout info
+2026-11-22T07:19:07.1143462Z ##[endgroup]
+2026-11-22T07:19:07.1171464Z [command]/usr/bin/git sparse-checkout disable
+2026-11-22T07:19:07.1198495Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-22T07:19:07.1228195Z ##[group]Checking out the ref
+2026-11-22T07:19:07.1231095Z [command]/usr/bin/git checkout --progress --force -B development refs/remotes/origin/development
+2026-11-22T07:19:07.2385521Z Switched to a new branch 'development'
+2026-11-22T07:19:07.2393984Z branch 'development' set up to track 'origin/development'.
+2026-11-22T07:19:07.2397240Z ##[endgroup]
+2026-11-22T07:19:07.2437553Z [command]/usr/bin/git log -1 --format=%H
+2026-11-22T07:19:07.2458905Z fcc4306facb731a6e6d0d5d4ef75bd3341c99803
+2026-11-22T07:19:07.2774625Z ##[group]Run actions/setup-node@v5
+2026-11-22T07:19:07.2775697Z with:
+2026-11-22T07:19:07.2776552Z   node-version: 22
+2026-11-22T07:19:07.2777454Z   cache: npm
+2026-11-22T07:19:07.2778322Z   always-auth: false
+2026-11-22T07:19:07.2779256Z   check-latest: false
+2026-11-22T07:19:07.2786240Z   token: ***
+2026-11-22T07:19:07.2787158Z   package-manager-cache: true
+2026-11-22T07:19:07.2788339Z ##[endgroup]
+2026-11-22T07:19:07.3967405Z Found in cache @ /opt/hostedtoolcache/node/22.23.5/x64
+2026-11-22T07:19:07.3970052Z (node:2183) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-22T07:19:07.3972371Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-22T07:19:07.3974281Z ##[group]Environment details
+2026-11-22T07:19:07.7424608Z node: v22.23.5
+2026-11-22T07:19:07.7425260Z npm: 10.9.9
+2026-11-22T07:19:07.7425848Z yarn: 1.22.22
+2026-11-22T07:19:07.7426965Z ##[endgroup]
+2026-11-22T07:19:07.7444663Z [command]/opt/hostedtoolcache/node/22.23.5/x64/bin/npm config get cache
+2026-11-22T07:19:07.8337573Z /home/runner/.npm
+2026-11-22T07:19:08.1048886Z npm cache is not found
+2026-11-22T07:19:08.1188725Z ##[group]Run npm ci --ignore-scripts
+2026-11-22T07:19:08.1189097Z [36;1mnpm ci --ignore-scripts[0m
+2026-11-22T07:19:08.1227601Z shell: /usr/bin/bash -e {0}
+2026-11-22T07:19:08.1227880Z ##[endgroup]
+2026-11-22T07:19:09.5371739Z npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+2026-11-22T07:19:10.0783063Z npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+2026-11-22T07:19:13.5247013Z 
+2026-11-22T07:19:13.5247797Z added 305 packages, and audited 306 packages in 5s
+2026-11-22T07:19:13.5248237Z 
+2026-11-22T07:19:13.5261575Z 46 packages are looking for funding
+2026-11-22T07:19:13.5262263Z   run `npm fund` for details
+2026-11-22T07:19:13.6191306Z 
+2026-11-22T07:19:13.6192381Z 23 vulnerabilities (1 low, 2 moderate, 18 high, 2 critical)
+2026-11-22T07:19:13.6193310Z 
+2026-11-22T07:19:13.6194036Z To address issues that do not require attention, run:
+2026-11-22T07:19:13.6195491Z   npm audit fix
+2026-11-22T07:19:13.6195771Z 
+2026-11-22T07:19:13.6196044Z To address all issues (including breaking changes), run:
+2026-11-22T07:19:13.6196497Z   npm audit fix --force
+2026-11-22T07:19:13.6196722Z 
+2026-11-22T07:19:13.6196899Z Run `npm audit` for details.
+2026-11-22T07:19:13.6766406Z ##[group]Run for f in src/main.js src/preload.js src/app.js src/i18n.js src/cloud-sync.js src/db/database.js src/libs/audio.js src/libs/ico.js src/libs/keycodes.js src/utils/remapper.js; do
+2026-11-22T07:19:13.6767401Z [36;1mfor f in src/main.js src/preload.js src/app.js src/i18n.js src/cloud-sync.js src/db/database.js src/libs/audio.js src/libs/ico.js src/libs/keycodes.js src/utils/remapper.js; do[0m
+2026-11-22T07:19:13.6767956Z [36;1m  node --check "$f"[0m
+2026-11-22T07:19:13.6768155Z [36;1mdone[0m
+2026-11-22T07:19:13.6798959Z shell: /usr/bin/bash -e {0}
+2026-11-22T07:19:13.6799191Z ##[endgroup]
+2026-11-22T07:19:13.8873839Z ##[group]Run npm test
+2026-11-22T07:19:13.8874087Z [36;1mnpm test[0m
+2026-11-22T07:19:13.8905059Z shell: /usr/bin/bash -e {0}
+2026-11-22T07:19:13.8905283Z ##[endgroup]
+2026-11-22T07:19:13.9825350Z 
+2026-11-22T07:19:13.9825893Z > tactile@1.0.0 test
+2026-11-22T07:19:13.9826295Z > node --test tools/tests/
+2026-11-22T07:19:13.9826540Z 
+2026-11-22T07:19:14.0201630Z TAP version 13
+2026-11-22T07:19:14.0392379Z # node:internal/modules/cjs/loader:1433
+2026-11-22T07:19:14.0408356Z #   throw err;
+2026-11-22T07:19:14.0408808Z #   ^
+2026-11-22T07:19:14.0409535Z # Error: Cannot find module '/home/runner/work/tactile/tactile/tools/tests'
+2026-11-22T07:19:14.0410708Z #     at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)
+2026-11-22T07:19:14.0411722Z #     at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)
+2026-11-22T07:19:14.0412652Z #     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)
+2026-11-22T07:19:14.0413637Z #     at Function._load (node:internal/modules/cjs/loader:1216:25)
+2026-11-22T07:19:14.0414535Z #     at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+2026-11-22T07:19:14.0415538Z #     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+2026-11-22T07:19:14.0416413Z #     at node:internal/main/run_main_module:36:49 {
+2026-11-22T07:19:14.0417502Z #   code: 'MODULE_NOT_FOUND',
+2026-11-22T07:19:14.0418096Z #   requireStack: []
+2026-11-22T07:19:14.0418540Z # }
+2026-11-22T07:19:14.0418983Z # Node.js v22.23.5
+2026-11-22T07:19:14.0433483Z # Subtest: tools/tests
+2026-11-22T07:19:14.0437784Z not ok 1 - tools/tests
+2026-11-22T07:19:14.0438110Z   ---
+2026-11-22T07:19:14.0438508Z   duration_ms: 26.994074
+2026-11-22T07:19:14.0438810Z   type: 'test'
+2026-11-22T07:19:14.0439300Z   location: '/home/runner/work/tactile/tactile/tools/tests:1:1'
+2026-11-22T07:19:14.0439862Z   failureType: 'testCodeFailure'
+2026-11-22T07:19:14.0440255Z   exitCode: 1
+2026-11-22T07:19:14.0440646Z   signal: ~
+2026-11-22T07:19:14.0440952Z   error: 'test failed'
+2026-11-22T07:19:14.0441248Z   code: 'ERR_TEST_FAILURE'
+2026-11-22T07:19:14.0441607Z   ...
+2026-11-22T07:19:14.0441864Z 1..1
+2026-11-22T07:19:14.0442094Z # tests 1
+2026-11-22T07:19:14.0442391Z # suites 0
+2026-11-22T07:19:14.0442653Z # pass 0
+2026-11-22T07:19:14.0442942Z # fail 1
+2026-11-22T07:19:14.0443206Z # cancelled 0
+2026-11-22T07:19:14.0443455Z # skipped 0
+2026-11-22T07:19:14.0563364Z # todo 0
+2026-11-22T07:19:14.0563587Z # duration_ms 32.788473
+2026-11-22T07:19:14.0573085Z ##[error]Process completed with exit code 1.
+2026-11-22T07:19:14.0702189Z Post job cleanup.
+2026-11-22T07:19:14.1431066Z [command]/usr/bin/git version
+2026-11-22T07:19:14.1473927Z git version 2.56.1
+2026-11-22T07:19:14.1508894Z Temporarily overriding HOME='/home/runner/work/_temp/a52eca55-55d3-49b8-9c7b-2a03c1292ccc' before making global git config changes
+2026-11-22T07:19:14.1515531Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-22T07:19:14.1516632Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tactile/tactile
+2026-11-22T07:19:14.1558909Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-22T07:19:14.1598634Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-22T07:19:14.1879661Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-22T07:19:14.1912698Z http.https://github.com/.extraheader
+2026-11-22T07:19:14.1943098Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-22T07:19:14.1991273Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-22T07:19:14.2379474Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-22T07:19:14.2412914Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-22T07:19:14.2929178Z Cleaning up orphan processes

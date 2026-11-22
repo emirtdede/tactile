@@ -3,7 +3,7 @@
 ## Commands
 
 ```bash
-node --test tools/tests/          # full suite, 71 tests
+npm test          # full suite, 80 tests
 node tools/i18n-status.js         # 73 declared, 73 complete, 0 missing, 0 partial
 node tools/i18n/placeholders.js   # issues: 0
 node node_modules/electron/cli.js tools/capture.js   # screenshots, 0 renderer errors
@@ -17,9 +17,12 @@ import the real modules; nothing is mocked except the Electron shell itself.
 | File | Tests | Covers |
 | --- | --- | --- |
 | `audio.test.js` | 5 | Extension/MIME detection, traversal blocking, range expansion, define resolution |
+| `cloud-sync.test.js` | 6 | Provider order, root resolution, snapshot validation, rotation, recovery chain |
 | `consistency.test.js` | 19 | DOM ids, a11y, CSP, escaping, IPC parity, key usage, CSS dead rules |
-| `modules.test.js` | 28 | Remapper, database transactions and indexes, renderer promise paths, UI state races |
-| `i18n.test.js` | 19 | 73 languages, key parity, leak detection, placeholders, RTL, picker generation |
+| `dashes.test.js` | 1 | Bans em and en dashes in shipped text |
+| `i18n.test.js` | 18 | 73 languages, key parity, leak detection, placeholders, RTL, picker generation |
+| `ico.test.js` | 2 | ICO wrapper layout and malformed payload rejection |
+| `modules.test.js` | 29 | Remapper, database transactions and indexes, renderer promise paths, UI state races |
 
 ## Quality gates
 
@@ -56,7 +59,7 @@ A release build is blocked unless all of these hold.
 
 ### Screenshots
 
-`tools/capture.js` prints `renderer errors: 0` when the 12 screens have no
+`tools/capture.js` prints `renderer errors: 0` when the 14 screens have no
 console errors. Any error fails the release.
 
 ## Manual checklist

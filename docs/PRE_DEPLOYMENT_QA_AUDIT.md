@@ -4,7 +4,7 @@ Scope: complete Tactile 1.0.0 codebase (`src/`, `build/`, `tools/`, docs, CI).
 Method: manual review of every IPC channel and handler pair, every renderer
 event handler, database and cloud sync paths, renderer/HTML/CSS contract checks,
 accessibility and contrast measurements, plus the automated suite
-(`node --test tools/tests/`, 80 tests) and a live screenshot run.
+(`npm test`, 80 tests) and a live screenshot run.
 
 Everything below was found, fixed and re-verified in this pass. The fix log with
 the exact diffs is in [QA_FIXES.md](QA_FIXES.md).
@@ -27,7 +27,7 @@ maintainability.
 | 9 | P2 | `pendingView` was assigned after `createWindow()`, so `--view=` could be lost on a fast load. | `src/main.js` `initializeApp` (line 525) | Read before the window is created. |
 | 10 | P2 | Update download finished but the app never installed it; the UI said the installer would start. | `src/main.js` `download-update` (line 1182) | Waits for `downloadUpdate()` then calls `quitAndInstall(false, true)` after a short delay, with an error push on failure. Dead `install-update` channel removed. |
 | 11 | P2 | Shortcut icons ignored the custom hex colour: window, taskbar and tray were tinted, the desktop shortcut stayed gold. | `src/main.js` `updateShortcutIcons` (line 1313) | Accepts the renderer's PNG, wraps it in a PNG-compressed ICO (`src/libs/ico.js`), caches it as `custom-shortcut.ico`, and uses it for `theme` and `custom`. |
-| 12 | P2 | Path traversal check compared case-sensitively, so a pack stored with different casing was treated as an escape attempt on Windows. | `src/libs/audio.js` `resolveWithinPath` (line 50) | Case-insensitive compare on `win32`, then returns the original absolute path. |
+| 12 | P2 | Path traversal check compared case-sensitively and only recognised POSIX absolute paths, so a pack stored with different casing failed on Windows and `C:\...` or `..\..\x` slipped through on Linux. | `src/libs/audio.js` `resolveWithinPath` (line 50) | Case-insensitive compare on `win32`, rejects every Windows drive, UNC and rooted form on any host, treats backslashes as separators, and rejects NUL bytes. |
 | 13 | P2 | `restoreDatabase()` leaked the failed `SQL.Database` handle when validation threw. | `src/db/database.js` line 312 | Closes `restored` before rethrowing. |
 | 14 | P2 | Cloud snapshot validation accepted any base64 string as a database. | `src/cloud-sync.js` `isValidSnapshot` (line 148) | Requires the `SQLite format 3` magic header in addition to format and version fields. |
 | 15 | P2 | Backup rotation compared filenames with day arithmetic, which drifted across month and year boundaries. | `src/cloud-sync.js` `rotateBackups` (line 181) | Builds calendar `Date` objects for the cutoff. |
@@ -104,7 +104,7 @@ maintainability.
 ```bash
 for f in src/main.js src/app.js src/preload.js src/i18n.js src/cloud-sync.js \
          src/db/database.js src/libs/audio.js src/libs/ico.js; do node --check "$f"; done
-node --test tools/tests/          # 80 pass, 0 fail
+npm test          # 80 pass, 0 fail
 node tools/i18n-status.js         # 73 declared, 73 complete, 0 partial
 node tools/i18n/placeholders.js   # issues: 0
 node node_modules/electron/cli.js tools/capture.js   # 14 screenshots, renderer errors: 0

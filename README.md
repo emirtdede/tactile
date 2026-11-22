@@ -219,7 +219,7 @@ npm start
 ### Tests and release gates
 
 ```bash
-node --test tools/tests/            # 72 tests: a11y, security, i18n, modules, dashes
+npm test            # 80 tests: a11y, security, i18n, modules, dashes, ICO
 node tools/i18n-status.js           # 73 declared, 73 complete, 0 missing, 0 partial
 node tools/i18n/placeholders.js     # issues: 0
 node tools/gen-installer-languages.js
@@ -376,7 +376,7 @@ npm start
 ### Testler ve sürüm kapıları
 
 ```bash
-node --test tools/tests/
+npm test
 node tools/i18n-status.js
 node tools/i18n/placeholders.js
 ```

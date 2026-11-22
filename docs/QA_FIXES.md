@@ -103,6 +103,10 @@ Each entry names the defect, the file touched and how it was verified.
   and custom protocol handlers remain blocked.
 - `sendToRenderer()` declaration repaired; it returns whether the message was
   delivered so navigation can fall back to `pendingView`.
+- `src/libs/audio.js` `resolveWithinPath()` now rejects Windows drive, UNC and
+  rooted paths on every host platform and treats backslashes as separators, so
+  the traversal contract is identical on Windows, macOS and Linux. NUL bytes are
+  rejected as well.
 
 ## 8. Documentation and repository hygiene
 
@@ -114,6 +118,11 @@ Each entry names the defect, the file touched and how it was verified.
 - Removed root artifacts and added them to `.gitignore`.
 
 ## 9. Tests added
+
+`tools/run-tests.js` resolves `tools/tests/*.test.js` and hands the files to
+`node --test` explicitly. Passing a directory is not portable across Node
+versions (Node 22 on the CI runner rejected it), so `npm test` now uses the
+runner and behaves the same on every supported Node release.
 
 | File | Covers |
 | --- | --- |

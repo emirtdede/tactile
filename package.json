@@ -6,7 +6,7 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "test": "node --test tools/tests/",
+    "test": "node tools/run-tests.js",
     "test:i18n": "node tools/i18n-status.js && node tools/i18n/placeholders.js",
     "build:icons": "node tools/build-icons.js",
     "build:win": "node tools/build-icons.js && electron-builder --win nsis --x64 && node tools/refresh-icon-cache.js",
